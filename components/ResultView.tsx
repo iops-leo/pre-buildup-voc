@@ -5,6 +5,11 @@ import { RefreshCcw, Home, Clock, History, ChevronDown, ChevronUp, Volume2, Trop
 import clsx from 'clsx';
 import { useTTS } from '@/hooks/useTTS';
 
+// Helper function to remove parenthetical parts (v., adj., n., pron., etc.) from word display
+const cleanWordForDisplay = (word: string): string => {
+    return word.replace(/\s*\(.*?\)/g, '');
+};
+
 export const ResultView = () => {
     const store = useQuizStore();
     const [showHistory, setShowHistory] = useState(false);
@@ -115,7 +120,7 @@ export const ResultView = () => {
                                     </div>
                                     <div>
                                         <div className="font-bold text-slate-200 flex items-center gap-2">
-                                            {item.word}
+                                            {cleanWordForDisplay(item.word)}
                                             {ttsSupported && (
                                                 <button
                                                     onClick={() => speak(item.word)}

@@ -5,6 +5,11 @@ import { ArrowRight, CheckCircle, XCircle, Home, Volume2, X } from 'lucide-react
 import clsx from 'clsx';
 import { useTTS } from '@/hooks/useTTS';
 
+// Helper function to remove parenthetical parts (v., adj., n., pron., etc.) from word display
+const cleanWordForDisplay = (word: string): string => {
+    return word.replace(/\s*\(.*?\)/g, '');
+};
+
 export const QuizView = () => {
     const store = useQuizStore();
     const currentWord = store.questions[store.currentQuestionIndex];
@@ -137,7 +142,7 @@ export const QuizView = () => {
 
     const questionText = (store.mode === 'korean_to_english' || store.mode === 'spelling')
         ? currentWord.meaning
-        : currentWord.word;
+        : cleanWordForDisplay(currentWord.word);
 
     return (
         <div className="w-full min-h-screen bg-slate-950 flex flex-col relative overflow-hidden">
@@ -291,7 +296,7 @@ export const QuizView = () => {
                                     </div>
                                     {!isCorrect && (
                                         <div className="text-slate-400 flex items-center gap-2">
-                                            정답: <span className="text-slate-200 font-semibold">{currentWord.word}</span>
+                                            정답: <span className="text-slate-200 font-semibold">{cleanWordForDisplay(currentWord.word)}</span>
                                             {ttsSupported && (
                                                 <button onClick={() => speak(currentWord.word)} className="text-slate-500 hover:text-slate-300 ml-1">
                                                     <Volume2 size={16} />
