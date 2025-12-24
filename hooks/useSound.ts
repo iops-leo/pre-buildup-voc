@@ -11,7 +11,7 @@ export const useSound = () => {
             correctAudio.current = new Audio('/media/sounds/correct.mp3');
             wrongAudio.current = new Audio('/media/sounds/wrong.ogg');
             clickAudio.current = new Audio('/media/sounds/click.ogg');
-            levelUpAudio.current = new Audio('/media/sounds/level_up.ogg');
+            levelUpAudio.current = new Audio('/media/sounds/level_up.mp3');
 
             // Preload
             correctAudio.current.load();

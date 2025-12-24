@@ -79,7 +79,7 @@ export const LessonSelector = () => {
                 {/* Streak Card */}
                 <div className="bg-slate-900 border border-slate-700 rounded-2xl p-4 md:p-6 flex flex-row md:flex-col items-center justify-between md:justify-center relative overflow-hidden group shadow-sm">
                     <div className="absolute inset-0 bg-orange-500/5 group-hover:bg-orange-500/10 transition-colors" />
-                    <div className="flex items-center gap-4 md:block md:text-center z-10">
+                    <div className="flex items-center gap-4 md:flex-col md:items-center md:justify-center md:gap-2 z-10 w-full">
                         <div className={clsx(
                             "p-3 md:p-4 rounded-full transition-all duration-300 shrink-0",
                             streak > 0 ? "bg-orange-500/20 text-orange-500 shadow-sm" : "bg-slate-800 text-slate-600"
