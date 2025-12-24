@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useQuizStore } from '@/store/useQuizStore';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, CheckCircle, XCircle, Home, Volume2, X } from 'lucide-react';
+import { ArrowRight, CheckCircle, XCircle, Volume2, X, Mic, MicOff, Loader2 } from 'lucide-react';
 import clsx from 'clsx';
 import { useTTS } from '@/hooks/useTTS';
+import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 
-// Helper function to remove parenthetical parts (v., adj., n., pron., etc.) from word display
+// Helper function to remove parenthetical parts
 const cleanWordForDisplay = (word: string): string => {
     return word.replace(/\s*\(.*?\)/g, '');
 };
@@ -18,13 +19,34 @@ export const QuizView = () => {
     const [isAnswered, setIsAnswered] = useState(false);
     const [isCorrect, setIsCorrect] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
-    const { speak, isSpeaking, isSupported: ttsSupported } = useTTS();
+    const { speak, isSpeaking: isTtsSpeaking, isSupported: ttsSupported } = useTTS();
+
+    // Voice Recognition Hook
+    const {
+        isListening,
+        transcript,
+        interimTranscript,
+        startListening,
+        stopListening,
+        resetTranscript,
+        isSupported: isSpeechSupported,
+        error: speechError
+    } = useSpeechRecognition();
 
     const isTypingMode = store.mode === 'spelling' || (store.mode === 'korean_to_english' && !currentWord?.word.includes(' '));
-    const [options, setOptions] = useState<string[]>([]);
+    const isSpeakingMode = store.mode === 'speaking';
 
-    // Progress calculation
+    const [options, setOptions] = useState<string[]>([]);
     const progress = ((store.currentQuestionIndex) / store.questions.length) * 100;
+
+    // Reset voice transcript when question changes
+    useEffect(() => {
+        resetTranscript();
+        if (isSpeakingMode) {
+            // Optional: Auto-start listening or wait for user action?
+            // Let's require user action to avoid permission spam or confusion
+        }
+    }, [store.currentQuestionIndex, isSpeakingMode, resetTranscript]);
 
     useEffect(() => {
         if (!currentWord) return;
@@ -39,7 +61,8 @@ export const QuizView = () => {
                 .map(q => q.meaning);
             const alts = [...wrongAnswers, currentWord.meaning].sort(() => Math.random() - 0.5);
             setOptions(alts);
-        } else if (isPhrase && store.mode !== 'spelling') {
+        } else if (isPhrase && !isSpeakingMode && store.mode !== 'spelling') {
+            // Multiple choice for phrases in K->E mode (except spelling/speaking)
             const wrongAnswers = store.questions
                 .filter(q => q.word !== currentWord.word)
                 .sort(() => Math.random() - 0.5)
@@ -48,26 +71,65 @@ export const QuizView = () => {
             const alts = [...wrongAnswers, currentWord.word].sort(() => Math.random() - 0.5);
             setOptions(alts);
         }
-    }, [currentWord, store.mode, store.questions]);
+    }, [currentWord, store.mode, store.questions, isSpeakingMode]);
 
+    // Auto-focus for typing
     useEffect(() => {
-        if (isTypingMode && !isAnswered) {
+        if (isTypingMode && !isAnswered && !isSpeakingMode) {
             setTimeout(() => inputRef.current?.focus(), 50);
         }
-    }, [store.currentQuestionIndex, isTypingMode, isAnswered]);
+    }, [store.currentQuestionIndex, isTypingMode, isAnswered, isSpeakingMode]);
 
+    // TTS for E->K mode
     useEffect(() => {
         if (store.mode === 'english_to_korean' && currentWord && ttsSupported) {
             speak(currentWord.word);
         }
     }, [currentWord, store.mode, ttsSupported]);
 
+    // Voice Answer Checking
+    useEffect(() => {
+        if (isSpeakingMode && transcript && !isAnswered) {
+            const cleanTarget = currentWord.word.replace(/\s*\(.*\)/, '').toLowerCase();
+            const cleanTranscript = transcript.toLowerCase();
+
+            // Check if target is included in transcript (flexible matching)
+            // or check strict equality if single word
+            // Let's use flexible includes for now, as speech recognition can be messy
+            if (cleanTranscript.includes(cleanTarget) || cleanTarget === cleanTranscript) {
+                stopListening();
+                handleVoiceSubmit(true);
+            }
+        }
+    }, [transcript, isSpeakingMode, isAnswered, currentWord, stopListening]);
+
     const handleSpeak = useCallback(() => {
         if (currentWord) {
-            const textToSpeak = store.mode === 'english_to_korean' ? currentWord.word : currentWord.word;
-            speak(textToSpeak);
+            speak(currentWord.word);
         }
-    }, [currentWord, store.mode, speak]);
+    }, [currentWord, speak]);
+
+    const stopVoice = useCallback(() => {
+        stopListening();
+    }, [stopListening]);
+
+    const toggleListening = () => {
+        if (isListening) {
+            stopListening();
+        } else {
+            resetTranscript();
+            startListening();
+        }
+    };
+
+    const handleVoiceSubmit = (success: boolean) => {
+        setIsCorrect(success);
+        setIsAnswered(true);
+        store.submitAnswer(success, currentWord);
+        if (success) {
+            // Play success sound?
+        }
+    };
 
     const handleSubmit = (e?: React.FormEvent) => {
         e?.preventDefault();
@@ -106,15 +168,18 @@ export const QuizView = () => {
             setSelectedOption(null);
             setIsAnswered(false);
             setIsCorrect(false);
+            resetTranscript();
         }
-    }, [store]);
+    }, [store, resetTranscript]);
 
     const handleExit = useCallback(() => {
-        if (confirm('퀴즈를 종료하고 처음으로 돌아갈까요?')) {
+        if (confirm('Exit quiz?')) {
+            stopListening();
             store.resetQuiz();
         }
-    }, [store]);
+    }, [store, stopListening]);
 
+    // Keyboard shortcuts
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === 'Escape') {
@@ -126,7 +191,7 @@ export const QuizView = () => {
                 handleNext();
                 return;
             }
-            if (!isTypingMode && !isAnswered && options.length > 0) {
+            if (!isTypingMode && !isSpeakingMode && !isAnswered && options.length > 0) {
                 const num = parseInt(e.key);
                 if (num >= 1 && num <= options.length) {
                     e.preventDefault();
@@ -136,11 +201,11 @@ export const QuizView = () => {
         };
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [isAnswered, isTypingMode, options, handleNext, handleOptionSelect, handleExit]);
+    }, [isAnswered, isTypingMode, isSpeakingMode, options, handleNext, handleOptionSelect, handleExit]);
 
     if (!currentWord) return null;
 
-    const questionText = (store.mode === 'korean_to_english' || store.mode === 'spelling')
+    const questionText = (store.mode === 'korean_to_english' || store.mode === 'spelling' || store.mode === 'speaking')
         ? currentWord.meaning
         : cleanWordForDisplay(currentWord.word);
 
@@ -158,10 +223,7 @@ export const QuizView = () => {
 
             {/* Header */}
             <header className="p-6 flex justify-between items-center z-10">
-                <button
-                    onClick={handleExit}
-                    className="p-2 rounded-full hover:bg-slate-800 text-slate-500 hover:text-slate-300 transition-colors"
-                >
+                <button onClick={handleExit} className="p-2 rounded-full hover:bg-slate-800 text-slate-500">
                     <X size={24} />
                 </button>
                 <div className="text-sm font-medium text-slate-500 font-mono">
@@ -173,7 +235,7 @@ export const QuizView = () => {
             <main className="flex-1 w-full max-w-2xl mx-auto p-6 flex flex-col items-center justify-center -mt-10">
                 <AnimatePresence mode="wait">
                     <motion.div
-                        key={currentWord.word} // Re-render animation on new word
+                        key={currentWord.word}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -20 }}
@@ -191,9 +253,7 @@ export const QuizView = () => {
                                         onClick={handleSpeak}
                                         className={clsx(
                                             "p-3 rounded-full transition-all duration-200",
-                                            isSpeaking
-                                                ? "bg-blue-500 text-white shadow-lg shadow-blue-500/30 scale-110"
-                                                : "bg-slate-800/50 text-slate-400 hover:bg-slate-700 hover:text-slate-200"
+                                            isTtsSpeaking ? "bg-blue-500 text-white scale-110" : "bg-slate-800/50 text-slate-400"
                                         )}
                                     >
                                         <Volume2 size={24} />
@@ -201,43 +261,77 @@ export const QuizView = () => {
                                 )}
                             </div>
 
-                            {(store.mode === 'korean_to_english' || store.mode === 'spelling') && (
-                                <p className="text-slate-500 font-medium tracking-wide uppercase text-sm">Designated English Word</p>
+                            {isSpeakingMode && (
+                                <p className="text-blue-400 font-medium tracking-wide uppercase text-sm animate-pulse">
+                                    Speak the English word!
+                                </p>
                             )}
                         </div>
 
-                        {/* Input / Options */}
-                        <div className="w-full max-w-lg mx-auto">
-                            {isTypingMode ? (
-                                <form onSubmit={handleSubmit} className="relative">
+                        {/* Input Area */}
+                        <div className="w-full max-w-lg mx-auto min-h-[120px] flex flex-col items-center justify-center">
+                            {isSpeakingMode ? (
+                                <div className="space-y-6 w-full">
+                                    {/* Mic Button */}
+                                    <button
+                                        onClick={toggleListening}
+                                        disabled={isAnswered}
+                                        className={clsx(
+                                            "w-24 h-24 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 mx-auto",
+                                            isListening
+                                                ? "bg-rose-500 text-white shadow-rose-500/40 scale-110 ring-4 ring-rose-500/20"
+                                                : "bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white border-2 border-slate-700 hover:border-slate-500",
+                                            isAnswered && "opacity-50 cursor-not-allowed"
+                                        )}
+                                    >
+                                        {isListening ? <Mic size={40} className="animate-bounce" /> : <MicOff size={32} />}
+                                    </button>
+
+                                    {/* Live Caption */}
+                                    <div className="h-12 flex items-center justify-center">
+                                        {isListening ? (
+                                            <div className="text-slate-300 text-lg font-medium flex items-center gap-2">
+                                                <Loader2 size={16} className="animate-spin text-rose-500" />
+                                                <span>{interimTranscript || "Listening..."}</span>
+                                            </div>
+                                        ) : transcript ? (
+                                            <div className="text-slate-100 text-xl font-bold">"{transcript}"</div>
+                                        ) : (
+                                            <div className="text-slate-600 text-sm">Click mic and speak</div>
+                                        )}
+                                    </div>
+
+                                    {speechError && (
+                                        <div className="text-rose-500 text-xs font-mono bg-rose-500/10 py-1 px-3 rounded-md inline-block">
+                                            {speechError} (Try Chrome/Safari)
+                                        </div>
+                                    )}
+                                </div>
+                            ) : isTypingMode ? (
+                                <form onSubmit={handleSubmit} className="relative w-full">
                                     <input
                                         ref={inputRef}
                                         type="text"
                                         value={input}
                                         onChange={(e) => setInput(e.target.value)}
                                         disabled={isAnswered}
-                                        placeholder="Type your answer..."
+                                        placeholder="Type answer..."
                                         className={clsx(
                                             "w-full bg-slate-900/50 border-2 rounded-xl text-3xl text-center py-6 px-4 focus:outline-none transition-all duration-300 placeholder:text-slate-700",
                                             isAnswered
-                                                ? isCorrect
-                                                    ? "border-green-500/50 text-green-400 bg-green-500/5"
-                                                    : "border-red-500/50 text-red-400 bg-red-500/5"
-                                                : "border-slate-800 focus:border-blue-500 focus:bg-slate-900 focus:shadow-[0_0_30px_-5px_rgba(59,130,246,0.15)] text-slate-100"
+                                                ? isCorrect ? "border-green-500/50 text-green-400" : "border-red-500/50 text-red-400"
+                                                : "border-slate-800 focus:border-blue-500 focus:bg-slate-900 text-slate-100"
                                         )}
                                         autoComplete="off"
-                                        autoCorrect="off"
-                                        autoCapitalize="off"
                                     />
                                 </form>
                             ) : (
-                                <div className="grid grid-cols-1 gap-3">
+                                <div className="grid grid-cols-1 gap-3 w-full">
                                     {options.map((opt, idx) => {
                                         const isSelected = opt === selectedOption;
                                         const isTarget = (store.mode === 'english_to_korean' ? opt === currentWord.meaning : opt === currentWord.word);
                                         const showSuccess = isAnswered && isTarget;
                                         const showFail = isAnswered && isSelected && !isTarget;
-                                        const dimmed = isAnswered && !isTarget && !isSelected;
 
                                         return (
                                             <button
@@ -245,24 +339,16 @@ export const QuizView = () => {
                                                 onClick={() => handleOptionSelect(opt)}
                                                 disabled={isAnswered}
                                                 className={clsx(
-                                                    "w-full p-5 rounded-xl border-2 text-lg font-medium transition-all duration-200 text-left flex items-center gap-4 relative overflow-hidden",
-                                                    showSuccess ? "bg-green-500/10 border-green-500/50 text-green-400" :
-                                                        showFail ? "bg-red-500/10 border-red-500/50 text-red-400" :
-                                                            dimmed ? "opacity-40 border-slate-800 bg-slate-900/30 text-slate-500" :
-                                                                "bg-slate-800/30 border-slate-800 hover:bg-slate-800 hover:border-slate-600 text-slate-300 hover:text-slate-100"
+                                                    "w-full p-5 rounded-xl border-2 text-lg font-medium transition-all text-left flex items-center gap-4",
+                                                    showSuccess ? "bg-green-500/10 border-green-500 text-green-400" :
+                                                        showFail ? "bg-red-500/10 border-red-500 text-red-400" :
+                                                            "bg-slate-800/30 border-slate-800 hover:bg-slate-800 text-slate-300"
                                                 )}
                                             >
-                                                <div className={clsx(
-                                                    "w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold border transition-colors",
-                                                    showSuccess ? "bg-green-500/20 border-green-500/50 text-green-400" :
-                                                        showFail ? "bg-red-500/20 border-red-500/50 text-red-400" :
-                                                            "bg-slate-800 border-slate-700 text-slate-500"
-                                                )}>
+                                                <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold border border-slate-700 bg-slate-800 text-slate-500">
                                                     {idx + 1}
                                                 </div>
                                                 <span className="flex-1">{opt}</span>
-                                                {showSuccess && <CheckCircle size={20} className="text-green-500" />}
-                                                {showFail && <XCircle size={20} className="text-red-500" />}
                                             </button>
                                         );
                                     })}
@@ -273,7 +359,7 @@ export const QuizView = () => {
                 </AnimatePresence>
             </main>
 
-            {/* Footer / Feedback Area */}
+            {/* Footer / Feedback */}
             <div className="h-32 w-full flex items-center justify-center bg-slate-950 border-t border-slate-900 z-10">
                 <AnimatePresence mode="wait">
                     {isAnswered ? (
@@ -284,50 +370,32 @@ export const QuizView = () => {
                             className="w-full max-w-2xl px-6 flex items-center justify-between"
                         >
                             <div className="flex items-center gap-4">
-                                <div className={clsx(
-                                    "w-12 h-12 rounded-full flex items-center justify-center shrink-0 border-2",
-                                    isCorrect ? "bg-green-500/10 border-green-500/30 text-green-500" : "bg-red-500/10 border-red-500/30 text-red-500"
-                                )}>
+                                <div className={clsx("w-12 h-12 rounded-full flex items-center justify-center border-2", isCorrect ? "border-green-500 text-green-500" : "border-red-500 text-red-500")}>
                                     {isCorrect ? <CheckCircle size={24} /> : <XCircle size={24} />}
                                 </div>
                                 <div>
                                     <div className={clsx("font-bold text-lg", isCorrect ? "text-green-400" : "text-red-400")}>
-                                        {isCorrect ? "정답입니다!" : "틀렸습니다"}
+                                        {isCorrect ? "Correct!" : "Incorrect"}
                                     </div>
                                     {!isCorrect && (
                                         <div className="text-slate-400 flex items-center gap-2">
-                                            정답: <span className="text-slate-200 font-semibold">{cleanWordForDisplay(currentWord.word)}</span>
-                                            {ttsSupported && (
-                                                <button onClick={() => speak(currentWord.word)} className="text-slate-500 hover:text-slate-300 ml-1">
-                                                    <Volume2 size={16} />
-                                                </button>
-                                            )}
+                                            Answer: <span className="text-slate-200 font-semibold">{cleanWordForDisplay(currentWord.word)}</span>
+                                            <button onClick={() => speak(currentWord.word)}>
+                                                <Volume2 size={16} />
+                                            </button>
                                         </div>
                                     )}
                                 </div>
                             </div>
-
-                            <button
-                                onClick={handleNext}
-                                className={clsx(
-                                    "px-8 py-3 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg hover:shadow-xl hover:scale-105 active:scale-95",
-                                    isCorrect
-                                        ? "bg-green-500 text-white shadow-green-500/20 hover:bg-green-400"
-                                        : "bg-slate-100 text-slate-900 shadow-slate-200/20 hover:bg-white"
-                                )}
-                            >
-                                다음 <ArrowRight size={20} />
+                            <button onClick={handleNext} className="px-8 py-3 rounded-xl font-bold bg-slate-100 text-slate-900 hover:bg-white flex items-center gap-2">
+                                Next <ArrowRight size={20} />
                             </button>
                         </motion.div>
                     ) : (
-                        <div className="text-slate-600 text-sm font-medium animate-pulse">
-                            문제 푸는 중...
-                        </div>
+                        <div className="text-slate-600 text-sm font-medium">Problem {store.currentQuestionIndex + 1} of {store.questions.length}</div>
                     )}
                 </AnimatePresence>
             </div>
         </div>
     );
 };
-
-

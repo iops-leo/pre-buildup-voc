@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Vocabulary, Unit, Lesson } from '@/data/vocabulary';
 
-export type QuizMode = 'korean_to_english' | 'english_to_korean' | 'spelling';
+export type QuizMode = 'korean_to_english' | 'english_to_korean' | 'spelling' | 'speaking';
 
 export interface QuizHistoryEntry {
     id: string;
@@ -14,9 +14,57 @@ export interface QuizHistoryEntry {
     correctAnswers: number;
     percentage: number;
     durationSeconds: number;
+    xpGained?: number;
 }
 
+export interface Badge {
+    id: string;
+    icon: string;
+    name: string;
+    description: string;
+    condition: (state: QuizState, history: QuizHistoryEntry) => boolean;
+}
+
+export const BADGES: Badge[] = [
+    {
+        id: 'first_step',
+        icon: '🥚',
+        name: '첫 걸음',
+        description: '첫 번째 퀴즈를 완료했어요!',
+        condition: (state, history) => state.quizHistory.length === 1
+    },
+    {
+        id: 'perfect_score',
+        icon: '💯',
+        name: '백점 만점',
+        description: '퀴즈에서 100점을 맞았어요!',
+        condition: (state, history) => history.percentage === 100
+    },
+    {
+        id: 'speed_racer',
+        icon: '⚡',
+        name: '스피드 레이서',
+        description: '30초 안에 퀴즈를 완료했어요!',
+        condition: (state, history) => history.durationSeconds <= 30 && history.correctAnswers >= 5
+    },
+    {
+        id: 'streak_3',
+        icon: '🔥',
+        name: '작심삼일 탈출',
+        description: '3일 연속으로 학습했어요!',
+        condition: (state) => state.streak >= 3
+    },
+    {
+        id: 'level_5',
+        icon: '🎓',
+        name: '모범생',
+        description: '레벨 5를 달성했어요!',
+        condition: (state) => state.level >= 5
+    }
+];
+
 interface QuizState {
+    // Current Quiz State
     currentUnit: Unit | null;
     currentLesson: Lesson | null;
     quizActive: boolean;
@@ -25,10 +73,17 @@ interface QuizState {
     currentQuestionIndex: number;
     score: number;
     correctAnswers: number;
-    wrongAnswers: Vocabulary[]; // Current session wrong answers
-    persistentWrongAnswers: Vocabulary[]; // All-time wrong answers for review
+    wrongAnswers: Vocabulary[];
+    persistentWrongAnswers: Vocabulary[];
     startTime: number;
-    quizHistory: QuizHistoryEntry[]; // History of completed quizzes
+    quizHistory: QuizHistoryEntry[];
+
+    // Gamification State
+    xp: number;
+    level: number;
+    streak: number;
+    lastStudyDate: string | null;
+    earnedBadges: string[]; // Badge IDs
 
     // Actions
     startQuiz: (unit: Unit, lesson: Lesson, mode: QuizMode) => void;
@@ -40,6 +95,10 @@ interface QuizState {
     resetQuiz: () => void;
     clearReviewList: () => void;
     clearHistory: () => void;
+
+    // Gamification Actions
+    addXp: (amount: number) => void;
+    checkAchievements: (historyEntry: QuizHistoryEntry) => void;
 }
 
 export const useQuizStore = create<QuizState>()(
@@ -58,8 +117,14 @@ export const useQuizStore = create<QuizState>()(
             startTime: 0,
             quizHistory: [],
 
+            // Gamification Initial State
+            xp: 0,
+            level: 1,
+            streak: 0,
+            lastStudyDate: null,
+            earnedBadges: [],
+
             startQuiz: (unit, lesson, mode) => {
-                // Shuffle questions
                 const shuffled = [...lesson.vocabulary].sort(() => Math.random() - 0.5);
                 set({
                     currentUnit: unit,
@@ -82,7 +147,7 @@ export const useQuizStore = create<QuizState>()(
                 const shuffled = [...wrong].sort(() => Math.random() - 0.5);
                 set({
                     currentUnit: null,
-                    currentLesson: null, // Indicates review mode
+                    currentLesson: null,
                     quizActive: true,
                     mode,
                     questions: shuffled,
@@ -97,13 +162,11 @@ export const useQuizStore = create<QuizState>()(
             retryQuiz: () => {
                 const state = get();
                 if (!state.currentUnit || !state.currentLesson) {
-                    // If in review mode, restart review
                     if (state.persistentWrongAnswers.length > 0) {
                         get().startReviewQuiz(state.mode);
                     }
                     return;
                 }
-                // Restart the same lesson with same mode
                 get().startQuiz(state.currentUnit, state.currentLesson, state.mode);
             },
 
@@ -114,13 +177,11 @@ export const useQuizStore = create<QuizState>()(
                         ? state.persistentWrongAnswers
                         : [...state.persistentWrongAnswers, word];
 
-                    // Dedupe persistent
                     const uniquePersistent = Array.from(new Set(newPersistent.map(w => w.word)))
                         .map(w => newPersistent.find(p => p.word === w)!);
 
-                    // Removing if correct in review mode check
                     let finalPersistent = uniquePersistent;
-                    if (state.currentLesson === null && isCorrect) { // Review mode
+                    if (state.currentLesson === null && isCorrect) {
                         finalPersistent = uniquePersistent.filter(w => w.word !== word.word);
                     }
 
@@ -146,7 +207,11 @@ export const useQuizStore = create<QuizState>()(
                 const durationSeconds = Math.floor((Date.now() - state.startTime) / 1000);
                 const percentage = Math.round((state.correctAnswers / state.questions.length) * 100) || 0;
 
-                // Create history entry
+                // XP Calculation: base 10 per word, bonus for %
+                const baseXp = state.correctAnswers * 10;
+                const bonusXp = percentage === 100 ? 50 : percentage >= 80 ? 20 : 0;
+                const totalXp = baseXp + bonusXp;
+
                 const historyEntry: QuizHistoryEntry = {
                     id: Date.now().toString(),
                     date: new Date().toISOString(),
@@ -157,12 +222,37 @@ export const useQuizStore = create<QuizState>()(
                     correctAnswers: state.correctAnswers,
                     percentage,
                     durationSeconds,
+                    xpGained: totalXp,
                 };
 
+                // Update Streak Logic
+                const today = new Date().toDateString();
+                const last = state.lastStudyDate ? new Date(state.lastStudyDate).toDateString() : null;
+
+                let newStreak = state.streak;
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+
+                if (today !== last) {
+                    if (last === yesterday.toDateString()) {
+                        newStreak += 1;
+                    } else if (last !== today) {
+                        // Reset if gap > 1 day, unless it's the very first time (streak 0)
+                        newStreak = 1;
+                    }
+                }
+
+                // Update State first
                 set((s) => ({
                     quizActive: false,
-                    quizHistory: [historyEntry, ...s.quizHistory].slice(0, 50), // Keep last 50 entries
+                    quizHistory: [historyEntry, ...s.quizHistory].slice(0, 50),
+                    lastStudyDate: new Date().toISOString(),
+                    streak: newStreak,
                 }));
+
+                // Add XP and Check Achievements
+                get().addXp(totalXp);
+                get().checkAchievements(historyEntry);
             },
 
             resetQuiz: () => {
@@ -178,21 +268,48 @@ export const useQuizStore = create<QuizState>()(
                 });
             },
 
-            clearReviewList: () => {
-                set({ persistentWrongAnswers: [] });
+            clearReviewList: () => set({ persistentWrongAnswers: [] }),
+            clearHistory: () => set({ quizHistory: [] }),
+
+            addXp: (amount) => {
+                set((state) => {
+                    const newXp = state.xp + amount;
+                    const newLevel = Math.floor(newXp / 1000) + 1; // Simple Level Formula: 1000 XP per level
+                    return { xp: newXp, level: newLevel };
+                });
             },
 
-            clearHistory: () => {
-                set({ quizHistory: [] });
-            },
+            checkAchievements: (historyEntry) => {
+                const state = get();
+                const newBadges = [...state.earnedBadges];
+                let badgeAdded = false;
+
+                BADGES.forEach(badge => {
+                    if (!newBadges.includes(badge.id)) {
+                        if (badge.condition(state, historyEntry)) {
+                            newBadges.push(badge.id);
+                            badgeAdded = true;
+                            // Optionally trigger a toast/notification here via UI components
+                        }
+                    }
+                });
+
+                if (badgeAdded) {
+                    set({ earnedBadges: newBadges });
+                }
+            }
         }),
         {
             name: 'quiz-storage',
             partialize: (state) => ({
                 persistentWrongAnswers: state.persistentWrongAnswers,
                 quizHistory: state.quizHistory,
+                xp: state.xp,
+                level: state.level,
+                streak: state.streak,
+                lastStudyDate: state.lastStudyDate,
+                earnedBadges: state.earnedBadges,
             }),
         }
     )
 );
-
