@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useQuizStore, QuizHistoryEntry } from '@/store/useQuizStore';
 import { motion } from 'framer-motion';
-import { Home, RefreshCw, Trophy, Clock, Target, TrendingUp, Award, Share2 } from 'lucide-react';
+import { Home, RefreshCw, Trophy, Clock, Target, TrendingUp, Award, Share2, Volume2 } from 'lucide-react';
 import clsx from 'clsx';
 import { useTTS } from '@/hooks/useTTS';
 import { useSound } from '@/hooks/useSound';
@@ -20,7 +20,7 @@ export const ResultView = () => {
             if (result.percentage >= 80) {
                 setTimeout(() => playLevelUp(), 500); // Delay slightly for animation
             } else {
-                // playCorrect(); // Optional: play standard sound? Maybe silence is better if score low
+                // playCorrect(); // Optional
             }
         }
     }, [result, playLevelUp]);
@@ -45,9 +45,9 @@ export const ResultView = () => {
     };
 
     return (
-        <div className="w-full max-w-2xl mx-auto p-6 space-y-8 animate-in fade-in zoom-in duration-700 pb-20">
+        <div className="w-full max-w-2xl mx-auto p-6 space-y-8 animate-in fade-in zoom-in duration-500 pb-20">
             {/* Main Score Card with Gamification Header */}
-            <div className="relative bg-slate-900/50 backdrop-blur-md border border-slate-800 rounded-3xl p-8 overflow-hidden shadow-2xl">
+            <div className="relative bg-slate-900 border border-slate-800 rounded-3xl p-8 overflow-hidden shadow-lg">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5" />
 
                 {/* XP & Level Badge (Floating) */}
@@ -55,7 +55,7 @@ export const ResultView = () => {
                     initial={{ y: -20, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ delay: 0.5 }}
-                    className="absolute top-4 right-4 flex items-center gap-2 bg-slate-800/80 px-3 py-1.5 rounded-full border border-slate-700 shadow-lg"
+                    className="absolute top-4 right-4 flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700 shadow-md"
                 >
                     <span className="text-yellow-400 font-bold">+{result.xpGained || ((result.correctAnswers * 10) + (result.percentage === 100 ? 50 : 0))} XP</span>
                     <div className="w-px h-3 bg-slate-600" />
@@ -140,16 +140,16 @@ export const ResultView = () => {
                     <h3 className="text-lg font-bold text-slate-300 px-2 flex items-center gap-2">
                         <RefreshCw size={18} className="text-orange-400" /> Review Incorrect Answers
                     </h3>
-                    <div className="bg-slate-900/40 rounded-2xl border border-slate-800 divide-y divide-slate-800/50">
+                    <div className="bg-slate-900 border border-slate-800 rounded-2xl divide-y divide-slate-800 shadow-sm">
                         {store.wrongAnswers.map((word, idx) => (
-                            <div key={idx} className="p-4 flex items-center justify-between group hover:bg-slate-800/30 transition-colors">
+                            <div key={idx} className="p-4 flex items-center justify-between group hover:bg-slate-800 transition-colors">
                                 <div>
                                     <div className="text-lg font-bold text-slate-200">{word.word}</div>
                                     <div className="text-sm text-slate-500">{word.meaning}</div>
                                 </div>
                                 <button
                                     onClick={() => speak(word.word)}
-                                    className="p-2 rounded-full bg-slate-800 text-slate-400 hover:bg-blue-500 hover:text-white transition-all active:scale-95"
+                                    className="p-2 rounded-full bg-slate-800 text-slate-400 hover:bg-blue-600 hover:text-white transition-all active:scale-95"
                                 >
                                     <Volume2 size={16} />
                                 </button>
@@ -163,13 +163,13 @@ export const ResultView = () => {
             <div className="grid grid-cols-2 gap-4">
                 <button
                     onClick={handleRetry}
-                    className="py-4 rounded-xl font-bold transition-all border-b-[4px] active:border-b-0 active:translate-y-[4px] bg-slate-800 border-slate-900 text-slate-200 hover:bg-slate-700 hover:border-slate-800 flex items-center justify-center gap-2"
+                    className="py-4 rounded-xl font-bold transition-all border-b-[4px] active:border-b-0 active:translate-y-[4px] active:shadow-none bg-slate-800 border-slate-900 text-slate-200 hover:bg-slate-700 hover:border-slate-800 flex items-center justify-center gap-2 shadow-sm"
                 >
                     <RefreshCw size={20} /> Retry
                 </button>
                 <button
                     onClick={handleDashboard}
-                    className="py-4 rounded-xl font-bold transition-all border-b-[4px] active:border-b-0 active:translate-y-[4px] bg-blue-600 border-blue-800 text-white hover:bg-blue-500 hover:border-blue-700 flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20"
+                    className="py-4 rounded-xl font-bold transition-all border-b-[4px] active:border-b-0 active:translate-y-[4px] active:shadow-none bg-blue-600 border-blue-800 text-white hover:bg-blue-500 hover:border-blue-700 flex items-center justify-center gap-2 shadow-md shadow-blue-500/20"
                 >
                     <Home size={20} /> Dashboard
                 </button>
@@ -184,7 +184,7 @@ const StatBox = ({ icon, label, value, delay }: { icon: React.ReactNode, label: 
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay }}
-        className="bg-slate-950/50 rounded-2xl p-4 border border-slate-800/50 flex flex-col justify-center"
+        className="bg-slate-950 rounded-2xl p-4 border border-slate-800 flex flex-col justify-center"
     >
         <div className="flex items-center gap-2 mb-1 opacity-80">
             {icon}

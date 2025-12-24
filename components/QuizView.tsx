@@ -150,8 +150,6 @@ export const QuizView = () => {
         const target = store.mode === 'english_to_korean' ? currentWord.meaning : currentWord.word;
         const correct = option === target;
 
-        // Wait slightly for calculation but usually instant. 
-        // We'll play result sound after a micro delay or just execute
         setTimeout(() => {
             if (correct) playCorrect();
             else playWrong();
@@ -219,10 +217,10 @@ export const QuizView = () => {
             {/* Top Progress Bar */}
             <div className="absolute top-0 left-0 w-full h-1.5 bg-slate-900 z-50">
                 <motion.div
-                    className="h-full bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]"
+                    className="h-full bg-blue-600"
                     initial={{ width: 0 }}
                     animate={{ width: `${progress}%` }}
-                    transition={{ duration: 0.5 }}
+                    transition={{ duration: 0.3 }}
                 />
             </div>
 
@@ -230,7 +228,7 @@ export const QuizView = () => {
             <header className="p-6 flex justify-between items-center z-10">
                 <button
                     onClick={handleExit}
-                    className="p-2 rounded-full hover:bg-slate-800 text-slate-500 transition-transform active:scale-95"
+                    className="p-2 rounded-full hover:bg-slate-800 text-slate-500 transition-transform active:scale-95 touch-manipulation"
                 >
                     <X size={24} />
                 </button>
@@ -244,24 +242,24 @@ export const QuizView = () => {
                 <AnimatePresence mode="wait">
                     <motion.div
                         key={currentWord.word}
-                        initial={{ opacity: 0, y: 20 }}
+                        initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -20 }}
-                        transition={{ duration: 0.3 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2 }}
                         className="w-full text-center space-y-12"
                     >
                         {/* Question */}
                         <div className="space-y-6">
                             <div className="flex items-center justify-center gap-4">
-                                <h2 className="text-4xl md:text-6xl font-black text-slate-100 tracking-tight leading-tight drop-shadow-lg">
+                                <h2 className="text-4xl md:text-6xl font-black text-slate-100 tracking-tight leading-tight drop-shadow-md">
                                     {questionText}
                                 </h2>
                                 {ttsSupported && store.mode === 'english_to_korean' && (
                                     <button
                                         onClick={handleSpeak}
                                         className={clsx(
-                                            "p-3 rounded-full transition-all duration-200 active:scale-95",
-                                            isTtsSpeaking ? "bg-blue-500 text-white scale-110 shadow-blue-500/50" : "bg-slate-800/50 text-slate-400 hover:bg-slate-700"
+                                            "p-3 rounded-full transition-all duration-150 active:scale-95 touch-manipulation",
+                                            isTtsSpeaking ? "bg-blue-600 text-white scale-110 shadow-md" : "bg-slate-800 text-slate-400 hover:bg-slate-700"
                                         )}
                                     >
                                         <Volume2 size={24} />
@@ -285,7 +283,7 @@ export const QuizView = () => {
                                         onClick={toggleListening}
                                         disabled={isAnswered}
                                         className={clsx(
-                                            "w-24 h-24 rounded-full flex items-center justify-center transition-all duration-150 mx-auto border-b-[6px] active:border-b-0 active:translate-y-[6px]",
+                                            "w-24 h-24 rounded-full flex items-center justify-center transition-all duration-150 mx-auto border-b-[6px] active:border-b-0 active:translate-y-[6px] touch-manipulation",
                                             isListening
                                                 ? "bg-rose-500 border-rose-700 text-white shadow-rose-500/40"
                                                 : "bg-slate-700 border-slate-800 text-slate-400 hover:bg-slate-600 hover:text-white",
@@ -325,9 +323,9 @@ export const QuizView = () => {
                                         disabled={isAnswered}
                                         placeholder="Type answer..."
                                         className={clsx(
-                                            "w-full bg-slate-900/50 border-2 rounded-xl text-3xl text-center py-6 px-4 focus:outline-none transition-all duration-300 placeholder:text-slate-700 shadow-inner",
+                                            "w-full bg-slate-900 border-2 rounded-xl text-3xl text-center py-6 px-4 focus:outline-none transition-all duration-300 placeholder:text-slate-700 shadow-inner",
                                             isAnswered
-                                                ? isCorrect ? "border-green-500/50 text-green-400" : "border-red-500/50 text-red-400"
+                                                ? isCorrect ? "border-green-500 text-green-400" : "border-red-500 text-red-400"
                                                 : "border-slate-800 focus:border-blue-500 focus:bg-slate-900 text-slate-100"
                                         )}
                                         autoComplete="off"
@@ -347,9 +345,9 @@ export const QuizView = () => {
                                                 onClick={() => handleOptionSelect(opt)}
                                                 disabled={isAnswered}
                                                 className={clsx(
-                                                    "w-full p-4 rounded-xl text-lg font-bold transition-all duration-100 text-left flex items-center gap-4 border-b-[4px] active:border-b-0 active:translate-y-[4px]",
-                                                    showSuccess ? "bg-green-500 border-green-700 text-white" :
-                                                        showFail ? "bg-red-500 border-red-700 text-white" :
+                                                    "w-full p-4 rounded-xl text-lg font-bold transition-all duration-100 text-left flex items-center gap-4 border-b-[4px] active:border-b-0 active:translate-y-[4px] touch-manipulation",
+                                                    showSuccess ? "bg-green-600 border-green-800 text-white" :
+                                                        showFail ? "bg-red-600 border-red-800 text-white" :
                                                             "bg-slate-800 border-slate-900 text-slate-300 hover:bg-slate-700 hover:border-slate-800 hover:text-white"
                                                 )}
                                             >
@@ -375,13 +373,14 @@ export const QuizView = () => {
                 <AnimatePresence mode="wait">
                     {isAnswered ? (
                         <motion.div
-                            initial={{ opacity: 0, y: 20 }}
+                            initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: 20 }}
+                            exit={{ opacity: 0, y: 10 }}
+                            transition={{ duration: 0.2 }}
                             className="w-full max-w-2xl px-6 flex items-center justify-between"
                         >
                             <div className="flex items-center gap-4">
-                                <div className={clsx("w-12 h-12 rounded-full flex items-center justify-center border-2 shadow-lg", isCorrect ? "border-green-500 text-green-500 bg-green-500/10" : "border-red-500 text-red-500 bg-red-500/10")}>
+                                <div className={clsx("w-12 h-12 rounded-full flex items-center justify-center border-2 shadow-sm", isCorrect ? "border-green-600 text-green-500 bg-green-900/20" : "border-red-600 text-red-500 bg-red-900/20")}>
                                     {isCorrect ? <CheckCircle size={24} /> : <XCircle size={24} />}
                                 </div>
                                 <div>
@@ -401,10 +400,10 @@ export const QuizView = () => {
                             <button
                                 onClick={handleNext}
                                 className={clsx(
-                                    "px-8 py-3 rounded-xl font-bold flex items-center gap-2 transition-all duration-150 border-b-[4px] active:border-b-0 active:translate-y-[4px]",
+                                    "px-8 py-3 rounded-xl font-bold flex items-center gap-2 transition-all duration-150 border-b-[4px] active:border-b-0 active:translate-y-[4px] touch-manipulation",
                                     isCorrect
-                                        ? "bg-green-500 border-green-700 text-white hover:bg-green-400 hover:border-green-600"
-                                        : "bg-slate-200 border-slate-400 text-slate-900 hover:bg-white hover:border-slate-300"
+                                        ? "bg-green-600 border-green-800 text-white hover:bg-green-500"
+                                        : "bg-slate-200 border-slate-400 text-slate-900 hover:bg-white"
                                 )}
                             >
                                 Next <ArrowRight size={20} />

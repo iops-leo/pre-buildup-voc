@@ -46,16 +46,16 @@ export const LessonSelector = () => {
     };
 
     return (
-        <div className="w-full max-w-4xl mx-auto p-3 md:p-6 space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="w-full max-w-4xl mx-auto p-3 md:p-6 space-y-6 md:space-y-8 animate-in fade-in duration-500">
             {/* Gamification Dashboard - Compact for Mobile/Tablet */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
                 {/* Profile / Level Card */}
-                <div className="md:col-span-2 bg-slate-900/80 backdrop-blur-md border border-slate-700/50 rounded-2xl p-4 md:p-6 relative overflow-hidden flex items-center gap-4 shadow-lg">
+                <div className="md:col-span-2 bg-slate-900 border border-slate-700 rounded-2xl p-4 md:p-6 relative overflow-hidden flex items-center gap-4 shadow-sm">
                     <div className="absolute top-0 right-0 p-3 opacity-10 pointer-events-none">
                         <Trophy size={100} className="text-yellow-500" />
                     </div>
 
-                    <div className="w-16 h-16 md:w-20 md:h-20 shrink-0 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex flex-col items-center justify-center text-white shadow-xl shadow-blue-500/20 border-4 border-slate-900 z-10">
+                    <div className="w-16 h-16 md:w-20 md:h-20 shrink-0 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex flex-col items-center justify-center text-white border-4 border-slate-800 z-10">
                         <span className="text-[10px] md:text-xs font-bold opacity-80">LEVEL</span>
                         <span className="text-2xl md:text-3xl font-black leading-none">{level}</span>
                     </div>
@@ -67,7 +67,7 @@ export const LessonSelector = () => {
                         </div>
                         <div className="w-full h-2.5 md:h-3 bg-slate-800 rounded-full overflow-hidden">
                             <motion.div
-                                initial={{ width: 0 }}
+                                initial={false}
                                 animate={{ width: `${xpProgress}%` }}
                                 className="h-full bg-gradient-to-r from-blue-500 to-indigo-400"
                             />
@@ -77,12 +77,12 @@ export const LessonSelector = () => {
                 </div>
 
                 {/* Streak Card */}
-                <div className="bg-slate-900/80 backdrop-blur-md border border-slate-700/50 rounded-2xl p-4 md:p-6 flex flex-row md:flex-col items-center justify-between md:justify-center relative overflow-hidden group shadow-lg">
+                <div className="bg-slate-900 border border-slate-700 rounded-2xl p-4 md:p-6 flex flex-row md:flex-col items-center justify-between md:justify-center relative overflow-hidden group shadow-sm">
                     <div className="absolute inset-0 bg-orange-500/5 group-hover:bg-orange-500/10 transition-colors" />
                     <div className="flex items-center gap-4 md:block md:text-center z-10">
                         <div className={clsx(
-                            "p-3 md:p-4 rounded-full transition-all duration-500 shrink-0",
-                            streak > 0 ? "bg-orange-500/20 text-orange-500 shadow-[0_0_20px_rgba(249,115,22,0.3)]" : "bg-slate-800 text-slate-600"
+                            "p-3 md:p-4 rounded-full transition-all duration-300 shrink-0",
+                            streak > 0 ? "bg-orange-500/20 text-orange-500 shadow-sm" : "bg-slate-800 text-slate-600"
                         )}>
                             <Flame size={24} className="w-6 h-6 md:w-8 md:h-8" fill={streak > 0 ? "currentColor" : "none"} />
                         </div>
@@ -96,14 +96,14 @@ export const LessonSelector = () => {
 
             {/* Badges Section (Compact) */}
             {earnedBadges.length > 0 && (
-                <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-3 md:p-4 overflow-x-auto scrollbar-hide">
+                <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 md:p-4 overflow-x-auto scrollbar-hide">
                     <div className="flex gap-2 min-w-max">
                         {BADGES.filter(b => earnedBadges.includes(b.id)).map(badge => (
                             <motion.div
                                 key={badge.id}
-                                initial={{ scale: 0.8, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
-                                className="flex items-center gap-1.5 bg-slate-800/80 px-2.5 py-1.5 rounded-lg border border-slate-700 shrink-0"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                className="flex items-center gap-1.5 bg-slate-800 px-2.5 py-1.5 rounded-lg border border-slate-700 shrink-0"
                             >
                                 <span className="text-lg">{badge.icon}</span>
                                 <span className="text-[10px] md:text-xs font-bold text-slate-300">{badge.name}</span>
@@ -126,10 +126,9 @@ export const LessonSelector = () => {
             {/* Review Button */}
             {persistentWrongAnswers.length > 0 && (
                 <motion.button
-                    whileHover={{ scale: 1.01 }}
-                    whileTap={{ scale: 0.99 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={handleReviewClick}
-                    className="w-full relative overflow-hidden group bg-orange-500 overflow-hidden border-b-[6px] border-orange-700 active:border-b-0 active:translate-y-[6px] p-4 rounded-xl flex items-center justify-between transition-all shadow-md hover:bg-orange-400"
+                    className="w-full relative overflow-hidden group bg-orange-600 overflow-hidden border-b-[4px] border-orange-800 active:border-b-0 active:translate-y-[4px] p-4 rounded-xl flex items-center justify-between transition-all shadow-md active:shadow-none"
                 >
                     <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
                     <div className="flex items-center gap-3 z-10">
@@ -187,7 +186,7 @@ interface LessonCardProps {
 
 const LessonCard = ({ unit, lesson, bestScore, onSelect }: LessonCardProps) => {
     return (
-        <div className="group relative flex flex-col justify-between bg-slate-900/60 backdrop-blur-md border border-white/5 rounded-xl p-4 md:p-6 hover:bg-slate-800/60 transition-all duration-300 shadow-sm hover:shadow-md">
+        <div className="group relative flex flex-col justify-between bg-slate-900 border border-slate-800 rounded-xl p-4 md:p-6 hover:bg-slate-800 transition-colors duration-200 shadow-sm">
             <div className="flex justify-between items-start mb-4">
                 <div>
                     <h3 className="text-base md:text-lg font-bold text-slate-100 group-hover:text-blue-400 transition-colors">
@@ -198,15 +197,15 @@ const LessonCard = ({ unit, lesson, bestScore, onSelect }: LessonCardProps) => {
                 {bestScore !== null ? (
                     <div className={clsx(
                         "flex items-center gap-1 px-2 py-1 rounded-md text-[10px] md:text-xs font-bold border",
-                        bestScore >= 90 ? "bg-amber-500/10 text-amber-400 border-amber-500/20" :
-                            bestScore >= 70 ? "bg-blue-500/10 text-blue-400 border-blue-500/20" :
-                                "bg-slate-700/30 text-slate-400 border-slate-600/30"
+                        bestScore >= 90 ? "bg-amber-900/40 text-amber-400 border-amber-500/20" :
+                            bestScore >= 70 ? "bg-blue-900/40 text-blue-400 border-blue-500/20" :
+                                "bg-slate-800/80 text-slate-400 border-slate-700"
                     )}>
                         <Trophy size={11} className={bestScore >= 90 ? "fill-amber-400" : ""} />
                         {bestScore}%
                     </div>
                 ) : (
-                    <div className="w-7 h-7 rounded-full bg-slate-800/50 flex items-center justify-center text-slate-600">
+                    <div className="w-7 h-7 rounded-full bg-slate-800 flex items-center justify-center text-slate-600">
                         <Star size={14} />
                     </div>
                 )}
@@ -245,10 +244,10 @@ const LessonCard = ({ unit, lesson, bestScore, onSelect }: LessonCardProps) => {
 
 const ModeButton = ({ label, subLabel, color, icon, onClick }: { label: string, subLabel: string, color: 'blue' | 'purple' | 'green' | 'rose', icon?: React.ReactNode, onClick: () => void }) => {
     const colorStyles = {
-        blue: "bg-blue-500 border-blue-700 hover:bg-blue-400 text-white hover:border-blue-600",
-        purple: "bg-purple-500 border-purple-700 hover:bg-purple-400 text-white hover:border-purple-600",
-        green: "bg-emerald-500 border-emerald-700 hover:bg-emerald-400 text-white hover:border-emerald-600",
-        rose: "bg-rose-500 border-rose-700 hover:bg-rose-400 text-white hover:border-rose-600"
+        blue: "bg-blue-600 border-blue-800 hover:bg-blue-500 text-white",
+        purple: "bg-purple-600 border-purple-800 hover:bg-purple-500 text-white",
+        green: "bg-emerald-600 border-emerald-800 hover:bg-emerald-500 text-white",
+        rose: "bg-rose-600 border-rose-800 hover:bg-rose-500 text-white"
     };
 
     return (
