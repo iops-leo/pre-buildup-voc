@@ -1,16 +1,29 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useQuizStore, QuizHistoryEntry } from '@/store/useQuizStore';
 import { motion } from 'framer-motion';
 import { Home, RefreshCw, Trophy, Clock, Target, TrendingUp, Award, Share2 } from 'lucide-react';
 import clsx from 'clsx';
 import { useTTS } from '@/hooks/useTTS';
+import { useSound } from '@/hooks/useSound';
 
 export const ResultView = () => {
     const store = useQuizStore();
     const { retryQuiz, resetQuiz, quizHistory, level, xp } = store;
+    const { playLevelUp, playCorrect, playClick } = useSound();
 
     // The latest history entry is the current result
     const result = quizHistory[0];
+
+    // Play sound on mount
+    useEffect(() => {
+        if (result) {
+            if (result.percentage >= 80) {
+                setTimeout(() => playLevelUp(), 500); // Delay slightly for animation
+            } else {
+                // playCorrect(); // Optional: play standard sound? Maybe silence is better if score low
+            }
+        }
+    }, [result, playLevelUp]);
 
     // If no result (shouldn't happen directly), fallback
     if (!result) return null;
@@ -20,6 +33,16 @@ export const ResultView = () => {
     // Calculate level progress for visualization
     const currentLevelXp = xp - ((level - 1) * 1000);
     const xpProgress = Math.min((currentLevelXp / 1000) * 100, 100);
+
+    const handleRetry = () => {
+        playClick();
+        retryQuiz();
+    };
+
+    const handleDashboard = () => {
+        playClick();
+        resetQuiz();
+    };
 
     return (
         <div className="w-full max-w-2xl mx-auto p-6 space-y-8 animate-in fade-in zoom-in duration-700 pb-20">
@@ -118,10 +141,6 @@ export const ResultView = () => {
                         <RefreshCw size={18} className="text-orange-400" /> Review Incorrect Answers
                     </h3>
                     <div className="bg-slate-900/40 rounded-2xl border border-slate-800 divide-y divide-slate-800/50">
-                        {/* Only showing last 5 wrong answers or current session wrong answers could be pulled from store if needed
-                            But for now, HistoryEntry doesn't have list of specific wrong words.
-                            Actually, the store has `wrongAnswers` state which persists until reset.
-                        */}
                         {store.wrongAnswers.map((word, idx) => (
                             <div key={idx} className="p-4 flex items-center justify-between group hover:bg-slate-800/30 transition-colors">
                                 <div>
@@ -130,11 +149,9 @@ export const ResultView = () => {
                                 </div>
                                 <button
                                     onClick={() => speak(word.word)}
-                                    className="p-2 rounded-full bg-slate-800 text-slate-400 hover:bg-blue-500 hover:text-white transition-all"
+                                    className="p-2 rounded-full bg-slate-800 text-slate-400 hover:bg-blue-500 hover:text-white transition-all active:scale-95"
                                 >
-                                    <Trophy size={14} className="opacity-0" /> {/* Just a spacer or icon */}
-                                    <span className="sr-only">Listen</span>
-                                    🔊
+                                    <Volume2 size={16} />
                                 </button>
                             </div>
                         ))}
@@ -145,14 +162,14 @@ export const ResultView = () => {
             {/* Action Buttons */}
             <div className="grid grid-cols-2 gap-4">
                 <button
-                    onClick={retryQuiz}
-                    className="py-4 rounded-xl bg-slate-800 text-slate-200 font-bold hover:bg-slate-700 transition-colors flex items-center justify-center gap-2"
+                    onClick={handleRetry}
+                    className="py-4 rounded-xl font-bold transition-all border-b-[4px] active:border-b-0 active:translate-y-[4px] bg-slate-800 border-slate-900 text-slate-200 hover:bg-slate-700 hover:border-slate-800 flex items-center justify-center gap-2"
                 >
                     <RefreshCw size={20} /> Retry
                 </button>
                 <button
-                    onClick={resetQuiz}
-                    className="py-4 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-500 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20"
+                    onClick={handleDashboard}
+                    className="py-4 rounded-xl font-bold transition-all border-b-[4px] active:border-b-0 active:translate-y-[4px] bg-blue-600 border-blue-800 text-white hover:bg-blue-500 hover:border-blue-700 flex items-center justify-center gap-2 shadow-lg shadow-blue-500/20"
                 >
                     <Home size={20} /> Dashboard
                 </button>

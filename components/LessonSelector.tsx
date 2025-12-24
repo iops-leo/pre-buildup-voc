@@ -4,6 +4,7 @@ import { useQuizStore, QuizHistoryEntry, BADGES } from '@/store/useQuizStore';
 import { BookOpen, Star, RefreshCw, Trophy, ChevronRight, GraduationCap, Flame, Medal, Mic } from 'lucide-react';
 import { motion } from 'framer-motion';
 import clsx from 'clsx';
+import { useSound } from '@/hooks/useSound';
 
 export const LessonSelector = () => {
     const {
@@ -16,6 +17,9 @@ export const LessonSelector = () => {
         streak,
         earnedBadges
     } = useQuizStore();
+
+    // SFX
+    const { playClick } = useSound();
 
     // Get best score for a specific unit/lesson
     const getBestScore = (unitNum: number, lessonNum: number): number | null => {
@@ -30,6 +34,16 @@ export const LessonSelector = () => {
     const xpForNextLevel = level * 1000;
     const currentLevelXp = xp - ((level - 1) * 1000);
     const xpProgress = Math.min((currentLevelXp / 1000) * 100, 100);
+
+    const handleModeSelect = (unit: Unit, lesson: Lesson, mode: 'korean_to_english' | 'english_to_korean' | 'spelling' | 'speaking') => {
+        playClick();
+        startQuiz(unit, lesson, mode);
+    };
+
+    const handleReviewClick = () => {
+        playClick();
+        startReviewQuiz('spelling');
+    };
 
     return (
         <div className="w-full max-w-4xl mx-auto p-3 md:p-6 space-y-6 md:space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -70,7 +84,7 @@ export const LessonSelector = () => {
                             "p-3 md:p-4 rounded-full transition-all duration-500 shrink-0",
                             streak > 0 ? "bg-orange-500/20 text-orange-500 shadow-[0_0_20px_rgba(249,115,22,0.3)]" : "bg-slate-800 text-slate-600"
                         )}>
-                            <Flame size={24} md:size={32} className="w-6 h-6 md:w-8 md:h-8" fill={streak > 0 ? "currentColor" : "none"} />
+                            <Flame size={24} className="w-6 h-6 md:w-8 md:h-8" fill={streak > 0 ? "currentColor" : "none"} />
                         </div>
                         <div className="text-left md:text-center">
                             <div className="text-2xl md:text-3xl font-black text-white leading-none">{streak}</div>
@@ -87,7 +101,7 @@ export const LessonSelector = () => {
                         {BADGES.filter(b => earnedBadges.includes(b.id)).map(badge => (
                             <motion.div
                                 key={badge.id}
-                                initial={{ scale: 0.8, capacity: 0 }}
+                                initial={{ scale: 0.8, opacity: 0 }}
                                 animate={{ scale: 1, opacity: 1 }}
                                 className="flex items-center gap-1.5 bg-slate-800/80 px-2.5 py-1.5 rounded-lg border border-slate-700 shrink-0"
                             >
@@ -114,22 +128,23 @@ export const LessonSelector = () => {
                 <motion.button
                     whileHover={{ scale: 1.01 }}
                     whileTap={{ scale: 0.99 }}
-                    onClick={() => startReviewQuiz('spelling')}
-                    className="w-full relative overflow-hidden group bg-orange-500/10 border border-orange-500/30 p-4 rounded-xl flex items-center justify-between transition-all shadow-md"
+                    onClick={handleReviewClick}
+                    className="w-full relative overflow-hidden group bg-orange-500 overflow-hidden border-b-[6px] border-orange-700 active:border-b-0 active:translate-y-[6px] p-4 rounded-xl flex items-center justify-between transition-all shadow-md hover:bg-orange-400"
                 >
-                    <div className="flex items-center gap-3">
-                        <div className="p-2.5 bg-orange-500/20 rounded-lg text-orange-400">
+                    <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="flex items-center gap-3 z-10">
+                        <div className="p-2.5 bg-black/20 rounded-lg text-white">
                             <RefreshCw size={20} className="group-hover:rotate-180 transition-transform duration-700" />
                         </div>
-                        <div className="text-left">
-                            <h3 className="text-base md:text-lg font-bold text-orange-100">Review Waiting</h3>
-                            <p className="text-orange-200/70 text-xs md:text-sm">
-                                <span className="text-orange-400 font-bold mr-1">{persistentWrongAnswers.length}</span>
+                        <div className="text-left text-white">
+                            <h3 className="text-base md:text-lg font-bold">Review Waiting</h3>
+                            <p className="opacity-90 text-xs md:text-sm">
+                                <span className="font-extrabold mr-1 bg-white text-orange-600 px-1.5 rounded-md">{persistentWrongAnswers.length}</span>
                                 words
                             </p>
                         </div>
                     </div>
-                    <ChevronRight size={18} className="text-orange-400" />
+                    <ChevronRight size={18} className="text-white z-10" />
                 </motion.button>
             )}
 
@@ -150,7 +165,7 @@ export const LessonSelector = () => {
                                     unit={unit}
                                     lesson={lesson}
                                     bestScore={getBestScore(unit.unit, lesson.lesson)}
-                                    onSelect={(mode) => startQuiz(unit, lesson, mode)}
+                                    onSelect={(mode) => handleModeSelect(unit, lesson, mode)}
                                 />
                             ))}
                         </div>
@@ -230,25 +245,25 @@ const LessonCard = ({ unit, lesson, bestScore, onSelect }: LessonCardProps) => {
 
 const ModeButton = ({ label, subLabel, color, icon, onClick }: { label: string, subLabel: string, color: 'blue' | 'purple' | 'green' | 'rose', icon?: React.ReactNode, onClick: () => void }) => {
     const colorStyles = {
-        blue: "bg-blue-500/10 text-blue-400 border-blue-500/20 hover:bg-blue-500/20 hover:border-blue-500/40",
-        purple: "bg-purple-500/10 text-purple-400 border-purple-500/20 hover:bg-purple-500/20 hover:border-purple-500/40",
-        green: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20 hover:border-emerald-500/40",
-        rose: "bg-rose-500/10 text-rose-400 border-rose-500/20 hover:bg-rose-500/20 hover:border-rose-500/40"
+        blue: "bg-blue-500 border-blue-700 hover:bg-blue-400 text-white hover:border-blue-600",
+        purple: "bg-purple-500 border-purple-700 hover:bg-purple-400 text-white hover:border-purple-600",
+        green: "bg-emerald-500 border-emerald-700 hover:bg-emerald-400 text-white hover:border-emerald-600",
+        rose: "bg-rose-500 border-rose-700 hover:bg-rose-400 text-white hover:border-rose-600"
     };
 
     return (
         <button
             onClick={onClick}
             className={clsx(
-                "flex flex-col items-center justify-center py-2 px-1.5 rounded-lg border transition-all duration-200 active:scale-95 touch-manipulation",
+                "flex flex-col items-center justify-center py-2 px-1.5 rounded-lg border-b-[4px] transition-all duration-150 active:border-b-0 active:translate-y-[4px] active:shadow-none touch-manipulation",
                 colorStyles[color]
             )}
         >
-            <span className="text-xs md:text-sm font-bold flex items-center gap-1">
+            <span className="text-xs md:text-sm font-bold flex items-center gap-1 drop-shadow-sm">
                 {icon}
                 {label}
             </span>
-            <span className="text-[9px] md:text-[10px] opacity-70 mt-px">{subLabel}</span>
+            <span className="text-[9px] md:text-[10px] opacity-90 mt-px font-medium">{subLabel}</span>
         </button>
     );
 };

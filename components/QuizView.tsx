@@ -5,6 +5,7 @@ import { ArrowRight, CheckCircle, XCircle, Volume2, X, Mic, MicOff, Loader2 } fr
 import clsx from 'clsx';
 import { useTTS } from '@/hooks/useTTS';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
+import { useSound } from '@/hooks/useSound';
 
 // Helper function to remove parenthetical parts
 const cleanWordForDisplay = (word: string): string => {
@@ -19,9 +20,10 @@ export const QuizView = () => {
     const [isAnswered, setIsAnswered] = useState(false);
     const [isCorrect, setIsCorrect] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
-    const { speak, isSpeaking: isTtsSpeaking, isSupported: ttsSupported } = useTTS();
 
-    // Voice Recognition Hook
+    // Hooks
+    const { speak, isSpeaking: isTtsSpeaking, isSupported: ttsSupported } = useTTS();
+    const { playCorrect, playWrong, playClick } = useSound();
     const {
         isListening,
         transcript,
@@ -29,7 +31,6 @@ export const QuizView = () => {
         startListening,
         stopListening,
         resetTranscript,
-        isSupported: isSpeechSupported,
         error: speechError
     } = useSpeechRecognition();
 
@@ -42,10 +43,6 @@ export const QuizView = () => {
     // Reset voice transcript when question changes
     useEffect(() => {
         resetTranscript();
-        if (isSpeakingMode) {
-            // Optional: Auto-start listening or wait for user action?
-            // Let's require user action to avoid permission spam or confusion
-        }
     }, [store.currentQuestionIndex, isSpeakingMode, resetTranscript]);
 
     useEffect(() => {
@@ -62,7 +59,6 @@ export const QuizView = () => {
             const alts = [...wrongAnswers, currentWord.meaning].sort(() => Math.random() - 0.5);
             setOptions(alts);
         } else if (isPhrase && !isSpeakingMode && store.mode !== 'spelling') {
-            // Multiple choice for phrases in K->E mode (except spelling/speaking)
             const wrongAnswers = store.questions
                 .filter(q => q.word !== currentWord.word)
                 .sort(() => Math.random() - 0.5)
@@ -93,9 +89,6 @@ export const QuizView = () => {
             const cleanTarget = currentWord.word.replace(/\s*\(.*\)/, '').toLowerCase();
             const cleanTranscript = transcript.toLowerCase();
 
-            // Check if target is included in transcript (flexible matching)
-            // or check strict equality if single word
-            // Let's use flexible includes for now, as speech recognition can be messy
             if (cleanTranscript.includes(cleanTarget) || cleanTarget === cleanTranscript) {
                 stopListening();
                 handleVoiceSubmit(true);
@@ -109,11 +102,8 @@ export const QuizView = () => {
         }
     }, [currentWord, speak]);
 
-    const stopVoice = useCallback(() => {
-        stopListening();
-    }, [stopListening]);
-
     const toggleListening = () => {
+        playClick();
         if (isListening) {
             stopListening();
         } else {
@@ -123,12 +113,12 @@ export const QuizView = () => {
     };
 
     const handleVoiceSubmit = (success: boolean) => {
+        if (success) playCorrect();
+        else playWrong();
+
         setIsCorrect(success);
         setIsAnswered(true);
         store.submitAnswer(success, currentWord);
-        if (success) {
-            // Play success sound?
-        }
     };
 
     const handleSubmit = (e?: React.FormEvent) => {
@@ -139,6 +129,9 @@ export const QuizView = () => {
         const cleanInput = input.trim().toLowerCase();
         const validAnswers = cleanTarget.split('/').map(s => s.trim());
         const correct = validAnswers.includes(cleanInput);
+
+        if (correct) playCorrect();
+        else playWrong();
 
         setIsCorrect(correct);
         setIsAnswered(true);
@@ -151,15 +144,26 @@ export const QuizView = () => {
 
     const handleOptionSelect = useCallback((option: string) => {
         if (isAnswered) return;
+        playClick(); // Click sound immediately
+
         setSelectedOption(option);
         const target = store.mode === 'english_to_korean' ? currentWord.meaning : currentWord.word;
         const correct = option === target;
+
+        // Wait slightly for calculation but usually instant. 
+        // We'll play result sound after a micro delay or just execute
+        setTimeout(() => {
+            if (correct) playCorrect();
+            else playWrong();
+        }, 100);
+
         setIsCorrect(correct);
         setIsAnswered(true);
         store.submitAnswer(correct, currentWord);
-    }, [isAnswered, store, currentWord]);
+    }, [isAnswered, store, currentWord, playClick, playCorrect, playWrong]);
 
     const handleNext = useCallback(() => {
+        playClick();
         if (store.currentQuestionIndex >= store.questions.length - 1) {
             store.endQuiz();
         } else {
@@ -170,14 +174,15 @@ export const QuizView = () => {
             setIsCorrect(false);
             resetTranscript();
         }
-    }, [store, resetTranscript]);
+    }, [store, resetTranscript, playClick]);
 
     const handleExit = useCallback(() => {
+        playClick();
         if (confirm('Exit quiz?')) {
             stopListening();
             store.resetQuiz();
         }
-    }, [store, stopListening]);
+    }, [store, stopListening, playClick]);
 
     // Keyboard shortcuts
     useEffect(() => {
@@ -210,7 +215,7 @@ export const QuizView = () => {
         : cleanWordForDisplay(currentWord.word);
 
     return (
-        <div className="w-full min-h-screen bg-slate-950 flex flex-col relative overflow-hidden">
+        <div className="w-full min-h-screen bg-slate-950 flex flex-col relative overflow-hidden select-none">
             {/* Top Progress Bar */}
             <div className="absolute top-0 left-0 w-full h-1.5 bg-slate-900 z-50">
                 <motion.div
@@ -223,7 +228,10 @@ export const QuizView = () => {
 
             {/* Header */}
             <header className="p-6 flex justify-between items-center z-10">
-                <button onClick={handleExit} className="p-2 rounded-full hover:bg-slate-800 text-slate-500">
+                <button
+                    onClick={handleExit}
+                    className="p-2 rounded-full hover:bg-slate-800 text-slate-500 transition-transform active:scale-95"
+                >
                     <X size={24} />
                 </button>
                 <div className="text-sm font-medium text-slate-500 font-mono">
@@ -245,15 +253,15 @@ export const QuizView = () => {
                         {/* Question */}
                         <div className="space-y-6">
                             <div className="flex items-center justify-center gap-4">
-                                <h2 className="text-4xl md:text-6xl font-black text-slate-100 tracking-tight leading-tight">
+                                <h2 className="text-4xl md:text-6xl font-black text-slate-100 tracking-tight leading-tight drop-shadow-lg">
                                     {questionText}
                                 </h2>
                                 {ttsSupported && store.mode === 'english_to_korean' && (
                                     <button
                                         onClick={handleSpeak}
                                         className={clsx(
-                                            "p-3 rounded-full transition-all duration-200",
-                                            isTtsSpeaking ? "bg-blue-500 text-white scale-110" : "bg-slate-800/50 text-slate-400"
+                                            "p-3 rounded-full transition-all duration-200 active:scale-95",
+                                            isTtsSpeaking ? "bg-blue-500 text-white scale-110 shadow-blue-500/50" : "bg-slate-800/50 text-slate-400 hover:bg-slate-700"
                                         )}
                                     >
                                         <Volume2 size={24} />
@@ -272,16 +280,16 @@ export const QuizView = () => {
                         <div className="w-full max-w-lg mx-auto min-h-[120px] flex flex-col items-center justify-center">
                             {isSpeakingMode ? (
                                 <div className="space-y-6 w-full">
-                                    {/* Mic Button */}
+                                    {/* Mic Button (Raised 3D) */}
                                     <button
                                         onClick={toggleListening}
                                         disabled={isAnswered}
                                         className={clsx(
-                                            "w-24 h-24 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 mx-auto",
+                                            "w-24 h-24 rounded-full flex items-center justify-center transition-all duration-150 mx-auto border-b-[6px] active:border-b-0 active:translate-y-[6px]",
                                             isListening
-                                                ? "bg-rose-500 text-white shadow-rose-500/40 scale-110 ring-4 ring-rose-500/20"
-                                                : "bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white border-2 border-slate-700 hover:border-slate-500",
-                                            isAnswered && "opacity-50 cursor-not-allowed"
+                                                ? "bg-rose-500 border-rose-700 text-white shadow-rose-500/40"
+                                                : "bg-slate-700 border-slate-800 text-slate-400 hover:bg-slate-600 hover:text-white",
+                                            isAnswered && "opacity-50 cursor-not-allowed border-b-0 translate-y-[6px]"
                                         )}
                                     >
                                         {isListening ? <Mic size={40} className="animate-bounce" /> : <MicOff size={32} />}
@@ -303,7 +311,7 @@ export const QuizView = () => {
 
                                     {speechError && (
                                         <div className="text-rose-500 text-xs font-mono bg-rose-500/10 py-1 px-3 rounded-md inline-block">
-                                            {speechError} (Try Chrome/Safari)
+                                            {speechError} (Confirm mic permissions)
                                         </div>
                                     )}
                                 </div>
@@ -317,7 +325,7 @@ export const QuizView = () => {
                                         disabled={isAnswered}
                                         placeholder="Type answer..."
                                         className={clsx(
-                                            "w-full bg-slate-900/50 border-2 rounded-xl text-3xl text-center py-6 px-4 focus:outline-none transition-all duration-300 placeholder:text-slate-700",
+                                            "w-full bg-slate-900/50 border-2 rounded-xl text-3xl text-center py-6 px-4 focus:outline-none transition-all duration-300 placeholder:text-slate-700 shadow-inner",
                                             isAnswered
                                                 ? isCorrect ? "border-green-500/50 text-green-400" : "border-red-500/50 text-red-400"
                                                 : "border-slate-800 focus:border-blue-500 focus:bg-slate-900 text-slate-100"
@@ -339,16 +347,19 @@ export const QuizView = () => {
                                                 onClick={() => handleOptionSelect(opt)}
                                                 disabled={isAnswered}
                                                 className={clsx(
-                                                    "w-full p-5 rounded-xl border-2 text-lg font-medium transition-all text-left flex items-center gap-4",
-                                                    showSuccess ? "bg-green-500/10 border-green-500 text-green-400" :
-                                                        showFail ? "bg-red-500/10 border-red-500 text-red-400" :
-                                                            "bg-slate-800/30 border-slate-800 hover:bg-slate-800 text-slate-300"
+                                                    "w-full p-4 rounded-xl text-lg font-bold transition-all duration-100 text-left flex items-center gap-4 border-b-[4px] active:border-b-0 active:translate-y-[4px]",
+                                                    showSuccess ? "bg-green-500 border-green-700 text-white" :
+                                                        showFail ? "bg-red-500 border-red-700 text-white" :
+                                                            "bg-slate-800 border-slate-900 text-slate-300 hover:bg-slate-700 hover:border-slate-800 hover:text-white"
                                                 )}
                                             >
-                                                <div className="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold border border-slate-700 bg-slate-800 text-slate-500">
+                                                <div className={clsx(
+                                                    "w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold shadow-sm",
+                                                    showSuccess || showFail ? "bg-black/20 text-white" : "bg-slate-900 text-slate-500"
+                                                )}>
                                                     {idx + 1}
                                                 </div>
-                                                <span className="flex-1">{opt}</span>
+                                                <span className="flex-1 drop-shadow-sm">{opt}</span>
                                             </button>
                                         );
                                     })}
@@ -370,7 +381,7 @@ export const QuizView = () => {
                             className="w-full max-w-2xl px-6 flex items-center justify-between"
                         >
                             <div className="flex items-center gap-4">
-                                <div className={clsx("w-12 h-12 rounded-full flex items-center justify-center border-2", isCorrect ? "border-green-500 text-green-500" : "border-red-500 text-red-500")}>
+                                <div className={clsx("w-12 h-12 rounded-full flex items-center justify-center border-2 shadow-lg", isCorrect ? "border-green-500 text-green-500 bg-green-500/10" : "border-red-500 text-red-500 bg-red-500/10")}>
                                     {isCorrect ? <CheckCircle size={24} /> : <XCircle size={24} />}
                                 </div>
                                 <div>
@@ -387,7 +398,15 @@ export const QuizView = () => {
                                     )}
                                 </div>
                             </div>
-                            <button onClick={handleNext} className="px-8 py-3 rounded-xl font-bold bg-slate-100 text-slate-900 hover:bg-white flex items-center gap-2">
+                            <button
+                                onClick={handleNext}
+                                className={clsx(
+                                    "px-8 py-3 rounded-xl font-bold flex items-center gap-2 transition-all duration-150 border-b-[4px] active:border-b-0 active:translate-y-[4px]",
+                                    isCorrect
+                                        ? "bg-green-500 border-green-700 text-white hover:bg-green-400 hover:border-green-600"
+                                        : "bg-slate-200 border-slate-400 text-slate-900 hover:bg-white hover:border-slate-300"
+                                )}
+                            >
                                 Next <ArrowRight size={20} />
                             </button>
                         </motion.div>
