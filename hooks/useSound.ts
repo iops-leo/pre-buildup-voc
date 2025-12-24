@@ -8,7 +8,7 @@ export const useSound = () => {
 
     useEffect(() => {
         if (typeof window !== 'undefined') {
-            correctAudio.current = new Audio('/media/sounds/correct.ogg');
+            correctAudio.current = new Audio('/media/sounds/correct.mp3');
             wrongAudio.current = new Audio('/media/sounds/wrong.ogg');
             clickAudio.current = new Audio('/media/sounds/click.ogg');
             levelUpAudio.current = new Audio('/media/sounds/level_up.ogg');
