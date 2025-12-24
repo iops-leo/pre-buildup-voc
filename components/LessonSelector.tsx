@@ -1,6 +1,6 @@
 import React from 'react';
 import { VOCABULARY_DATA, Unit, Lesson } from '@/data/vocabulary';
-import { useQuizStore, QuizHistoryEntry, BADGES } from '@/store/useQuizStore';
+import { useQuizStore, QuizHistoryEntry, BADGES, getLevelTitle } from '@/store/useQuizStore';
 import { BookOpen, Star, RefreshCw, Trophy, ChevronRight, GraduationCap, Flame, Medal, Mic } from 'lucide-react';
 import { motion } from 'framer-motion';
 import clsx from 'clsx';
@@ -20,6 +20,9 @@ export const LessonSelector = () => {
 
     // SFX
     const { playClick } = useSound();
+
+    // Get current title based on level
+    const currentTitle = getLevelTitle(level);
 
     // Get best score for a specific unit/lesson
     const getBestScore = (unitNum: number, lessonNum: number): number | null => {
@@ -51,28 +54,40 @@ export const LessonSelector = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
                 {/* Profile / Level Card */}
                 <div className="md:col-span-2 bg-slate-900 border border-slate-700 rounded-2xl p-4 md:p-6 relative overflow-hidden flex items-center gap-4 shadow-sm">
+                    {/* Background Pattern */}
                     <div className="absolute top-0 right-0 p-3 opacity-10 pointer-events-none">
-                        <Trophy size={100} className="text-yellow-500" />
+                        <span className="text-9xl">{currentTitle.icon}</span>
                     </div>
 
-                    <div className="w-16 h-16 md:w-20 md:h-20 shrink-0 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex flex-col items-center justify-center text-white border-4 border-slate-800 z-10">
-                        <span className="text-[10px] md:text-xs font-bold opacity-80">LEVEL</span>
-                        <span className="text-2xl md:text-3xl font-black leading-none">{level}</span>
+                    {/* Avatar Circle */}
+                    <div className="relative w-16 h-16 md:w-20 md:h-20 shrink-0 rounded-full bg-slate-800 flex flex-col items-center justify-center border-4 border-slate-700 z-10 shadow-lg">
+                        <div className="text-3xl md:text-4xl animate-bounce-slow">{currentTitle.icon}</div>
+                        <div className="absolute -bottom-2 bg-slate-900 text-[10px] md:text-xs font-bold px-2 py-0.5 rounded-full border border-slate-700 text-white">
+                            LV.{level}
+                        </div>
                     </div>
 
+                    {/* Stats Info */}
                     <div className="flex-1 space-y-1.5 md:space-y-2 z-10">
                         <div className="flex justify-between items-end">
-                            <h2 className="text-lg md:text-xl font-bold text-white">Learning Progress</h2>
+                            <div>
+                                <h2 className={clsx("text-lg md:text-xl font-black", currentTitle.color)}>
+                                    {currentTitle.title}
+                                </h2>
+                                <p className="text-slate-400 text-xs font-medium">Keep evolving!</p>
+                            </div>
                             <span className="text-xs md:text-sm font-mono text-blue-400 font-bold">{Math.floor(xp)} XP</span>
                         </div>
-                        <div className="w-full h-2.5 md:h-3 bg-slate-800 rounded-full overflow-hidden">
+                        <div className="w-full h-2.5 md:h-3 bg-slate-800 rounded-full overflow-hidden border border-slate-700/50">
                             <motion.div
                                 initial={false}
                                 animate={{ width: `${xpProgress}%` }}
                                 className="h-full bg-gradient-to-r from-blue-500 to-indigo-400"
                             />
                         </div>
-                        <p className="text-[10px] md:text-xs text-slate-500 text-right">Next: {1000 - Math.floor(currentLevelXp)} XP to go</p>
+                        <p className="text-[10px] md:text-xs text-slate-500 text-right">
+                            {1000 - Math.floor(currentLevelXp)} XP to next level
+                        </p>
                     </div>
                 </div>
 
@@ -131,19 +146,19 @@ export const LessonSelector = () => {
                     className="w-full relative overflow-hidden group bg-orange-600 overflow-hidden border-b-[4px] border-orange-800 active:border-b-0 active:translate-y-[4px] p-4 rounded-xl flex items-center justify-between transition-all shadow-md active:shadow-none"
                 >
                     <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <div className="flex items-center gap-3 z-10">
+                    <div className="flex items-center gap-3 z-10 w-full">
                         <div className="p-2.5 bg-black/20 rounded-lg text-white">
                             <RefreshCw size={20} className="group-hover:rotate-180 transition-transform duration-700" />
                         </div>
-                        <div className="text-left text-white">
+                        <div className="text-left text-white flex-1">
                             <h3 className="text-base md:text-lg font-bold">Review Waiting</h3>
                             <p className="opacity-90 text-xs md:text-sm">
                                 <span className="font-extrabold mr-1 bg-white text-orange-600 px-1.5 rounded-md">{persistentWrongAnswers.length}</span>
                                 words
                             </p>
                         </div>
+                        <ChevronRight size={18} className="text-white z-10" />
                     </div>
-                    <ChevronRight size={18} className="text-white z-10" />
                 </motion.button>
             )}
 

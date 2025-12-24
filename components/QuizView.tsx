@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useQuizStore } from '@/store/useQuizStore';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, CheckCircle, XCircle, Volume2, X, Mic, MicOff, Loader2 } from 'lucide-react';
+import { ArrowRight, CheckCircle, XCircle, Volume2, X, Mic, MicOff, Loader2, Zap } from 'lucide-react';
 import clsx from 'clsx';
 import { useTTS } from '@/hooks/useTTS';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
@@ -19,6 +19,10 @@ export const QuizView = () => {
     const [selectedOption, setSelectedOption] = useState<string | null>(null);
     const [isAnswered, setIsAnswered] = useState(false);
     const [isCorrect, setIsCorrect] = useState(false);
+    // Combo & Fever State
+    const [combo, setCombo] = useState(0);
+    const [showCombo, setShowCombo] = useState(false);
+
     const inputRef = useRef<HTMLInputElement>(null);
 
     // Hooks
@@ -112,13 +116,26 @@ export const QuizView = () => {
         }
     };
 
-    const handleVoiceSubmit = (success: boolean) => {
-        if (success) playCorrect();
-        else playWrong();
-
-        setIsCorrect(success);
+    const processAnswer = (correct: boolean) => {
+        if (correct) {
+            playCorrect();
+            const newCombo = combo + 1;
+            setCombo(newCombo);
+            if (newCombo >= 2) {
+                setShowCombo(true);
+                setTimeout(() => setShowCombo(false), 1500);
+            }
+        } else {
+            playWrong();
+            setCombo(0);
+        }
+        setIsCorrect(correct);
         setIsAnswered(true);
-        store.submitAnswer(success, currentWord);
+        store.submitAnswer(correct, currentWord);
+    };
+
+    const handleVoiceSubmit = (success: boolean) => {
+        processAnswer(success);
     };
 
     const handleSubmit = (e?: React.FormEvent) => {
@@ -130,12 +147,7 @@ export const QuizView = () => {
         const validAnswers = cleanTarget.split('/').map(s => s.trim());
         const correct = validAnswers.includes(cleanInput);
 
-        if (correct) playCorrect();
-        else playWrong();
-
-        setIsCorrect(correct);
-        setIsAnswered(true);
-        store.submitAnswer(correct, currentWord);
+        processAnswer(correct);
 
         if (!correct && ttsSupported) {
             setTimeout(() => speak(currentWord.word), 300);
@@ -144,21 +156,16 @@ export const QuizView = () => {
 
     const handleOptionSelect = useCallback((option: string) => {
         if (isAnswered) return;
-        playClick(); // Click sound immediately
+        playClick();
 
         setSelectedOption(option);
         const target = store.mode === 'english_to_korean' ? currentWord.meaning : currentWord.word;
         const correct = option === target;
 
         setTimeout(() => {
-            if (correct) playCorrect();
-            else playWrong();
+            processAnswer(correct);
         }, 100);
-
-        setIsCorrect(correct);
-        setIsAnswered(true);
-        store.submitAnswer(correct, currentWord);
-    }, [isAnswered, store, currentWord, playClick, playCorrect, playWrong]);
+    }, [isAnswered, store, currentWord, playClick, combo]);
 
     const handleNext = useCallback(() => {
         playClick();
@@ -212,12 +219,40 @@ export const QuizView = () => {
         ? currentWord.meaning
         : cleanWordForDisplay(currentWord.word);
 
+    const isFever = combo >= 5;
+
     return (
-        <div className="w-full min-h-screen bg-slate-950 flex flex-col relative overflow-hidden select-none">
+        <div className={clsx(
+            "w-full min-h-screen flex flex-col relative overflow-hidden select-none transition-colors duration-500",
+            isFever ? "bg-indigo-950" : "bg-slate-950"
+        )}>
+            {/* Fever Background Effect */}
+            {isFever && (
+                <div className="absolute inset-0 pointer-events-none opacity-20">
+                    <div className="absolute inset-0 bg-gradient-to-t from-rose-500/20 to-indigo-500/20 animate-pulse" />
+                </div>
+            )}
+
+            {/* Start Combo Popup */}
+            <AnimatePresence>
+                {showCombo && (
+                    <motion.div
+                        initial={{ scale: 0, rotate: -10 }}
+                        animate={{ scale: 1.5, rotate: 0 }}
+                        exit={{ scale: 0, rotate: 10 }}
+                        className="absolute top-1/4 left-1/2 -translate-x-1/2 z-50 pointer-events-none drop-shadow-[0_0_15px_rgba(255,255,255,0.5)]"
+                    >
+                        <div className="text-6xl md:text-8xl font-black italic text-transparent bg-clip-text bg-gradient-to-b from-yellow-300 to-amber-600 stroke-white" style={{ WebkitTextStroke: '2px white' }}>
+                            {combo} COMBO!
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             {/* Top Progress Bar */}
             <div className="absolute top-0 left-0 w-full h-1.5 bg-slate-900 z-50">
                 <motion.div
-                    className="h-full bg-blue-600"
+                    className={clsx("h-full", isFever ? "bg-rose-500 shadow-[0_0_15px_rgba(244,63,94,0.8)]" : "bg-blue-600")}
                     initial={{ width: 0 }}
                     animate={{ width: `${progress}%` }}
                     transition={{ duration: 0.3 }}
@@ -232,6 +267,15 @@ export const QuizView = () => {
                 >
                     <X size={24} />
                 </button>
+
+                {/* Combo Counter (Small) */}
+                {combo > 1 && (
+                    <div className={clsx("font-black text-xl italic flex items-center gap-1", isFever ? "text-yellow-400 animate-pulse" : "text-slate-400")}>
+                        <Zap size={20} className={isFever ? "fill-yellow-400" : ""} />
+                        {combo} Combo
+                    </div>
+                )}
+
                 <div className="text-sm font-medium text-slate-500 font-mono">
                     {store.currentQuestionIndex + 1} <span className="text-slate-700">/</span> {store.questions.length}
                 </div>
@@ -251,7 +295,10 @@ export const QuizView = () => {
                         {/* Question */}
                         <div className="space-y-6">
                             <div className="flex items-center justify-center gap-4">
-                                <h2 className="text-4xl md:text-6xl font-black text-slate-100 tracking-tight leading-tight drop-shadow-md">
+                                <h2 className={clsx(
+                                    "text-4xl md:text-6xl font-black tracking-tight leading-tight drop-shadow-md transition-colors duration-300",
+                                    isFever ? "text-rose-100" : "text-slate-100"
+                                )}>
                                     {questionText}
                                 </h2>
                                 {ttsSupported && store.mode === 'english_to_korean' && (
@@ -278,7 +325,7 @@ export const QuizView = () => {
                         <div className="w-full max-w-lg mx-auto min-h-[120px] flex flex-col items-center justify-center">
                             {isSpeakingMode ? (
                                 <div className="space-y-6 w-full">
-                                    {/* Mic Button (Raised 3D) */}
+                                    {/* Mic Button */}
                                     <button
                                         onClick={toggleListening}
                                         disabled={isAnswered}
@@ -323,10 +370,11 @@ export const QuizView = () => {
                                         disabled={isAnswered}
                                         placeholder="Type answer..."
                                         className={clsx(
-                                            "w-full bg-slate-900 border-2 rounded-xl text-3xl text-center py-6 px-4 focus:outline-none transition-all duration-300 placeholder:text-slate-700 shadow-inner",
+                                            "w-full border-2 rounded-xl text-3xl text-center py-6 px-4 focus:outline-none transition-all duration-300 placeholder:text-slate-700 shadow-inner",
+                                            isFever && !isAnswered ? "bg-indigo-900/50 border-rose-500/50 text-white shadow-[0_0_20px_rgba(244,63,94,0.2)]" : "bg-slate-900 border-slate-800 text-slate-100",
                                             isAnswered
                                                 ? isCorrect ? "border-green-500 text-green-400" : "border-red-500 text-red-400"
-                                                : "border-slate-800 focus:border-blue-500 focus:bg-slate-900 text-slate-100"
+                                                : "focus:border-blue-500 focus:bg-slate-900"
                                         )}
                                         autoComplete="off"
                                     />
@@ -348,7 +396,8 @@ export const QuizView = () => {
                                                     "w-full p-4 rounded-xl text-lg font-bold transition-all duration-100 text-left flex items-center gap-4 border-b-[4px] active:border-b-0 active:translate-y-[4px] touch-manipulation",
                                                     showSuccess ? "bg-green-600 border-green-800 text-white" :
                                                         showFail ? "bg-red-600 border-red-800 text-white" :
-                                                            "bg-slate-800 border-slate-900 text-slate-300 hover:bg-slate-700 hover:border-slate-800 hover:text-white"
+                                                            isFever ? "bg-indigo-900 border-indigo-950 text-indigo-100 hover:bg-rose-500 hover:border-rose-700 hover:text-white" :
+                                                                "bg-slate-800 border-slate-900 text-slate-300 hover:bg-slate-700 hover:border-slate-800 hover:text-white"
                                                 )}
                                             >
                                                 <div className={clsx(

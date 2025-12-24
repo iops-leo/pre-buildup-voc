@@ -1,7 +1,7 @@
-import React, { useEffect } from 'react';
-import { useQuizStore, QuizHistoryEntry } from '@/store/useQuizStore';
-import { motion } from 'framer-motion';
-import { Home, RefreshCw, Trophy, Clock, Target, TrendingUp, Award, Share2, Volume2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { useQuizStore, QuizHistoryEntry, getLevelTitle } from '@/store/useQuizStore';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Home, RefreshCw, Trophy, Clock, Target, TrendingUp, Award, Share2, Volume2, Crown } from 'lucide-react';
 import clsx from 'clsx';
 import { useTTS } from '@/hooks/useTTS';
 import { useSound } from '@/hooks/useSound';
@@ -9,18 +9,21 @@ import { useSound } from '@/hooks/useSound';
 export const ResultView = () => {
     const store = useQuizStore();
     const { retryQuiz, resetQuiz, quizHistory, level, xp } = store;
-    const { playLevelUp, playCorrect, playClick } = useSound();
+    const { playLevelUp, playClick } = useSound();
+    const [showCertificate, setShowCertificate] = useState(false);
 
     // The latest history entry is the current result
     const result = quizHistory[0];
+    const currentTitle = getLevelTitle(level);
 
     // Play sound on mount
     useEffect(() => {
         if (result) {
             if (result.percentage >= 80) {
-                setTimeout(() => playLevelUp(), 500); // Delay slightly for animation
-            } else {
-                // playCorrect(); // Optional
+                setTimeout(() => playLevelUp(), 500);
+            }
+            if (result.percentage === 100) {
+                setTimeout(() => setShowCertificate(true), 1500);
             }
         }
     }, [result, playLevelUp]);
@@ -45,7 +48,50 @@ export const ResultView = () => {
     };
 
     return (
-        <div className="w-full max-w-2xl mx-auto p-6 space-y-8 animate-in fade-in zoom-in duration-500 pb-20">
+        <div className="w-full max-w-2xl mx-auto p-6 space-y-8 animate-in fade-in zoom-in duration-500 pb-20 relative">
+            {/* Master Certificate Overlay */}
+            <AnimatePresence>
+                {showCertificate && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+                        onClick={() => setShowCertificate(false)}
+                    >
+                        <div className="bg-slate-50 border-8 border-double border-amber-500 rounded-lg p-8 max-w-md w-full text-center shadow-2xl relative overflow-hidden" onClick={e => e.stopPropagation()}>
+                            <div className="absolute top-0 right-0 p-4 opacity-10">
+                                <Crown size={150} className="text-amber-500" />
+                            </div>
+
+                            <h2 className="text-4xl font-serif font-black text-amber-600 mb-2 uppercase tracking-widest">Certificate</h2>
+                            <p className="text-slate-500 font-serif italic mb-6">of Mastery</p>
+
+                            <div className="mb-6">
+                                <p className="text-slate-600 mb-2">This certifies that</p>
+                                <div className="text-2xl font-bold text-slate-900 border-b-2 border-slate-300 pb-1 mb-2">
+                                    Level {level} {currentTitle.title}
+                                </div>
+                                <p className="text-slate-600">has achieved a perfect score!</p>
+                            </div>
+
+                            <div className="flex justify-center mb-8">
+                                <div className="w-24 h-24 bg-amber-500 rounded-full flex items-center justify-center text-white shadow-lg border-4 border-amber-300">
+                                    <span className="text-3xl font-black">100</span>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={() => setShowCertificate(false)}
+                                className="bg-slate-900 text-white px-8 py-3 rounded-full font-bold hover:bg-slate-800 transition-colors shadow-lg"
+                            >
+                                Close & Collect
+                            </button>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             {/* Main Score Card with Gamification Header */}
             <div className="relative bg-slate-900 border border-slate-800 rounded-3xl p-8 overflow-hidden shadow-lg">
                 <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5" />
@@ -57,9 +103,9 @@ export const ResultView = () => {
                     transition={{ delay: 0.5 }}
                     className="absolute top-4 right-4 flex items-center gap-2 bg-slate-800 px-3 py-1.5 rounded-full border border-slate-700 shadow-md"
                 >
-                    <span className="text-yellow-400 font-bold">+{result.xpGained || ((result.correctAnswers * 10) + (result.percentage === 100 ? 50 : 0))} XP</span>
+                    <span className="text-2xl">{currentTitle.icon}</span>
                     <div className="w-px h-3 bg-slate-600" />
-                    <span className="text-blue-400 font-bold text-xs">LV.{level}</span>
+                    <span className="text-yellow-400 font-bold">+{result.xpGained} XP</span>
                 </motion.div>
 
                 <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 mt-4">
@@ -125,9 +171,9 @@ export const ResultView = () => {
                             delay={0.3}
                         />
                         <StatBox
-                            icon={<Trophy className="text-amber-400" size={20} />}
-                            label="XP Gained"
-                            value={`+${result.xpGained || 0}`}
+                            icon={<Crown className="text-amber-400" size={20} />}
+                            label="Rank"
+                            value={currentTitle.title}
                             delay={0.4}
                         />
                     </div>
