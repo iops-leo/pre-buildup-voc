@@ -83,6 +83,7 @@ interface QuizState {
     currentUnit: Unit | null;
     currentLesson: Lesson | null;
     quizActive: boolean;
+    previewActive: boolean;
     mode: QuizMode;
     questions: Vocabulary[];
     currentQuestionIndex: number;
@@ -103,6 +104,7 @@ interface QuizState {
     // Actions
     startQuiz: (unit: Unit, lesson: Lesson, mode: QuizMode) => void;
     startReviewQuiz: (mode: QuizMode) => void;
+    startPreview: (unit: Unit, lesson: Lesson) => void;
     retryQuiz: () => void;
     submitAnswer: (isCorrect: boolean, word: Vocabulary) => void;
     nextQuestion: () => void;
@@ -122,6 +124,7 @@ export const useQuizStore = create<QuizState>()(
             currentUnit: null,
             currentLesson: null,
             quizActive: false,
+            previewActive: false,
             mode: 'korean_to_english',
             questions: [],
             currentQuestionIndex: 0,
@@ -171,6 +174,16 @@ export const useQuizStore = create<QuizState>()(
                     correctAnswers: 0,
                     wrongAnswers: [],
                     startTime: Date.now(),
+                });
+            },
+
+            startPreview: (unit, lesson) => {
+                set({
+                    currentUnit: unit,
+                    currentLesson: lesson,
+                    previewActive: true,
+                    quizActive: false,
+                    questions: lesson.vocabulary,
                 });
             },
 
@@ -273,6 +286,7 @@ export const useQuizStore = create<QuizState>()(
             resetQuiz: () => {
                 set({
                     quizActive: false,
+                    previewActive: false,
                     currentUnit: null,
                     currentLesson: null,
                     questions: [],

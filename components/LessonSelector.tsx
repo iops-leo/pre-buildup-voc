@@ -10,6 +10,7 @@ export const LessonSelector = () => {
     const {
         startQuiz,
         startReviewQuiz,
+        startPreview,
         persistentWrongAnswers,
         quizHistory,
         level,
@@ -41,6 +42,11 @@ export const LessonSelector = () => {
     const handleModeSelect = (unit: Unit, lesson: Lesson, mode: 'korean_to_english' | 'english_to_korean' | 'spelling' | 'speaking') => {
         playClick();
         startQuiz(unit, lesson, mode);
+    };
+
+    const handlePreview = (unit: Unit, lesson: Lesson) => {
+        playClick();
+        startPreview(unit, lesson);
     };
 
     const handleReviewClick = () => {
@@ -180,6 +186,7 @@ export const LessonSelector = () => {
                                     lesson={lesson}
                                     bestScore={getBestScore(unit.unit, lesson.lesson)}
                                     onSelect={(mode) => handleModeSelect(unit, lesson, mode)}
+                                    onPreview={() => handlePreview(unit, lesson)}
                                 />
                             ))}
                         </div>
@@ -197,12 +204,13 @@ interface LessonCardProps {
     lesson: Lesson;
     bestScore: number | null;
     onSelect: (mode: 'korean_to_english' | 'english_to_korean' | 'spelling' | 'speaking') => void;
+    onPreview: () => void;
 }
 
-const LessonCard = ({ unit, lesson, bestScore, onSelect }: LessonCardProps) => {
+const LessonCard = ({ unit, lesson, bestScore, onSelect, onPreview }: LessonCardProps) => {
     return (
         <div className="group relative flex flex-col justify-between bg-slate-900 border border-slate-800 rounded-xl p-4 md:p-6 hover:bg-slate-800 transition-colors duration-200 shadow-sm">
-            <div className="flex justify-between items-start mb-4">
+            <div className="flex justify-between items-start mb-3">
                 <div>
                     <h3 className="text-base md:text-lg font-bold text-slate-100 group-hover:text-blue-400 transition-colors">
                         Lesson {lesson.lesson}
@@ -225,6 +233,15 @@ const LessonCard = ({ unit, lesson, bestScore, onSelect }: LessonCardProps) => {
                     </div>
                 )}
             </div>
+
+            {/* Preview Button */}
+            <button
+                onClick={onPreview}
+                className="w-full mb-3 py-2 px-3 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors flex items-center justify-center gap-2 text-sm font-medium active:scale-[0.98] touch-manipulation"
+            >
+                <BookOpen size={16} />
+                문제보기
+            </button>
 
             <div className="grid grid-cols-2 gap-2">
                 <ModeButton
