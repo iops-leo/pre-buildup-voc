@@ -145,6 +145,7 @@ export const QuizView = () => {
         const cleanTarget = currentWord.word.replace(/\s*\(.*\)/, '').toLowerCase();
         const cleanInput = input.trim().toLowerCase();
         const validAnswers = cleanTarget.split('/').map(s => s.trim());
+        validAnswers.push(cleanTarget); // 전체 문자열도 정답으로 인정
         const correct = validAnswers.includes(cleanInput);
 
         processAnswer(correct);
@@ -223,7 +224,7 @@ export const QuizView = () => {
 
     return (
         <div className={clsx(
-            "w-full min-h-screen flex flex-col relative overflow-hidden select-none transition-colors duration-500",
+            "w-full h-screen flex flex-col relative overflow-hidden select-none transition-colors duration-500",
             isFever ? "bg-indigo-950" : "bg-slate-950"
         )}>
             {/* Fever Background Effect */}
@@ -260,7 +261,7 @@ export const QuizView = () => {
             </div>
 
             {/* Header */}
-            <header className="p-6 flex justify-between items-center z-10">
+            <header className="p-4 md:p-6 flex justify-between items-center z-10 shrink-0">
                 <button
                     onClick={handleExit}
                     className="p-2 rounded-full hover:bg-slate-800 text-slate-500 transition-transform active:scale-95 touch-manipulation"
@@ -282,7 +283,7 @@ export const QuizView = () => {
             </header>
 
             {/* Main Content */}
-            <main className="flex-1 w-full max-w-2xl mx-auto p-6 flex flex-col items-center justify-center -mt-10">
+            <main className="flex-1 w-full max-w-2xl mx-auto px-4 md:px-6 py-2 flex flex-col items-center justify-center overflow-y-auto">
                 <AnimatePresence mode="wait">
                     <motion.div
                         key={currentWord.word}
@@ -290,13 +291,13 @@ export const QuizView = () => {
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
                         transition={{ duration: 0.2 }}
-                        className="w-full text-center space-y-12"
+                        className="w-full text-center space-y-6 md:space-y-10"
                     >
                         {/* Question */}
-                        <div className="space-y-6">
-                            <div className="flex items-center justify-center gap-4">
+                        <div className="space-y-3 md:space-y-6">
+                            <div className="flex items-center justify-center gap-3 md:gap-4">
                                 <h2 className={clsx(
-                                    "text-4xl md:text-6xl font-black tracking-tight leading-tight drop-shadow-md transition-colors duration-300",
+                                    "text-2xl sm:text-3xl md:text-5xl font-black tracking-tight leading-snug drop-shadow-md transition-colors duration-300 break-keep",
                                     isFever ? "text-rose-100" : "text-slate-100"
                                 )}>
                                     {questionText}
@@ -322,26 +323,26 @@ export const QuizView = () => {
                         </div>
 
                         {/* Input Area */}
-                        <div className="w-full max-w-lg mx-auto min-h-[120px] flex flex-col items-center justify-center">
+                        <div className="w-full max-w-lg mx-auto flex flex-col items-center justify-center">
                             {isSpeakingMode ? (
-                                <div className="space-y-6 w-full">
+                                <div className="space-y-4 md:space-y-6 w-full">
                                     {/* Mic Button */}
                                     <button
                                         onClick={toggleListening}
                                         disabled={isAnswered}
                                         className={clsx(
-                                            "w-24 h-24 rounded-full flex items-center justify-center transition-all duration-150 mx-auto border-b-[6px] active:border-b-0 active:translate-y-[6px] touch-manipulation",
+                                            "w-20 h-20 md:w-24 md:h-24 rounded-full flex items-center justify-center transition-all duration-150 mx-auto border-b-[6px] active:border-b-0 active:translate-y-[6px] touch-manipulation",
                                             isListening
                                                 ? "bg-rose-500 border-rose-700 text-white shadow-rose-500/40"
                                                 : "bg-slate-700 border-slate-800 text-slate-400 hover:bg-slate-600 hover:text-white",
                                             isAnswered && "opacity-50 cursor-not-allowed border-b-0 translate-y-[6px]"
                                         )}
                                     >
-                                        {isListening ? <Mic size={40} className="animate-bounce" /> : <MicOff size={32} />}
+                                        {isListening ? <Mic size={36} className="animate-bounce" /> : <MicOff size={28} />}
                                     </button>
 
                                     {/* Live Caption */}
-                                    <div className="h-12 flex items-center justify-center">
+                                    <div className="h-10 md:h-12 flex items-center justify-center">
                                         {isListening ? (
                                             <div className="text-slate-300 text-lg font-medium flex items-center gap-2">
                                                 <Loader2 size={16} className="animate-spin text-rose-500" />
@@ -370,7 +371,7 @@ export const QuizView = () => {
                                         disabled={isAnswered}
                                         placeholder="Type answer..."
                                         className={clsx(
-                                            "w-full border-2 rounded-xl text-3xl text-center py-6 px-4 focus:outline-none transition-all duration-300 placeholder:text-slate-700 shadow-inner",
+                                            "w-full border-2 rounded-xl text-xl md:text-3xl text-center py-4 md:py-6 px-4 focus:outline-none transition-all duration-300 placeholder:text-slate-700 shadow-inner",
                                             isFever && !isAnswered ? "bg-indigo-900/50 border-rose-500/50 text-white shadow-[0_0_20px_rgba(244,63,94,0.2)]" : "bg-slate-900 border-slate-800 text-slate-100",
                                             isAnswered
                                                 ? isCorrect ? "border-green-500 text-green-400" : "border-red-500 text-red-400"
@@ -380,7 +381,7 @@ export const QuizView = () => {
                                     />
                                 </form>
                             ) : (
-                                <div className="grid grid-cols-1 gap-3 w-full">
+                                <div className="grid grid-cols-1 gap-2 md:gap-3 w-full">
                                     {options.map((opt, idx) => {
                                         const isSelected = opt === selectedOption;
                                         const isTarget = (store.mode === 'english_to_korean' ? opt === currentWord.meaning : opt === currentWord.word);
@@ -393,7 +394,7 @@ export const QuizView = () => {
                                                 onClick={() => handleOptionSelect(opt)}
                                                 disabled={isAnswered}
                                                 className={clsx(
-                                                    "w-full p-4 rounded-xl text-lg font-bold transition-all duration-100 text-left flex items-center gap-4 border-b-[4px] active:border-b-0 active:translate-y-[4px] touch-manipulation",
+                                                    "w-full p-3 md:p-4 rounded-xl text-base md:text-lg font-bold transition-all duration-100 text-left flex items-center gap-3 md:gap-4 border-b-[4px] active:border-b-0 active:translate-y-[4px] touch-manipulation",
                                                     showSuccess ? "bg-green-600 border-green-800 text-white" :
                                                         showFail ? "bg-red-600 border-red-800 text-white" :
                                                             isFever ? "bg-indigo-900 border-indigo-950 text-indigo-100 hover:bg-rose-500 hover:border-rose-700 hover:text-white" :
@@ -401,12 +402,12 @@ export const QuizView = () => {
                                                 )}
                                             >
                                                 <div className={clsx(
-                                                    "w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold shadow-sm",
+                                                    "w-7 h-7 md:w-8 md:h-8 rounded-lg flex items-center justify-center text-xs md:text-sm font-bold shadow-sm shrink-0",
                                                     showSuccess || showFail ? "bg-black/20 text-white" : "bg-slate-900 text-slate-500"
                                                 )}>
                                                     {idx + 1}
                                                 </div>
-                                                <span className="flex-1 drop-shadow-sm">{opt}</span>
+                                                <span className="flex-1 drop-shadow-sm break-keep">{opt}</span>
                                             </button>
                                         );
                                     })}
@@ -418,7 +419,7 @@ export const QuizView = () => {
             </main>
 
             {/* Footer / Feedback */}
-            <div className="h-32 w-full flex items-center justify-center bg-slate-950 border-t border-slate-900 z-10">
+            <div className="h-24 md:h-32 w-full flex items-center justify-center bg-slate-950 border-t border-slate-900 z-10 shrink-0">
                 <AnimatePresence mode="wait">
                     {isAnswered ? (
                         <motion.div
@@ -426,21 +427,21 @@ export const QuizView = () => {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 10 }}
                             transition={{ duration: 0.2 }}
-                            className="w-full max-w-2xl px-6 flex items-center justify-between"
+                            className="w-full max-w-2xl px-4 md:px-6 flex items-center justify-between gap-3"
                         >
-                            <div className="flex items-center gap-4">
-                                <div className={clsx("w-12 h-12 rounded-full flex items-center justify-center border-2 shadow-sm", isCorrect ? "border-green-600 text-green-500 bg-green-900/20" : "border-red-600 text-red-500 bg-red-900/20")}>
-                                    {isCorrect ? <CheckCircle size={24} /> : <XCircle size={24} />}
+                            <div className="flex items-center gap-3 md:gap-4 min-w-0 flex-1">
+                                <div className={clsx("w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center border-2 shadow-sm shrink-0", isCorrect ? "border-green-600 text-green-500 bg-green-900/20" : "border-red-600 text-red-500 bg-red-900/20")}>
+                                    {isCorrect ? <CheckCircle size={20} /> : <XCircle size={20} />}
                                 </div>
-                                <div>
-                                    <div className={clsx("font-bold text-lg", isCorrect ? "text-green-400" : "text-red-400")}>
+                                <div className="min-w-0">
+                                    <div className={clsx("font-bold text-base md:text-lg", isCorrect ? "text-green-400" : "text-red-400")}>
                                         {isCorrect ? "Correct!" : "Incorrect"}
                                     </div>
                                     {!isCorrect && (
-                                        <div className="text-slate-400 flex items-center gap-2">
-                                            Answer: <span className="text-slate-200 font-semibold">{cleanWordForDisplay(currentWord.word)}</span>
-                                            <button onClick={() => speak(currentWord.word)}>
-                                                <Volume2 size={16} />
+                                        <div className="text-slate-400 flex items-center gap-2 text-sm md:text-base truncate">
+                                            <span className="text-slate-200 font-semibold truncate">{cleanWordForDisplay(currentWord.word)}</span>
+                                            <button onClick={() => speak(currentWord.word)} className="shrink-0">
+                                                <Volume2 size={14} />
                                             </button>
                                         </div>
                                     )}
@@ -449,13 +450,13 @@ export const QuizView = () => {
                             <button
                                 onClick={handleNext}
                                 className={clsx(
-                                    "px-8 py-3 rounded-xl font-bold flex items-center gap-2 transition-all duration-150 border-b-[4px] active:border-b-0 active:translate-y-[4px] touch-manipulation",
+                                    "px-5 md:px-8 py-2.5 md:py-3 rounded-xl font-bold flex items-center gap-2 transition-all duration-150 border-b-[4px] active:border-b-0 active:translate-y-[4px] touch-manipulation shrink-0",
                                     isCorrect
                                         ? "bg-green-600 border-green-800 text-white hover:bg-green-500"
                                         : "bg-slate-200 border-slate-400 text-slate-900 hover:bg-white"
                                 )}
                             >
-                                Next <ArrowRight size={20} />
+                                Next <ArrowRight size={18} />
                             </button>
                         </motion.div>
                     ) : (
