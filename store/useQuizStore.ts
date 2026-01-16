@@ -17,6 +17,11 @@ export interface QuizHistoryEntry {
     xpGained?: number;
 }
 
+export interface LessonProgress {
+    bestScore: number;
+    lastPlayedAt: number;
+}
+
 // Level Titles & Evolution
 export const LEVEL_TITLES = [
     { minLevel: 1, title: 'Baby Egg', icon: '🥚', color: 'text-slate-200' },
@@ -93,6 +98,7 @@ interface QuizState {
     persistentWrongAnswers: Vocabulary[];
     startTime: number;
     quizHistory: QuizHistoryEntry[];
+    lessonProgress: Record<string, LessonProgress>;
 
     // Gamification State
     xp: number;
@@ -134,6 +140,7 @@ export const useQuizStore = create<QuizState>()(
             persistentWrongAnswers: [],
             startTime: 0,
             quizHistory: [],
+            lessonProgress: {},
 
             // Gamification Initial State
             xp: 0,
@@ -208,8 +215,9 @@ export const useQuizStore = create<QuizState>()(
                     const uniquePersistent = Array.from(new Set(newPersistent.map(w => w.word)))
                         .map(w => newPersistent.find(p => p.word === w)!);
 
+                    // 정답 시 persistentWrongAnswers에서 해당 단어 제거
                     let finalPersistent = uniquePersistent;
-                    if (state.currentLesson === null && isCorrect) {
+                    if (isCorrect) {
                         finalPersistent = uniquePersistent.filter(w => w.word !== word.word);
                     }
 
@@ -271,12 +279,30 @@ export const useQuizStore = create<QuizState>()(
                 }
 
                 // Update State first
-                set((s) => ({
-                    quizActive: false,
-                    quizHistory: [historyEntry, ...s.quizHistory].slice(0, 50),
-                    lastStudyDate: new Date().toISOString(),
-                    streak: newStreak,
-                }));
+                set((s) => {
+                    const newState: Partial<QuizState> = {
+                        quizActive: false,
+                        quizHistory: [historyEntry, ...s.quizHistory].slice(0, 50),
+                        lastStudyDate: new Date().toISOString(),
+                        streak: newStreak,
+                    };
+
+                    // Update Lesson Progress
+                    if (state.currentUnit && state.currentLesson) {
+                        const key = `${state.currentUnit.unit}-${state.currentLesson.lesson}`;
+                        const prev = s.lessonProgress[key];
+                        const newBest = Math.max(prev?.bestScore ?? 0, percentage);
+
+                        newState.lessonProgress = {
+                            ...s.lessonProgress,
+                            [key]: {
+                                bestScore: newBest,
+                                lastPlayedAt: Date.now()
+                            }
+                        };
+                    }
+                    return newState as QuizState;
+                });
 
                 // Add XP and Check Achievements
                 get().addXp(totalXp);
@@ -338,7 +364,35 @@ export const useQuizStore = create<QuizState>()(
                 streak: state.streak,
                 lastStudyDate: state.lastStudyDate,
                 earnedBadges: state.earnedBadges,
+                lessonProgress: state.lessonProgress,
             }),
+            version: 1,
+            migrate: (persistedState: any, version) => {
+                if (version === 0) {
+                    const history = persistedState.quizHistory || [];
+                    const progress: Record<string, LessonProgress> = {};
+
+                    history.forEach((h: QuizHistoryEntry) => {
+                        if (h.unitNumber && h.lessonNumber) {
+                            const key = `${h.unitNumber}-${h.lessonNumber}`;
+                            const prev = progress[key]?.bestScore || 0;
+                            // Update only if better, or initialize
+                            if (h.percentage >= prev) {
+                                progress[key] = {
+                                    bestScore: Math.max(prev, h.percentage),
+                                    lastPlayedAt: new Date(h.date).getTime()
+                                };
+                            }
+                        }
+                    });
+
+                    return {
+                        ...persistedState,
+                        lessonProgress: progress,
+                    };
+                }
+                return persistedState;
+            },
         }
     )
 );

@@ -16,7 +16,8 @@ export const LessonSelector = () => {
         level,
         xp,
         streak,
-        earnedBadges
+        earnedBadges,
+        lessonProgress
     } = useQuizStore();
 
     // SFX
@@ -27,11 +28,8 @@ export const LessonSelector = () => {
 
     // Get best score for a specific unit/lesson
     const getBestScore = (unitNum: number, lessonNum: number): number | null => {
-        const relevant = quizHistory.filter(
-            (h: QuizHistoryEntry) => h.unitNumber === unitNum && h.lessonNumber === lessonNum
-        );
-        if (relevant.length === 0) return null;
-        return Math.max(...relevant.map((h: QuizHistoryEntry) => h.percentage));
+        const key = `${unitNum}-${lessonNum}`;
+        return lessonProgress[key]?.bestScore ?? null;
     };
 
     // Calculate XP progress for next level
