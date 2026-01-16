@@ -23,14 +23,15 @@ export interface LessonProgress {
 }
 
 // Level Titles & Evolution
-export const LEVEL_TITLES = [
-    { minLevel: 1, title: 'Baby Egg', icon: '🥚', color: 'text-slate-200' },
-    { minLevel: 2, title: 'Wobbly Chick', icon: '🐣', color: 'text-yellow-300' },
-    { minLevel: 5, title: 'Smart Owl', icon: '🦉', color: 'text-blue-300' },
-    { minLevel: 10, title: 'Fast Eagle', icon: '🦅', color: 'text-amber-400' },
-    { minLevel: 20, title: 'Wise Wizard', icon: '🧙‍♂️', color: 'text-purple-400' },
-    { minLevel: 30, title: 'Voca King', icon: '👑', color: 'text-rose-400' },
-    { minLevel: 50, title: 'Legendary Dragon', icon: '🐉', color: 'text-red-500' },
+{ minLevel: 1, title: 'Baby Egg', icon: '🥚', color: 'text-slate-200' },
+{ minLevel: 2, title: 'Wobbly Chick', icon: '🐣', color: 'text-yellow-300' },
+{ minLevel: 5, title: 'Smart Owl', icon: '🦉', color: 'text-blue-300' },
+{ minLevel: 10, title: 'Fast Eagle', icon: '🦅', color: 'text-amber-400' },
+{ minLevel: 20, title: 'Wise Wizard', icon: '🧙‍♂️', color: 'text-purple-400' },
+{ minLevel: 30, title: 'Voca King', icon: '👑', color: 'text-rose-400' },
+{ minLevel: 50, title: 'Legendary Dragon', icon: '🐉', color: 'text-red-500' },
+{ minLevel: 70, title: 'Cosmic Voyager', icon: '🚀', color: 'text-indigo-400' },
+{ minLevel: 100, title: 'God of Words', icon: '🌟', color: 'text-yellow-200' },
 ];
 
 export const getLevelTitle = (level: number) => {
