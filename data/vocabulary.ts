@@ -164,6 +164,24 @@ export const VOCABULARY_DATA: BookData = {
             { "word": "wipe/wiped (v.)", "definition": "to make something clean with a cloth", "meaning": "닦다" },
             { "word": "weekend (n.)", "definition": "Saturday and Sunday", "meaning": "주말" }
           ]
+        },
+        {
+          "lesson": 9,
+          "vocabulary": [
+            { "word": "water the plants", "definition": "to pour or to put water on the plants", "meaning": "식물에 물을 주다" },
+            { "word": "clean the bathroom", "definition": "to remove stains in the bathroom", "meaning": "화장실을 청소하다" },
+            { "word": "iron the clothes", "definition": "to make clothes smooth using an iron", "meaning": "옷을 다림질하다" },
+            { "word": "take out the garbage", "definition": "to move the garbage from indoors to outdoors", "meaning": "쓰레기를 내놓다" },
+            { "word": "feed the dog", "definition": "to give food to a dog", "meaning": "개에게 먹이를 주다" },
+            { "word": "wipe the windows", "definition": "to make windows clean with a cloth", "meaning": "창문을 닦다" },
+            { "word": "do the laundry", "definition": "to wash clothes and other things that are dirty", "meaning": "빨래를 하다" },
+            { "word": "fold the clothes", "definition": "to bend clothes in order to be stored easily", "meaning": "옷을 개다" },
+            { "word": "put the dry clothes in the drawers", "definition": "to put the dry clothes in the drawers", "meaning": "마른 옷을 서랍에 넣다" },
+            { "word": "vacuum the floor", "definition": "to clean the floor using a vacuum cleaner", "meaning": "바닥을 진공청소기로 청소하다" },
+            { "word": "wash the dishes", "definition": "to clean the dishes using water or soap", "meaning": "설거지를 하다" },
+            { "word": "feed/fed (v.)", "definition": "to give food to a person or an animal", "meaning": "먹이를 주다" },
+            { "word": "weekend (n.)", "definition": "Saturday and Sunday", "meaning": "주말" }
+          ]
         }
       ]
     },
