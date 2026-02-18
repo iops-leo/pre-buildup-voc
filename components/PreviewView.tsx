@@ -1,7 +1,7 @@
 import React from 'react';
 import { useQuizStore, QuizMode } from '@/store/useQuizStore';
 import { motion } from 'framer-motion';
-import { ArrowLeft, Volume2, BookOpen, Mic } from 'lucide-react';
+import { ArrowLeft, Volume2, BookOpen, Mic, PenTool } from 'lucide-react';
 import clsx from 'clsx';
 import { useTTS } from '@/hooks/useTTS';
 import { useSound } from '@/hooks/useSound';
@@ -96,7 +96,7 @@ export const PreviewView = () => {
             <footer className="sticky bottom-0 z-20 bg-slate-950/95 backdrop-blur-sm border-t border-slate-800 p-4 md:p-6">
                 <div className="max-w-2xl mx-auto space-y-3">
                     <p className="text-center text-sm text-slate-500 font-medium">퀴즈 시작하기</p>
-                    <div className="grid grid-cols-4 gap-2">
+                    <div className="grid grid-cols-5 gap-2">
                         <button
                             onClick={() => handleStartQuiz('korean_to_english')}
                             className="py-3 px-2 rounded-xl font-bold text-sm bg-blue-600 border-b-[4px] border-blue-800 text-white hover:bg-blue-500 active:border-b-0 active:translate-y-[4px] transition-all touch-manipulation"
@@ -121,6 +121,13 @@ export const PreviewView = () => {
                         >
                             <Mic size={14} />
                             말하기
+                        </button>
+                        <button
+                            onClick={() => handleStartQuiz('writing')}
+                            className="py-3 px-2 rounded-xl font-bold text-sm bg-amber-600 border-b-[4px] border-amber-800 text-white hover:bg-amber-500 active:border-b-0 active:translate-y-[4px] transition-all touch-manipulation flex items-center justify-center gap-1"
+                        >
+                            <PenTool size={14} />
+                            셀프시험
                         </button>
                     </div>
                 </div>
