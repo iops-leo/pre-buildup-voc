@@ -234,7 +234,7 @@ export const QuizView = () => {
 
     if (!currentWord) return null;
 
-    const questionText = (store.mode === 'korean_to_english' || store.mode === 'spelling' || store.mode === 'speaking')
+    const questionText = (store.mode === 'korean_to_english' || store.mode === 'spelling' || store.mode === 'speaking' || store.mode === 'writing')
         ? currentWord.meaning
         : cleanWordForDisplay(currentWord.word);
 
