@@ -9,6 +9,7 @@ import { StatsView } from '@/components/StatsView';
 import { SettingsView } from '@/components/SettingsView';
 import { TimeChallengeView } from '@/components/TimeChallengeView';
 import { useEffect, useState } from 'react';
+import { useNotification } from '@/hooks/useNotification';
 
 // View types for navigation
 type ViewType = 'home' | 'stats' | 'settings' | 'game';
@@ -17,6 +18,9 @@ export default function Home() {
   const store = useQuizStore();
   const [mounted, setMounted] = useState(false);
   const [currentView, setCurrentView] = useState<ViewType>('home');
+
+  // Initialize notification scheduling at app level
+  useNotification();
 
   // Avoid hydration mismatch with zustand persist
   useEffect(() => {
