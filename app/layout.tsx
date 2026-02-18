@@ -29,7 +29,7 @@ export default function RootLayout({
     <html lang="ko" className={`${inter.variable} ${notoSansKr.variable}`}>
       <body className="antialiased font-sans bg-slate-950 text-slate-100 selection:bg-blue-500/30">
         <div className="fixed inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-900 via-slate-950 to-black -z-10" />
-        <div className="fixed inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 pointer-events-none mix-blend-soft-light -z-10" />
+        <div className="fixed inset-0 bg-[url('/noise.svg')] opacity-20 pointer-events-none mix-blend-soft-light -z-10" />
         {children}
       </body>
     </html>

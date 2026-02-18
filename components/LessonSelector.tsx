@@ -1,12 +1,19 @@
 import React from 'react';
 import { VOCABULARY_DATA, Unit, Lesson } from '@/data/vocabulary';
 import { useQuizStore, QuizHistoryEntry, BADGES, getLevelTitle } from '@/store/useQuizStore';
-import { BookOpen, Star, RefreshCw, Trophy, ChevronRight, GraduationCap, Flame, Medal, Mic } from 'lucide-react';
+import { BookOpen, Star, RefreshCw, Trophy, ChevronRight, GraduationCap, Flame, Medal, Mic, PenTool, BarChart3, Settings, Timer } from 'lucide-react';
 import { motion } from 'framer-motion';
 import clsx from 'clsx';
 import { useSound } from '@/hooks/useSound';
 
-export const LessonSelector = () => {
+// View types for navigation
+type ViewType = 'home' | 'stats' | 'settings' | 'game';
+
+interface LessonSelectorProps {
+    onNavigate?: (view: ViewType) => void;
+}
+
+export const LessonSelector = ({ onNavigate }: LessonSelectorProps) => {
     const {
         startQuiz,
         startReviewQuiz,
@@ -37,7 +44,7 @@ export const LessonSelector = () => {
     const currentLevelXp = xp - ((level - 1) * 1000);
     const xpProgress = Math.min((currentLevelXp / 1000) * 100, 100);
 
-    const handleModeSelect = (unit: Unit, lesson: Lesson, mode: 'korean_to_english' | 'english_to_korean' | 'spelling' | 'speaking') => {
+    const handleModeSelect = (unit: Unit, lesson: Lesson, mode: 'korean_to_english' | 'english_to_korean' | 'spelling' | 'speaking' | 'writing') => {
         playClick();
         startQuiz(unit, lesson, mode);
     };
@@ -132,6 +139,37 @@ export const LessonSelector = () => {
                 </div>
             )}
 
+            {/* Navigation Menu */}
+            <div className="grid grid-cols-3 gap-3">
+                <button
+                    onClick={() => { playClick(); onNavigate?.('stats'); }}
+                    className="flex flex-col items-center gap-2 p-4 bg-slate-900 border border-slate-800 rounded-xl hover:bg-slate-800 transition-colors group"
+                >
+                    <div className="p-3 rounded-full bg-blue-500/10 text-blue-400 group-hover:bg-blue-500/20 transition-colors">
+                        <BarChart3 size={22} />
+                    </div>
+                    <span className="text-xs font-bold text-slate-300">학습 통계</span>
+                </button>
+                <button
+                    onClick={() => { playClick(); onNavigate?.('game'); }}
+                    className="flex flex-col items-center gap-2 p-4 bg-slate-900 border border-slate-800 rounded-xl hover:bg-slate-800 transition-colors group"
+                >
+                    <div className="p-3 rounded-full bg-rose-500/10 text-rose-400 group-hover:bg-rose-500/20 transition-colors">
+                        <Timer size={22} />
+                    </div>
+                    <span className="text-xs font-bold text-slate-300">타이머 챌린지</span>
+                </button>
+                <button
+                    onClick={() => { playClick(); onNavigate?.('settings'); }}
+                    className="flex flex-col items-center gap-2 p-4 bg-slate-900 border border-slate-800 rounded-xl hover:bg-slate-800 transition-colors group"
+                >
+                    <div className="p-3 rounded-full bg-slate-500/10 text-slate-400 group-hover:bg-slate-500/20 transition-colors">
+                        <Settings size={22} />
+                    </div>
+                    <span className="text-xs font-bold text-slate-300">설정</span>
+                </button>
+            </div>
+
             {/* Main Header */}
             <header className="text-center space-y-1 md:space-y-2 pt-2 md:pt-4">
                 <h1 className="text-3xl md:text-5xl font-black tracking-tight text-white font-display">
@@ -201,7 +239,7 @@ interface LessonCardProps {
     unit: Unit;
     lesson: Lesson;
     bestScore: number | null;
-    onSelect: (mode: 'korean_to_english' | 'english_to_korean' | 'spelling' | 'speaking') => void;
+    onSelect: (mode: 'korean_to_english' | 'english_to_korean' | 'spelling' | 'speaking' | 'writing') => void;
     onPreview: () => void;
 }
 
@@ -268,16 +306,28 @@ const LessonCard = ({ unit, lesson, bestScore, onSelect, onPreview }: LessonCard
                     onClick={() => onSelect('speaking')}
                 />
             </div>
+            {/* Self-Test (Writing) Mode - Full Width */}
+            <div className="mt-2">
+                <ModeButton
+                    label="셀프시험"
+                    subLabel="노트에 쓰기"
+                    color="amber"
+                    icon={<PenTool size={13} />}
+                    onClick={() => onSelect('writing')}
+                    fullWidth
+                />
+            </div>
         </div>
     );
 };
 
-const ModeButton = ({ label, subLabel, color, icon, onClick }: { label: string, subLabel: string, color: 'blue' | 'purple' | 'green' | 'rose', icon?: React.ReactNode, onClick: () => void }) => {
+const ModeButton = ({ label, subLabel, color, icon, onClick, fullWidth }: { label: string, subLabel: string, color: 'blue' | 'purple' | 'green' | 'rose' | 'amber', icon?: React.ReactNode, onClick: () => void, fullWidth?: boolean }) => {
     const colorStyles = {
         blue: "bg-blue-600 border-blue-800 hover:bg-blue-500 text-white",
         purple: "bg-purple-600 border-purple-800 hover:bg-purple-500 text-white",
         green: "bg-emerald-600 border-emerald-800 hover:bg-emerald-500 text-white",
-        rose: "bg-rose-600 border-rose-800 hover:bg-rose-500 text-white"
+        rose: "bg-rose-600 border-rose-800 hover:bg-rose-500 text-white",
+        amber: "bg-amber-600 border-amber-800 hover:bg-amber-500 text-white"
     };
 
     return (
@@ -285,7 +335,8 @@ const ModeButton = ({ label, subLabel, color, icon, onClick }: { label: string, 
             onClick={onClick}
             className={clsx(
                 "flex flex-col items-center justify-center py-2 px-1.5 rounded-lg border-b-[4px] transition-all duration-150 active:border-b-0 active:translate-y-[4px] active:shadow-none touch-manipulation",
-                colorStyles[color]
+                colorStyles[color],
+                fullWidth && "w-full"
             )}
         >
             <span className="text-xs md:text-sm font-bold flex items-center gap-1 drop-shadow-sm">

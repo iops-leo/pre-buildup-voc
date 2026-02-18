@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { Vocabulary, Unit, Lesson } from '@/data/vocabulary';
 
-export type QuizMode = 'korean_to_english' | 'english_to_korean' | 'spelling' | 'speaking';
+export type QuizMode = 'korean_to_english' | 'english_to_korean' | 'spelling' | 'speaking' | 'writing';
 
 export interface QuizHistoryEntry {
     id: string;

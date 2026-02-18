@@ -10,6 +10,7 @@ export const ResultView = () => {
     const store = useQuizStore();
     const { retryQuiz, resetQuiz, quizHistory, level, xp } = store;
     const { playLevelUp, playClick } = useSound();
+    const { speak } = useTTS(); // Hook must be called before any conditional returns
     const [showCertificate, setShowCertificate] = useState(false);
 
     // The latest history entry is the current result
@@ -30,8 +31,6 @@ export const ResultView = () => {
 
     // If no result (shouldn't happen directly), fallback
     if (!result) return null;
-
-    const { speak } = useTTS();
 
     // Calculate level progress for visualization
     const currentLevelXp = xp - ((level - 1) * 1000);

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useQuizStore } from '@/store/useQuizStore';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowRight, CheckCircle, XCircle, Volume2, X, Mic, MicOff, Loader2, Zap } from 'lucide-react';
+import { ArrowRight, CheckCircle, XCircle, Volume2, X, Mic, MicOff, Loader2, Zap, Eye, EyeOff, PenTool, Check } from 'lucide-react';
 import clsx from 'clsx';
 import { useTTS } from '@/hooks/useTTS';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
@@ -40,6 +40,10 @@ export const QuizView = () => {
 
     const isTypingMode = store.mode === 'spelling' || (store.mode === 'korean_to_english' && !currentWord?.word.includes(' '));
     const isSpeakingMode = store.mode === 'speaking';
+    const isWritingMode = store.mode === 'writing';
+
+    // Writing mode state
+    const [showAnswer, setShowAnswer] = useState(false);
 
     const [options, setOptions] = useState<string[]>([]);
     const progress = ((store.currentQuestionIndex) / store.questions.length) * 100;
@@ -178,9 +182,23 @@ export const QuizView = () => {
             setSelectedOption(null);
             setIsAnswered(false);
             setIsCorrect(false);
+            setShowAnswer(false);
             resetTranscript();
         }
     }, [store, resetTranscript, playClick]);
+
+    // Writing mode handlers
+    const handleRevealAnswer = useCallback(() => {
+        playClick();
+        setShowAnswer(true);
+        if (ttsSupported) {
+            speak(currentWord.word);
+        }
+    }, [playClick, ttsSupported, speak, currentWord]);
+
+    const handleWritingResult = useCallback((correct: boolean) => {
+        processAnswer(correct);
+    }, []);
 
     const handleExit = useCallback(() => {
         playClick();
@@ -324,7 +342,94 @@ export const QuizView = () => {
 
                         {/* Input Area */}
                         <div className="w-full max-w-lg mx-auto flex flex-col items-center justify-center">
-                            {isSpeakingMode ? (
+                            {isWritingMode ? (
+                                <div className="space-y-6 w-full">
+                                    {/* Instruction */}
+                                    <div className="text-center space-y-2">
+                                        <div className="flex items-center justify-center gap-2 text-amber-400">
+                                            <PenTool size={20} />
+                                            <span className="font-bold text-sm uppercase tracking-wide">셀프 시험</span>
+                                        </div>
+                                        <p className="text-slate-400 text-sm">
+                                            노트에 영어 단어를 쓴 후, 정답을 확인하세요
+                                        </p>
+                                    </div>
+
+                                    {/* Answer Area */}
+                                    {!showAnswer ? (
+                                        <div className="space-y-4">
+                                            {/* Hidden answer placeholder */}
+                                            <div className="bg-slate-800/50 border-2 border-dashed border-slate-700 rounded-xl p-8 text-center">
+                                                <EyeOff size={48} className="mx-auto text-slate-600 mb-3" />
+                                                <p className="text-slate-500 text-sm">정답이 숨겨져 있습니다</p>
+                                            </div>
+
+                                            {/* Reveal button */}
+                                            <button
+                                                onClick={handleRevealAnswer}
+                                                className="w-full py-4 px-6 rounded-xl bg-amber-600 border-b-[4px] border-amber-800 text-white font-bold text-lg flex items-center justify-center gap-3 hover:bg-amber-500 active:border-b-0 active:translate-y-[4px] transition-all touch-manipulation"
+                                            >
+                                                <Eye size={24} />
+                                                정답 확인
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-4">
+                                            {/* Revealed answer */}
+                                            <div className="bg-slate-800 border-2 border-blue-500/50 rounded-xl p-6 text-center space-y-2">
+                                                <p className="text-slate-400 text-xs uppercase tracking-wide">정답</p>
+                                                <div className="flex items-center justify-center gap-3">
+                                                    <p className="text-3xl md:text-4xl font-black text-white">
+                                                        {cleanWordForDisplay(currentWord.word)}
+                                                    </p>
+                                                    {ttsSupported && (
+                                                        <button
+                                                            onClick={handleSpeak}
+                                                            className="p-2 rounded-full bg-slate-700 hover:bg-slate-600 text-slate-300 transition-colors"
+                                                        >
+                                                            <Volume2 size={20} />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                                {currentWord.definition && (
+                                                    <p className="text-slate-400 text-sm mt-2">{currentWord.definition}</p>
+                                                )}
+                                            </div>
+
+                                            {/* Self-grade buttons */}
+                                            <p className="text-slate-400 text-sm text-center">내 답이 맞았나요?</p>
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <button
+                                                    onClick={() => handleWritingResult(false)}
+                                                    disabled={isAnswered}
+                                                    className={clsx(
+                                                        "py-4 px-6 rounded-xl border-b-[4px] font-bold text-lg flex items-center justify-center gap-2 active:border-b-0 active:translate-y-[4px] transition-all touch-manipulation",
+                                                        isAnswered
+                                                            ? "bg-slate-700 border-slate-800 text-slate-500 cursor-not-allowed"
+                                                            : "bg-red-600 border-red-800 text-white hover:bg-red-500"
+                                                    )}
+                                                >
+                                                    <XCircle size={22} />
+                                                    틀렸어요
+                                                </button>
+                                                <button
+                                                    onClick={() => handleWritingResult(true)}
+                                                    disabled={isAnswered}
+                                                    className={clsx(
+                                                        "py-4 px-6 rounded-xl border-b-[4px] font-bold text-lg flex items-center justify-center gap-2 active:border-b-0 active:translate-y-[4px] transition-all touch-manipulation",
+                                                        isAnswered
+                                                            ? "bg-slate-700 border-slate-800 text-slate-500 cursor-not-allowed"
+                                                            : "bg-green-600 border-green-800 text-white hover:bg-green-500"
+                                                    )}
+                                                >
+                                                    <CheckCircle size={22} />
+                                                    맞았어요
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            ) : isSpeakingMode ? (
                                 <div className="space-y-4 md:space-y-6 w-full">
                                     {/* Mic Button */}
                                     <button
