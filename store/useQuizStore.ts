@@ -252,6 +252,111 @@ export const BADGES: Badge[] = [
         description: '10,000 XP 달성!',
         condition: (state) => state.xp >= 10000
     },
+
+    // 재미/활동 관련 (New)
+    {
+        id: 'scholar',
+        icon: '📖',
+        name: '하루 3번 공부',
+        description: '하루에 퀴즈를 3번 완료했어요!',
+        condition: (state, history) => {
+            const today = new Date(history.date).toDateString();
+            const todayCount = state.quizHistory.filter(h => new Date(h.date).toDateString() === today).length;
+            return todayCount >= 3;
+        }
+    },
+    {
+        id: 'enthusiast',
+        icon: '📚',
+        name: '하루 5번 공부',
+        description: '하루에 퀴즈를 5번 완료했어요!',
+        condition: (state, history) => {
+            const today = new Date(history.date).toDateString();
+            const todayCount = state.quizHistory.filter(h => new Date(h.date).toDateString() === today).length;
+            return todayCount >= 5;
+        }
+    },
+    {
+        id: 'turtle',
+        icon: '🐢',
+        name: '천천히 꼼꼼하게',
+        description: '3분 이상 걸려서 100점을 맞았어요!',
+        condition: (state, history) => history.percentage === 100 && history.durationSeconds >= 180
+    },
+    {
+        id: 'lightning_fast',
+        icon: '⚡',
+        name: '번개처럼 빠르게',
+        description: '20초 안에 100점을 맞았어요!',
+        condition: (state, history) => history.percentage === 100 && history.durationSeconds <= 20
+    },
+
+    // 시간/습관 관련 (New)
+    {
+        id: 'early_bird',
+        icon: '🌅',
+        name: '얼리 버드',
+        description: '오전 5시 ~ 9시 사이에 학습했어요!',
+        condition: (state, history) => {
+            const hour = new Date(history.date).getHours();
+            return hour >= 5 && hour < 9;
+        }
+    },
+    {
+        id: 'night_owl',
+        icon: '🦉',
+        name: '올빼미족',
+        description: '밤 10시 ~ 새벽 2시 사이에 학습했어요!',
+        condition: (state, history) => {
+            const hour = new Date(history.date).getHours();
+            return hour >= 22 || hour < 2;
+        }
+    },
+    {
+        id: 'weekend_warrior',
+        icon: '📅',
+        name: '주말 전사',
+        description: '주말(토/일)에 학습했어요!',
+        condition: (state, history) => {
+            const day = new Date(history.date).getDay();
+            return day === 0 || day === 6;
+        }
+    },
+    {
+        id: 'speed_demon',
+        icon: '⚡',
+        name: '스피드 데몬',
+        description: '1분 안에 100점을 맞았어요!',
+        condition: (state, history) => history.percentage === 100 && history.durationSeconds <= 60
+    },
+    {
+        id: 'focus_master',
+        icon: '🧘',
+        name: '집중의 신',
+        description: '한 번의 퀴즈에 15분 이상 투자했어요!',
+        condition: (state, history) => history.durationSeconds >= 900
+    },
+    {
+        id: 'writing_perfect',
+        icon: '✍️',
+        name: '받아쓰기 장인',
+        description: '쓰기 모드에서 100점을 맞았어요!',
+        condition: (state, history) => history.mode === 'writing' && history.percentage === 100
+    },
+    {
+        id: 'comeback_kid',
+        icon: '👋',
+        name: '돌아온 탕아',
+        description: '3일 만에 다시 돌아왔어요!',
+        condition: (state) => {
+            if (state.quizHistory.length < 2) return false;
+            const current = new Date(state.quizHistory[0].date);
+            const prev = new Date(state.quizHistory[1].date);
+            const diffMs = current.getTime() - prev.getTime();
+            const days = diffMs / (1000 * 60 * 60 * 24);
+            return days >= 3;
+        }
+    },
 ];
 
 interface QuizState {

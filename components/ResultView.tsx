@@ -5,6 +5,7 @@ import { Home, RefreshCw, Trophy, Clock, Target, TrendingUp, Award, Share2, Volu
 import clsx from 'clsx';
 import { useTTS } from '@/hooks/useTTS';
 import { useSound } from '@/hooks/useSound';
+import confetti from 'canvas-confetti';
 
 export const ResultView = () => {
     const store = useQuizStore();
@@ -24,7 +25,23 @@ export const ResultView = () => {
                 setTimeout(() => playLevelUp(), 500);
             }
             if (result.percentage === 100) {
-                setTimeout(() => setShowCertificate(true), 1500);
+                setTimeout(() => {
+                    setShowCertificate(true);
+                    confetti({
+                        particleCount: 100,
+                        spread: 70,
+                        origin: { y: 0.6 },
+                        colors: ['#FCD34D', '#3B82F6', '#EF4444', '#10B981', '#8B5CF6']
+                    });
+                }, 1500);
+            } else if (result.percentage >= 80) {
+                confetti({
+                    particleCount: 50,
+                    spread: 50,
+                    origin: { y: 0.6 },
+                    colors: ['#FCD34D', '#3B82F6'],
+                    disableForReducedMotion: true
+                });
             }
         }
     }, [result, playLevelUp]);
