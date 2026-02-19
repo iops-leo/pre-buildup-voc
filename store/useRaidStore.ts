@@ -173,7 +173,14 @@ export const useRaidStore = create<RaidState>((set, get) => ({
     const code = generateRoomCode();
     const playerId = generatePlayerId();
     const monster = getMonsterById(monsterId);
-    if (!monster) return '';
+
+    console.log('[RaidStore] Creating room:', { code, playerId, monsterId });
+    console.log('[RaidStore] Supabase configured:', isSupabaseConfigured());
+
+    if (!monster) {
+      console.error('[RaidStore] Monster not found:', monsterId);
+      return '';
+    }
 
     const hostPlayer: Player = {
       id: playerId,
@@ -215,9 +222,10 @@ export const useRaidStore = create<RaidState>((set, get) => ({
       });
 
       if (error) {
-        console.error('Failed to create room:', error);
+        console.error('[RaidStore] Failed to create room:', error.message, error.details, error.hint);
         // Fall back to local only
       } else {
+        console.log('[RaidStore] Room created successfully in Supabase:', code);
         // Subscribe to realtime updates
         get().subscribeToRoom(code);
       }
@@ -229,17 +237,25 @@ export const useRaidStore = create<RaidState>((set, get) => ({
 
   joinRoom: async (code: string, playerName: string) => {
     const playerId = generatePlayerId();
+    const normalizedCode = code.toUpperCase().trim();
+
+    console.log('[RaidStore] Attempting to join room:', normalizedCode);
+    console.log('[RaidStore] Supabase configured:', isSupabaseConfigured());
 
     // If Supabase is configured, try to join from database
     if (isSupabaseConfigured()) {
+      console.log('[RaidStore] Querying Supabase for room code:', normalizedCode);
+
       const { data: existingRoom, error: fetchError } = await db()
         .from('raid_rooms')
         .select('*')
-        .eq('code', code.toUpperCase())
+        .eq('code', normalizedCode)
         .single();
 
+      console.log('[RaidStore] Query result:', { existingRoom, fetchError });
+
       if (fetchError || !existingRoom) {
-        console.error('Room not found:', fetchError);
+        console.error('[RaidStore] Room not found:', fetchError?.message, fetchError?.details, fetchError?.hint);
         return false;
       }
 
@@ -272,20 +288,22 @@ export const useRaidStore = create<RaidState>((set, get) => ({
       }
 
       // Subscribe to realtime updates
-      get().subscribeToRoom(code.toUpperCase());
+      get().subscribeToRoom(normalizedCode);
 
       const room = dbRowToRoom({
         ...existingRoom,
         players: [...existingRoom.players, guestPlayer],
       });
 
+      console.log('[RaidStore] Successfully joined room:', room.code);
       set({ room, myPlayerId: playerId, phase: 'waiting' });
       return true;
     }
 
     // Local fallback (single device testing)
+    console.log('[RaidStore] Using local fallback (no Supabase)');
     const { room } = get();
-    if (!room || room.code !== code.toUpperCase()) return false;
+    if (!room || room.code !== normalizedCode) return false;
     if (room.players.length >= 2) return false;
 
     const guestPlayer: Player = {
