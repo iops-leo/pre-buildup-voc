@@ -1,0 +1,583 @@
+import { create } from 'zustand';
+import { getMonsterById } from '@/data/monsters';
+import { Subject, Difficulty, getRandomQuestion } from '@/data/questions';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import type { RaidRoomRow, RaidPlayer, RoomPhase } from '@/types/supabase';
+import type { RealtimeChannel } from '@supabase/supabase-js';
+
+// Helper to safely use supabase
+const db = () => {
+  if (!supabase) throw new Error('Supabase not configured');
+  return supabase;
+};
+
+export type { RoomPhase };
+export type PlayerRole = 'host' | 'guest';
+
+export interface PlayerConfig {
+  subject: Subject;
+  category: string;
+  difficulty: Difficulty;
+  ready: boolean;
+}
+
+export interface Player {
+  id: string;
+  name: string;
+  role: PlayerRole;
+  config: PlayerConfig | null;
+  damageDealt: number;
+  answersCorrect: number;
+  answersWrong: number;
+  isConnected: boolean;
+}
+
+export interface DamageEvent {
+  playerId: string;
+  damage: number;
+  timestamp: number;
+  isCombo: boolean;
+}
+
+export interface RaidRoom {
+  code: string;
+  monsterId: string;
+  phase: RoomPhase;
+  players: Player[];
+  monsterCurrentHp: number;
+  monsterMaxHp: number;
+  damageLog: DamageEvent[];
+  startedAt: number | null;
+  endedAt: number | null;
+  isVictory: boolean;
+}
+
+export interface CurrentQuestion {
+  q: string;
+  a: string;
+  options?: string[];
+  timeLimit: number;
+  subject: Subject;
+  category: string;
+  difficulty: Difficulty;
+}
+
+interface RaidState {
+  // Connection state
+  isOnline: boolean;
+  channel: RealtimeChannel | null;
+
+  // Room state
+  room: RaidRoom | null;
+  myPlayerId: string | null;
+  phase: RoomPhase | 'lobby';
+
+  // Battle state
+  currentQuestion: CurrentQuestion | null;
+  answerResult: 'correct' | 'wrong' | null;
+  lastDamage: number | null;
+  comboCount: number;
+  monsterShaking: boolean;
+  questionStartedAt: number | null;
+
+  // Actions
+  createRoom: (playerName: string, monsterId: string) => Promise<string>;
+  joinRoom: (code: string, playerName: string) => Promise<boolean>;
+  setPlayerConfig: (config: PlayerConfig) => Promise<void>;
+  setPlayerReady: (ready: boolean) => Promise<void>;
+  startBattle: () => Promise<void>;
+  loadNextQuestion: () => void;
+  submitAnswer: (answer: string) => Promise<void>;
+  resetRaid: () => void;
+  setMonsterShaking: (v: boolean) => void;
+  clearAnswerResult: () => void;
+  subscribeToRoom: (code: string) => void;
+  unsubscribeFromRoom: () => void;
+}
+
+function generateRoomCode(): string {
+  return Math.random().toString(36).substring(2, 8).toUpperCase();
+}
+
+function generatePlayerId(): string {
+  return `player_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+}
+
+// Convert DB row to local RaidRoom format
+function dbRowToRoom(row: RaidRoomRow): RaidRoom {
+  return {
+    code: row.code,
+    monsterId: row.monster_id,
+    phase: row.phase,
+    players: row.players.map((p) => ({
+      id: p.id,
+      name: p.name,
+      role: p.isHost ? 'host' : 'guest',
+      config: p.config ? {
+        subject: p.config.subject as Subject,
+        category: p.config.category,
+        difficulty: p.config.difficulty as Difficulty,
+        ready: p.isReady,
+      } : null,
+      damageDealt: p.damageDealt,
+      answersCorrect: p.correctAnswers,
+      answersWrong: p.totalAnswers - p.correctAnswers,
+      isConnected: true,
+    })),
+    monsterCurrentHp: row.monster_hp,
+    monsterMaxHp: row.monster_max_hp,
+    damageLog: row.damage_log.map((d) => ({
+      playerId: d.playerId,
+      damage: d.damage,
+      timestamp: d.timestamp,
+      isCombo: d.damage > 15,
+    })),
+    startedAt: row.start_time,
+    endedAt: null,
+    isVictory: row.monster_hp <= 0,
+  };
+}
+
+// Convert local Player to DB RaidPlayer format
+function playerToDbFormat(player: Player): RaidPlayer {
+  return {
+    id: player.id,
+    name: player.name,
+    isHost: player.role === 'host',
+    isReady: player.config?.ready ?? false,
+    config: player.config ? {
+      subject: player.config.subject,
+      category: player.config.category,
+      difficulty: player.config.difficulty,
+    } : null,
+    damageDealt: player.damageDealt,
+    correctAnswers: player.answersCorrect,
+    totalAnswers: player.answersCorrect + player.answersWrong,
+  };
+}
+
+export const useRaidStore = create<RaidState>((set, get) => ({
+  isOnline: isSupabaseConfigured(),
+  channel: null,
+  room: null,
+  myPlayerId: null,
+  phase: 'lobby',
+  currentQuestion: null,
+  answerResult: null,
+  lastDamage: null,
+  comboCount: 0,
+  monsterShaking: false,
+  questionStartedAt: null,
+
+  createRoom: async (playerName: string, monsterId: string) => {
+    const code = generateRoomCode();
+    const playerId = generatePlayerId();
+    const monster = getMonsterById(monsterId);
+    if (!monster) return '';
+
+    const hostPlayer: Player = {
+      id: playerId,
+      name: playerName,
+      role: 'host',
+      config: null,
+      damageDealt: 0,
+      answersCorrect: 0,
+      answersWrong: 0,
+      isConnected: true,
+    };
+
+    const room: RaidRoom = {
+      code,
+      monsterId,
+      phase: 'waiting',
+      players: [hostPlayer],
+      monsterCurrentHp: monster.hp,
+      monsterMaxHp: monster.hp,
+      damageLog: [],
+      startedAt: null,
+      endedAt: null,
+      isVictory: false,
+    };
+
+    // If Supabase is configured, save to database
+    if (isSupabaseConfigured()) {
+      const { error } = await db().from('raid_rooms').insert({
+        code,
+        host_id: playerId,
+        monster_id: monsterId,
+        phase: 'waiting',
+        monster_hp: monster.hp,
+        monster_max_hp: monster.hp,
+        combo: 0,
+        start_time: null,
+        players: [playerToDbFormat(hostPlayer)],
+        damage_log: [],
+      });
+
+      if (error) {
+        console.error('Failed to create room:', error);
+        // Fall back to local only
+      } else {
+        // Subscribe to realtime updates
+        get().subscribeToRoom(code);
+      }
+    }
+
+    set({ room, myPlayerId: playerId, phase: 'waiting' });
+    return code;
+  },
+
+  joinRoom: async (code: string, playerName: string) => {
+    const playerId = generatePlayerId();
+
+    // If Supabase is configured, try to join from database
+    if (isSupabaseConfigured()) {
+      const { data: existingRoom, error: fetchError } = await db()
+        .from('raid_rooms')
+        .select('*')
+        .eq('code', code.toUpperCase())
+        .single();
+
+      if (fetchError || !existingRoom) {
+        console.error('Room not found:', fetchError);
+        return false;
+      }
+
+      if (existingRoom.players.length >= 2) {
+        console.error('Room is full');
+        return false;
+      }
+
+      const guestPlayer: RaidPlayer = {
+        id: playerId,
+        name: playerName,
+        isHost: false,
+        isReady: false,
+        config: null,
+        damageDealt: 0,
+        correctAnswers: 0,
+        totalAnswers: 0,
+      };
+
+      const { error: updateError } = await db()
+        .from('raid_rooms')
+        .update({
+          players: [...existingRoom.players, guestPlayer],
+        })
+        .eq('code', code.toUpperCase());
+
+      if (updateError) {
+        console.error('Failed to join room:', updateError);
+        return false;
+      }
+
+      // Subscribe to realtime updates
+      get().subscribeToRoom(code.toUpperCase());
+
+      const room = dbRowToRoom({
+        ...existingRoom,
+        players: [...existingRoom.players, guestPlayer],
+      });
+
+      set({ room, myPlayerId: playerId, phase: 'waiting' });
+      return true;
+    }
+
+    // Local fallback (single device testing)
+    const { room } = get();
+    if (!room || room.code !== code.toUpperCase()) return false;
+    if (room.players.length >= 2) return false;
+
+    const guestPlayer: Player = {
+      id: playerId,
+      name: playerName,
+      role: 'guest',
+      config: null,
+      damageDealt: 0,
+      answersCorrect: 0,
+      answersWrong: 0,
+      isConnected: true,
+    };
+
+    set((state) => ({
+      room: state.room
+        ? { ...state.room, players: [...state.room.players, guestPlayer] }
+        : null,
+      myPlayerId: playerId,
+      phase: 'waiting',
+    }));
+    return true;
+  },
+
+  setPlayerConfig: async (config: PlayerConfig) => {
+    const { room, myPlayerId } = get();
+    if (!room || !myPlayerId) return;
+
+    const updatedPlayers = room.players.map((p) =>
+      p.id === myPlayerId ? { ...p, config } : p
+    );
+
+    // Update Supabase if configured
+    if (isSupabaseConfigured()) {
+      await db()
+        .from('raid_rooms')
+        .update({
+          players: updatedPlayers.map(playerToDbFormat),
+        })
+        .eq('code', room.code);
+    }
+
+    set((state) => ({
+      room: state.room ? { ...state.room, players: updatedPlayers } : null,
+    }));
+  },
+
+  setPlayerReady: async (ready: boolean) => {
+    const { room, myPlayerId } = get();
+    if (!room || !myPlayerId) return;
+
+    const updatedPlayers = room.players.map((p) =>
+      p.id === myPlayerId
+        ? { ...p, config: p.config ? { ...p.config, ready } : null }
+        : p
+    );
+
+    // Update Supabase if configured
+    if (isSupabaseConfigured()) {
+      await db()
+        .from('raid_rooms')
+        .update({
+          players: updatedPlayers.map(playerToDbFormat),
+        })
+        .eq('code', room.code);
+    }
+
+    set((state) => ({
+      room: state.room ? { ...state.room, players: updatedPlayers } : null,
+    }));
+  },
+
+  startBattle: async () => {
+    const { room } = get();
+    if (!room) return;
+
+    const startTime = Date.now();
+
+    // Update Supabase if configured
+    if (isSupabaseConfigured()) {
+      await db()
+        .from('raid_rooms')
+        .update({
+          phase: 'battle',
+          start_time: startTime,
+        })
+        .eq('code', room.code);
+    }
+
+    set((state) => ({
+      room: state.room
+        ? { ...state.room, phase: 'battle', startedAt: startTime }
+        : null,
+      phase: 'battle',
+    }));
+    get().loadNextQuestion();
+  },
+
+  loadNextQuestion: () => {
+    const { room, myPlayerId } = get();
+    if (!room || !myPlayerId) return;
+
+    const me = room.players.find((p) => p.id === myPlayerId);
+    if (!me?.config) return;
+
+    const { subject, category, difficulty } = me.config;
+    const q = getRandomQuestion(subject, category, difficulty);
+    if (!q) return;
+
+    set({
+      currentQuestion: {
+        ...q,
+        timeLimit: difficulty === 'easy' ? 15 : difficulty === 'normal' ? 10 : 7,
+        subject,
+        category,
+        difficulty,
+      },
+      answerResult: null,
+      questionStartedAt: Date.now(),
+    });
+  },
+
+  submitAnswer: async (answer: string) => {
+    const { room, currentQuestion, myPlayerId, comboCount } = get();
+    if (!room || !currentQuestion || !myPlayerId) return;
+
+    const isCorrect =
+      answer.trim().toLowerCase() === currentQuestion.a.trim().toLowerCase();
+    const me = room.players.find((p) => p.id === myPlayerId);
+    const baseDamage = me?.config
+      ? ({ easy: 10, normal: 15, hard: 25 } as Record<Difficulty, number>)[
+          me.config.difficulty
+        ]
+      : 10;
+
+    const newCombo = isCorrect ? comboCount + 1 : 0;
+    const comboMultiplier = newCombo >= 5 ? 2.0 : newCombo >= 3 ? 1.5 : 1.0;
+    const damage = isCorrect ? Math.round(baseDamage * comboMultiplier) : 0;
+
+    if (isCorrect && room.phase === 'battle') {
+      const newHp = Math.max(0, room.monsterCurrentHp - damage);
+      const isVictory = newHp === 0;
+
+      const damageEvent: DamageEvent = {
+        playerId: myPlayerId,
+        damage,
+        timestamp: Date.now(),
+        isCombo: newCombo >= 3,
+      };
+
+      const updatedPlayers = room.players.map((p) =>
+        p.id === myPlayerId
+          ? {
+              ...p,
+              damageDealt: p.damageDealt + damage,
+              answersCorrect: p.answersCorrect + 1,
+            }
+          : p
+      );
+
+      // Update Supabase if configured
+      if (isSupabaseConfigured()) {
+        await db()
+          .from('raid_rooms')
+          .update({
+            monster_hp: newHp,
+            phase: isVictory ? 'result' : room.phase,
+            combo: newCombo,
+            players: updatedPlayers.map(playerToDbFormat),
+            damage_log: [...room.damageLog, {
+              playerId: damageEvent.playerId,
+              damage: damageEvent.damage,
+              timestamp: damageEvent.timestamp,
+            }],
+          })
+          .eq('code', room.code);
+      }
+
+      set((state) => ({
+        room: state.room
+          ? {
+              ...state.room,
+              monsterCurrentHp: newHp,
+              phase: isVictory ? 'result' : state.room.phase,
+              isVictory,
+              endedAt: isVictory ? Date.now() : state.room.endedAt,
+              damageLog: [...state.room.damageLog, damageEvent],
+              players: updatedPlayers,
+            }
+          : null,
+        answerResult: 'correct',
+        lastDamage: damage,
+        comboCount: newCombo,
+        monsterShaking: true,
+        phase: isVictory ? 'result' : state.phase,
+      }));
+    } else {
+      const updatedPlayers = room.players.map((p) =>
+        p.id === myPlayerId
+          ? { ...p, answersWrong: p.answersWrong + 1 }
+          : p
+      );
+
+      // Update Supabase if configured
+      if (isSupabaseConfigured()) {
+        await db()
+          .from('raid_rooms')
+          .update({
+            combo: 0,
+            players: updatedPlayers.map(playerToDbFormat),
+          })
+          .eq('code', room.code);
+      }
+
+      set((state) => ({
+        room: state.room
+          ? {
+              ...state.room,
+              players: updatedPlayers,
+            }
+          : null,
+        answerResult: 'wrong',
+        lastDamage: 0,
+        comboCount: 0,
+      }));
+    }
+  },
+
+  subscribeToRoom: (code: string) => {
+    if (!isSupabaseConfigured()) return;
+
+    // Unsubscribe from previous channel
+    get().unsubscribeFromRoom();
+
+    const channel = db()
+      .channel(`raid_room_${code}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'raid_rooms',
+          filter: `code=eq.${code}`,
+        },
+        (payload) => {
+          const { myPlayerId } = get();
+          if (payload.eventType === 'UPDATE' && payload.new) {
+            const newRow = payload.new as RaidRoomRow;
+            const room = dbRowToRoom(newRow);
+
+            set((state) => ({
+              room,
+              phase: room.phase,
+              // Don't override local battle state from other player's updates
+              ...(room.phase === 'battle' && state.currentQuestion
+                ? {}
+                : {}),
+            }));
+          } else if (payload.eventType === 'DELETE') {
+            get().resetRaid();
+          }
+        }
+      )
+      .subscribe();
+
+    set({ channel });
+  },
+
+  unsubscribeFromRoom: () => {
+    const { channel } = get();
+    if (channel && supabase) {
+      supabase.removeChannel(channel);
+      set({ channel: null });
+    }
+  },
+
+  setMonsterShaking: (v: boolean) => set({ monsterShaking: v }),
+
+  clearAnswerResult: () => set({ answerResult: null, lastDamage: null }),
+
+  resetRaid: () => {
+    get().unsubscribeFromRoom();
+    set({
+      room: null,
+      myPlayerId: null,
+      phase: 'lobby',
+      currentQuestion: null,
+      answerResult: null,
+      lastDamage: null,
+      comboCount: 0,
+      monsterShaking: false,
+      questionStartedAt: null,
+      channel: null,
+    });
+  },
+}));

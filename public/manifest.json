@@ -1,13 +1,22 @@
 {
   "name": "Pre-Build Up Voca",
   "short_name": "BuildUp Voca",
-  "description": "한-영 단어 학습 앱 with 게이미피케이션",
+  "description": "한-영 단어 학습 앱 with 게이미피케이션 & 몬스터 레이드",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#020617",
   "theme_color": "#020617",
   "orientation": "portrait",
   "scope": "/",
+  "shortcuts": [
+    {
+      "name": "몬스터 레이드",
+      "short_name": "레이드",
+      "description": "친구와 함께 몬스터 레이드!",
+      "url": "/raid",
+      "icons": [{ "src": "/icons/icon-96x96.png", "sizes": "96x96" }]
+    }
+  ],
   "icons": [
     {
       "src": "/icons/icon-72x72.png",
