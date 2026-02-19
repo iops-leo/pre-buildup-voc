@@ -54,7 +54,10 @@ export const ResultView = () => {
 
     // AI quiz feedback
     useEffect(() => {
-        if (!result || result.totalQuestions - result.correctAnswers <= 0) return;
+        const wrongCount = result?.totalQuestions - result?.correctAnswers;
+        if (!result || wrongCount <= 0) return;
+        if (quizFeedback) return; // Already fetched
+
         setFeedbackLoading(true);
         ask('quiz_feedback', {
             percentage: result.percentage,
@@ -66,9 +69,10 @@ export const ResultView = () => {
         }).then(content => {
             if (content) setQuizFeedback(content);
             setFeedbackLoading(false);
+        }).catch(() => {
+            setFeedbackLoading(false);
         });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [result, ask, store.wrongAnswers, quizFeedback]);
 
     // If no result (shouldn't happen directly), fallback
     if (!result) return null;

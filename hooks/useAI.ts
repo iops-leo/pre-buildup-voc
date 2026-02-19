@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback } from 'react';
 
 export type AIRequestType = 'explain_wrong' | 'example_sentence' | 'quiz_feedback';
 
@@ -30,7 +30,6 @@ function getCacheKey(type: AIRequestType, context: AIContext): string {
 export function useAI() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const abortRef = useRef<AbortController | null>(null);
 
   const ask = useCallback(async (type: AIRequestType, context: AIContext): Promise<string | null> => {
     const cacheKey = getCacheKey(type, context);
@@ -41,12 +40,6 @@ export function useAI() {
       return cached.data;
     }
 
-    // Abort previous request
-    if (abortRef.current) {
-      abortRef.current.abort();
-    }
-    abortRef.current = new AbortController();
-
     setIsLoading(true);
     setError(null);
 
@@ -55,7 +48,6 @@ export function useAI() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ type, context }),
-        signal: abortRef.current.signal,
       });
 
       if (!res.ok) {
@@ -73,9 +65,6 @@ export function useAI() {
       setIsLoading(false);
       return content;
     } catch (err: unknown) {
-      if (err instanceof Error && err.name === 'AbortError') {
-        return null;
-      }
       const message = err instanceof Error ? err.message : 'AI 요청에 실패했어요';
       setError(message);
       setIsLoading(false);
