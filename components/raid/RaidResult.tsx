@@ -213,7 +213,7 @@ export function RaidResult() {
                   <span className="text-lg">{player.role === 'host' ? '👑' : '🎮'}</span>
                   <span className="font-bold text-white text-sm">{player.name}</span>
                   {isCurrentPlayer && <span className="text-xs text-blue-400">(나)</span>}
-                  {i === 0 && player.damageDealt > (room.players[1]?.damageDealt ?? 0) && (
+                  {room.players.length > 1 && i === 0 && player.damageDealt > (room.players[1]?.damageDealt ?? 0) && (
                     <span className="ml-auto text-xs bg-yellow-900/50 text-yellow-400 border border-yellow-800 px-1.5 py-0.5 rounded-full">MVP</span>
                   )}
                 </div>

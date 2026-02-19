@@ -16,6 +16,7 @@ const subjectColors: Record<Subject, string> = {
   korean: 'border-rose-600 bg-rose-950/50',
   social: 'border-green-600 bg-green-950/50',
   science: 'border-purple-600 bg-purple-950/50',
+  english: 'border-emerald-600 bg-emerald-950/50',
 };
 
 const difficultyGlows: Record<Difficulty, string> = {

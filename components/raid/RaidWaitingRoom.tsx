@@ -11,15 +11,18 @@ import {
   difficultyInfo,
   allCategories,
 } from '@/data/questions';
-import { Copy, Check, Users, Swords } from 'lucide-react';
+import { VOCABULARY_DATA } from '@/data/vocabulary';
+import { Copy, Check, Users, Swords, User } from 'lucide-react';
 
 export function RaidWaitingRoom() {
-  const { room, myPlayerId, setPlayerConfig, startBattle } = useRaidStore();
+  const { room, myPlayerId, soloMode, setPlayerConfig, startBattle } = useRaidStore();
   const [copied, setCopied] = useState(false);
 
   const [selectedSubject, setSelectedSubject] = useState<Subject>('math');
   const [selectedCategory, setSelectedCategory] = useState<string>('addition');
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>('easy');
+  const [selectedVocabUnit, setSelectedVocabUnit] = useState<number>(1);
+  const [selectedVocabLesson, setSelectedVocabLesson] = useState<number>(1);
   const [configured, setConfigured] = useState(false);
 
   if (!room) return null;
@@ -28,7 +31,9 @@ export function RaidWaitingRoom() {
   const me = room.players.find((p) => p.id === myPlayerId);
   const partner = room.players.find((p) => p.id !== myPlayerId);
   const isHost = me?.role === 'host';
-  const allReady = room.players.length === 2 && room.players.every((p) => p.config?.ready);
+  const allReady = soloMode
+    ? room.players.length >= 1 && room.players.every((p) => p.config?.ready)
+    : room.players.length === 2 && room.players.every((p) => p.config?.ready);
   const categories = allCategories[selectedSubject] as unknown as Record<string, unknown>;
   const categoryKeys = Object.keys(categories);
 
@@ -40,17 +45,27 @@ export function RaidWaitingRoom() {
 
   function handleCategoryChange(subj: Subject) {
     setSelectedSubject(subj);
-    const cats = Object.keys(allCategories[subj] as Record<string, unknown>);
-    setSelectedCategory(cats[0] || '');
+    if (subj === 'english') {
+      setSelectedCategory('');
+      setSelectedVocabUnit(1);
+      setSelectedVocabLesson(1);
+    } else {
+      const cats = Object.keys(allCategories[subj] as Record<string, unknown>);
+      setSelectedCategory(cats[0] || '');
+    }
     setConfigured(false);
   }
 
   async function handleConfirmConfig() {
     const config: PlayerConfig = {
       subject: selectedSubject,
-      category: selectedCategory,
+      category: selectedSubject === 'english' ? '' : selectedCategory,
       difficulty: selectedDifficulty,
       ready: true,
+      ...(selectedSubject === 'english' && {
+        vocabUnit: selectedVocabUnit,
+        vocabLesson: selectedVocabLesson,
+      }),
     };
     await setPlayerConfig(config);
     setConfigured(true);
@@ -87,6 +102,7 @@ export function RaidWaitingRoom() {
       element: '원소',
       humanBody: '인체',
     },
+    english: {},
   };
 
   return (
@@ -99,20 +115,30 @@ export function RaidWaitingRoom() {
           className="rounded-2xl bg-slate-900 border border-slate-800 p-4 flex items-center justify-between"
         >
           <div>
-            <div className="text-xs text-slate-500 mb-0.5">방 코드</div>
-            <div className="text-3xl font-black tracking-widest text-white font-mono">{room.code}</div>
+            <div className="text-xs text-slate-500 mb-0.5">
+              {soloMode ? '모드' : '방 코드'}
+            </div>
+            {soloMode ? (
+              <div className="text-2xl font-black text-emerald-400 flex items-center gap-2">
+                🗡️ 솔로 모드
+              </div>
+            ) : (
+              <div className="text-3xl font-black tracking-widest text-white font-mono">{room.code}</div>
+            )}
           </div>
           <div className="flex flex-col items-end gap-2">
-            <button
-              onClick={handleCopyCode}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors text-sm"
-            >
-              {copied ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
-              {copied ? '복사됨!' : '코드 복사'}
-            </button>
+            {!soloMode && (
+              <button
+                onClick={handleCopyCode}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors text-sm"
+              >
+                {copied ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
+                {copied ? '복사됨!' : '코드 복사'}
+              </button>
+            )}
             <div className="flex items-center gap-1 text-xs text-slate-500">
-              <Users size={12} />
-              <span>{room.players.length} / 2명</span>
+              {soloMode ? <User size={12} /> : <Users size={12} />}
+              <span>{soloMode ? '1명 (솔로)' : `${room.players.length} / 2명`}</span>
             </div>
           </div>
         </motion.div>
@@ -142,8 +168,8 @@ export function RaidWaitingRoom() {
         )}
 
         {/* Players status */}
-        <div className="grid grid-cols-2 gap-3">
-          {[me, partner].map((player, i) => (
+        <div className={`grid ${soloMode ? 'grid-cols-1' : 'grid-cols-2'} gap-3`}>
+          {(soloMode ? [me] : [me, partner]).map((player, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 10 }}
@@ -209,25 +235,71 @@ export function RaidWaitingRoom() {
               </div>
             </div>
 
-            {/* Category */}
-            <div>
-              <label className="text-xs text-slate-400 font-medium block mb-2">카테고리</label>
-              <div className="grid grid-cols-2 gap-2">
-                {categoryKeys.map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => setSelectedCategory(cat)}
-                    className={`px-3 py-2 rounded-xl border text-sm font-medium transition-all ${
-                      selectedCategory === cat
-                        ? 'border-purple-500 bg-purple-900/40 text-white'
-                        : 'border-slate-700 bg-slate-800 text-slate-400 hover:border-slate-600'
-                    }`}
-                  >
-                    {categoryLabels[selectedSubject]?.[cat] ?? cat}
-                  </button>
-                ))}
+            {/* Category or Unit/Lesson for english */}
+            {selectedSubject === 'english' ? (
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs text-slate-400 font-medium block mb-2">Unit 선택</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {VOCABULARY_DATA.units.map((unit) => (
+                      <button
+                        key={unit.unit}
+                        onClick={() => {
+                          setSelectedVocabUnit(unit.unit);
+                          setSelectedVocabLesson(unit.lessons[0]?.lesson ?? 1);
+                        }}
+                        className={`px-3 py-2.5 rounded-xl border text-sm font-bold transition-all ${
+                          selectedVocabUnit === unit.unit
+                            ? 'border-emerald-500 bg-emerald-900/40 text-white'
+                            : 'border-slate-700 bg-slate-800 text-slate-400 hover:border-slate-600'
+                        }`}
+                      >
+                        Unit {unit.unit}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs text-slate-400 font-medium block mb-2">Lesson 선택</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {VOCABULARY_DATA.units
+                      .find((u) => u.unit === selectedVocabUnit)
+                      ?.lessons.map((lesson) => (
+                        <button
+                          key={lesson.lesson}
+                          onClick={() => setSelectedVocabLesson(lesson.lesson)}
+                          className={`px-3 py-2 rounded-xl border text-sm font-medium transition-all ${
+                            selectedVocabLesson === lesson.lesson
+                              ? 'border-emerald-500 bg-emerald-900/40 text-white'
+                              : 'border-slate-700 bg-slate-800 text-slate-400 hover:border-slate-600'
+                          }`}
+                        >
+                          L{lesson.lesson}
+                        </button>
+                      ))}
+                  </div>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div>
+                <label className="text-xs text-slate-400 font-medium block mb-2">카테고리</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {categoryKeys.map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => setSelectedCategory(cat)}
+                      className={`px-3 py-2 rounded-xl border text-sm font-medium transition-all ${
+                        selectedCategory === cat
+                          ? 'border-purple-500 bg-purple-900/40 text-white'
+                          : 'border-slate-700 bg-slate-800 text-slate-400 hover:border-slate-600'
+                      }`}
+                    >
+                      {categoryLabels[selectedSubject]?.[cat] ?? cat}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Difficulty */}
             <div>
@@ -269,7 +341,11 @@ export function RaidWaitingRoom() {
             <div className="text-3xl mb-2">✅</div>
             <div className="text-green-300 font-black text-lg">준비 완료!</div>
             <div className="text-green-400/70 text-sm mt-1">
-              {subjectInfo[selectedSubject].name} / {categoryLabels[selectedSubject]?.[selectedCategory] ?? selectedCategory} / {difficultyInfo[selectedDifficulty].name}
+              {subjectInfo[selectedSubject].name}
+              {selectedSubject === 'english'
+                ? ` / Unit ${selectedVocabUnit} - Lesson ${selectedVocabLesson}`
+                : ` / ${categoryLabels[selectedSubject]?.[selectedCategory] ?? selectedCategory}`}
+              {' / '}{difficultyInfo[selectedDifficulty].name}
             </div>
             <button
               onClick={() => setConfigured(false)}
@@ -280,8 +356,8 @@ export function RaidWaitingRoom() {
           </motion.div>
         )}
 
-        {/* Start battle button (host only) */}
-        {isHost && (
+        {/* Start battle button (host or solo) */}
+        {(isHost || soloMode) && (
           <motion.button
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -294,11 +370,11 @@ export function RaidWaitingRoom() {
             }`}
           >
             <Swords size={24} />
-            {allReady ? '전투 시작!' : '모두 준비 완료 대기 중...'}
+            {allReady ? '전투 시작!' : '준비 완료를 눌러주세요'}
           </motion.button>
         )}
 
-        {!isHost && (
+        {!isHost && !soloMode && (
           <div className="text-center text-slate-500 text-sm py-2">
             {allReady ? '방장이 전투를 시작하길 기다리는 중...' : '방장이 전투를 시작할 수 있습니다'}
           </div>

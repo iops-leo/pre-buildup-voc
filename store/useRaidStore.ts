@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { getMonsterById } from '@/data/monsters';
-import { Subject, Difficulty, getRandomQuestion } from '@/data/questions';
+import { Subject, Difficulty, getRandomQuestion, getRandomVocabQuestion } from '@/data/questions';
 import { supabase, isSupabaseConfigured } from '@/lib/supabase';
 import type { RaidRoomRow, RaidPlayer, RoomPhase } from '@/types/supabase';
 import type { RealtimeChannel } from '@supabase/supabase-js';
@@ -19,6 +19,8 @@ export interface PlayerConfig {
   category: string;
   difficulty: Difficulty;
   ready: boolean;
+  vocabUnit?: number;
+  vocabLesson?: number;
 }
 
 export interface Player {
@@ -71,6 +73,7 @@ interface RaidState {
   room: RaidRoom | null;
   myPlayerId: string | null;
   phase: RoomPhase | 'lobby';
+  soloMode: boolean;
 
   // Battle state
   currentQuestion: CurrentQuestion | null;
@@ -82,6 +85,7 @@ interface RaidState {
 
   // Actions
   createRoom: (playerName: string, monsterId: string) => Promise<string>;
+  createSoloRoom: (playerName: string, monsterId: string) => string;
   joinRoom: (code: string, playerName: string) => Promise<boolean>;
   setPlayerConfig: (config: PlayerConfig) => Promise<void>;
   setPlayerReady: (ready: boolean) => Promise<void>;
@@ -162,6 +166,7 @@ export const useRaidStore = create<RaidState>((set, get) => ({
   room: null,
   myPlayerId: null,
   phase: 'lobby',
+  soloMode: false,
   currentQuestion: null,
   answerResult: null,
   lastDamage: null,
@@ -206,32 +211,74 @@ export const useRaidStore = create<RaidState>((set, get) => ({
       isVictory: false,
     };
 
-    // If Supabase is configured, save to database
+    // Save to database (required for multiplayer)
     if (isSupabaseConfigured()) {
-      const { error } = await db().from('raid_rooms').insert({
-        code,
-        host_id: playerId,
-        monster_id: monsterId,
-        phase: 'waiting',
-        monster_hp: monster.hp,
-        monster_max_hp: monster.hp,
-        combo: 0,
-        start_time: null,
-        players: [playerToDbFormat(hostPlayer)],
-        damage_log: [],
-      });
+      try {
+        const { error } = await db().from('raid_rooms').insert({
+          code,
+          host_id: playerId,
+          monster_id: monsterId,
+          phase: 'waiting',
+          monster_hp: monster.hp,
+          monster_max_hp: monster.hp,
+          combo: 0,
+          start_time: null,
+          players: [playerToDbFormat(hostPlayer)],
+          damage_log: [],
+        });
 
-      if (error) {
-        console.error('[RaidStore] Failed to create room:', error.message, error.details, error.hint);
-        // Fall back to local only
-      } else {
+        if (error) {
+          console.error('[RaidStore] Failed to create room:', error.message, error.details, error.hint);
+          return '';
+        }
+
         console.log('[RaidStore] Room created successfully in Supabase:', code);
-        // Subscribe to realtime updates
         get().subscribeToRoom(code);
+      } catch (err) {
+        console.error('[RaidStore] Network error creating room:', err);
+        return '';
       }
+    } else {
+      console.error('[RaidStore] Supabase not configured');
+      return '';
     }
 
     set({ room, myPlayerId: playerId, phase: 'waiting' });
+    return code;
+  },
+
+  createSoloRoom: (playerName: string, monsterId: string) => {
+    const code = generateRoomCode();
+    const playerId = generatePlayerId();
+    const monster = getMonsterById(monsterId);
+
+    if (!monster) return '';
+
+    const hostPlayer: Player = {
+      id: playerId,
+      name: playerName,
+      role: 'host',
+      config: null,
+      damageDealt: 0,
+      answersCorrect: 0,
+      answersWrong: 0,
+      isConnected: true,
+    };
+
+    const room: RaidRoom = {
+      code,
+      monsterId,
+      phase: 'waiting',
+      players: [hostPlayer],
+      monsterCurrentHp: monster.hp,
+      monsterMaxHp: monster.hp,
+      damageLog: [],
+      startedAt: null,
+      endedAt: null,
+      isVictory: false,
+    };
+
+    set({ room, myPlayerId: playerId, phase: 'waiting', soloMode: true });
     return code;
   },
 
@@ -242,8 +289,12 @@ export const useRaidStore = create<RaidState>((set, get) => ({
     console.log('[RaidStore] Attempting to join room:', normalizedCode);
     console.log('[RaidStore] Supabase configured:', isSupabaseConfigured());
 
-    // If Supabase is configured, try to join from database
-    if (isSupabaseConfigured()) {
+    if (!isSupabaseConfigured()) {
+      console.error('[RaidStore] Supabase not configured');
+      return false;
+    }
+
+    try {
       console.log('[RaidStore] Querying Supabase for room code:', normalizedCode);
 
       const { data: existingRoom, error: fetchError } = await db()
@@ -252,15 +303,13 @@ export const useRaidStore = create<RaidState>((set, get) => ({
         .eq('code', normalizedCode)
         .single();
 
-      console.log('[RaidStore] Query result:', { existingRoom, fetchError });
-
       if (fetchError || !existingRoom) {
         console.error('[RaidStore] Room not found:', fetchError?.message, fetchError?.details, fetchError?.hint);
         return false;
       }
 
       if (existingRoom.players.length >= 2) {
-        console.error('Room is full');
+        console.error('[RaidStore] Room is full');
         return false;
       }
 
@@ -280,10 +329,10 @@ export const useRaidStore = create<RaidState>((set, get) => ({
         .update({
           players: [...existingRoom.players, guestPlayer],
         })
-        .eq('code', code.toUpperCase());
+        .eq('code', normalizedCode);
 
       if (updateError) {
-        console.error('Failed to join room:', updateError);
+        console.error('[RaidStore] Failed to join room:', updateError);
         return false;
       }
 
@@ -298,45 +347,22 @@ export const useRaidStore = create<RaidState>((set, get) => ({
       console.log('[RaidStore] Successfully joined room:', room.code);
       set({ room, myPlayerId: playerId, phase: 'waiting' });
       return true;
+    } catch (err) {
+      console.error('[RaidStore] Network error joining room:', err);
+      return false;
     }
-
-    // Local fallback (single device testing)
-    console.log('[RaidStore] Using local fallback (no Supabase)');
-    const { room } = get();
-    if (!room || room.code !== normalizedCode) return false;
-    if (room.players.length >= 2) return false;
-
-    const guestPlayer: Player = {
-      id: playerId,
-      name: playerName,
-      role: 'guest',
-      config: null,
-      damageDealt: 0,
-      answersCorrect: 0,
-      answersWrong: 0,
-      isConnected: true,
-    };
-
-    set((state) => ({
-      room: state.room
-        ? { ...state.room, players: [...state.room.players, guestPlayer] }
-        : null,
-      myPlayerId: playerId,
-      phase: 'waiting',
-    }));
-    return true;
   },
 
   setPlayerConfig: async (config: PlayerConfig) => {
-    const { room, myPlayerId } = get();
+    const { room, myPlayerId, soloMode } = get();
     if (!room || !myPlayerId) return;
 
     const updatedPlayers = room.players.map((p) =>
       p.id === myPlayerId ? { ...p, config } : p
     );
 
-    // Update Supabase if configured
-    if (isSupabaseConfigured()) {
+    // Update Supabase if configured (skip in solo mode)
+    if (!soloMode && isSupabaseConfigured()) {
       await db()
         .from('raid_rooms')
         .update({
@@ -351,7 +377,7 @@ export const useRaidStore = create<RaidState>((set, get) => ({
   },
 
   setPlayerReady: async (ready: boolean) => {
-    const { room, myPlayerId } = get();
+    const { room, myPlayerId, soloMode } = get();
     if (!room || !myPlayerId) return;
 
     const updatedPlayers = room.players.map((p) =>
@@ -360,8 +386,8 @@ export const useRaidStore = create<RaidState>((set, get) => ({
         : p
     );
 
-    // Update Supabase if configured
-    if (isSupabaseConfigured()) {
+    // Update Supabase if configured (skip in solo mode)
+    if (!soloMode && isSupabaseConfigured()) {
       await db()
         .from('raid_rooms')
         .update({
@@ -376,13 +402,13 @@ export const useRaidStore = create<RaidState>((set, get) => ({
   },
 
   startBattle: async () => {
-    const { room } = get();
+    const { room, soloMode } = get();
     if (!room) return;
 
     const startTime = Date.now();
 
-    // Update Supabase if configured
-    if (isSupabaseConfigured()) {
+    // Update Supabase if configured (skip in solo mode)
+    if (!soloMode && isSupabaseConfigured()) {
       await db()
         .from('raid_rooms')
         .update({
@@ -409,7 +435,15 @@ export const useRaidStore = create<RaidState>((set, get) => ({
     if (!me?.config) return;
 
     const { subject, category, difficulty } = me.config;
-    const q = getRandomQuestion(subject, category, difficulty);
+
+    let q;
+    if (subject === 'english') {
+      const vocabUnit = me.config.vocabUnit ?? 1;
+      const vocabLesson = me.config.vocabLesson ?? 1;
+      q = getRandomVocabQuestion(vocabUnit, vocabLesson, difficulty);
+    } else {
+      q = getRandomQuestion(subject, category, difficulty);
+    }
     if (!q) return;
 
     set({
@@ -426,11 +460,19 @@ export const useRaidStore = create<RaidState>((set, get) => ({
   },
 
   submitAnswer: async (answer: string) => {
-    const { room, currentQuestion, myPlayerId, comboCount } = get();
+    const { room, currentQuestion, myPlayerId, comboCount, soloMode } = get();
     if (!room || !currentQuestion || !myPlayerId) return;
 
-    const isCorrect =
-      answer.trim().toLowerCase() === currentQuestion.a.trim().toLowerCase();
+    // 영어 단어: "/"로 구분된 형태 중 하나라도 맞으면 정답
+    let isCorrect: boolean;
+    if (currentQuestion.subject === 'english') {
+      const userAnswer = answer.trim().toLowerCase();
+      const acceptableAnswers = currentQuestion.a.toLowerCase().split('/').map((s) => s.trim());
+      isCorrect = acceptableAnswers.some((a) => a === userAnswer);
+    } else {
+      isCorrect = answer.trim().toLowerCase() === currentQuestion.a.trim().toLowerCase();
+    }
+
     const me = room.players.find((p) => p.id === myPlayerId);
     const baseDamage = me?.config
       ? ({ easy: 10, normal: 15, hard: 25 } as Record<Difficulty, number>)[
@@ -463,8 +505,8 @@ export const useRaidStore = create<RaidState>((set, get) => ({
           : p
       );
 
-      // Update Supabase if configured
-      if (isSupabaseConfigured()) {
+      // Update Supabase if configured (skip in solo mode)
+      if (!soloMode && isSupabaseConfigured()) {
         await db()
           .from('raid_rooms')
           .update({
@@ -506,8 +548,8 @@ export const useRaidStore = create<RaidState>((set, get) => ({
           : p
       );
 
-      // Update Supabase if configured
-      if (isSupabaseConfigured()) {
+      // Update Supabase if configured (skip in solo mode)
+      if (!soloMode && isSupabaseConfigured()) {
         await db()
           .from('raid_rooms')
           .update({
@@ -596,6 +638,7 @@ export const useRaidStore = create<RaidState>((set, get) => ({
       room: null,
       myPlayerId: null,
       phase: 'lobby',
+      soloMode: false,
       currentQuestion: null,
       answerResult: null,
       lastDamage: null,

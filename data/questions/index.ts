@@ -6,6 +6,7 @@ export * from './math';
 export * from './korean';
 export * from './social';
 export * from './science';
+export * from './vocabulary';
 
 import { mathCategories, MathCategory } from './math';
 import { koreanCategories, KoreanCategory } from './korean';
@@ -13,17 +14,18 @@ import { socialCategories, SocialCategory } from './social';
 import { scienceCategories, ScienceCategory } from './science';
 
 // 과목 타입
-export type Subject = 'math' | 'korean' | 'social' | 'science';
+export type Subject = 'math' | 'korean' | 'social' | 'science' | 'english';
 
 // 난이도 타입
 export type Difficulty = 'easy' | 'normal' | 'hard';
 
 // 모든 카테고리
-export const allCategories = {
+export const allCategories: Record<string, Record<string, unknown>> = {
   math: mathCategories,
   korean: koreanCategories,
   social: socialCategories,
   science: scienceCategories,
+  english: {},
 };
 
 // 과목 정보
@@ -67,6 +69,11 @@ export const subjectInfo = {
       element: '원소',
       humanBody: '인체',
     },
+  },
+  english: {
+    name: '영어 단어',
+    emoji: '📝',
+    categories: {},
   },
 };
 
