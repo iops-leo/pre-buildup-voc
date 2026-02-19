@@ -68,6 +68,7 @@ interface RaidState {
   // Connection state
   isOnline: boolean;
   channel: RealtimeChannel | null;
+  _pollInterval: number | null;
 
   // Room state
   room: RaidRoom | null;
@@ -163,6 +164,7 @@ function playerToDbFormat(player: Player): RaidPlayer {
 export const useRaidStore = create<RaidState>((set, get) => ({
   isOnline: isSupabaseConfigured(),
   channel: null,
+  _pollInterval: null,
   room: null,
   myPlayerId: null,
   phase: 'lobby',
@@ -607,25 +609,44 @@ export const useRaidStore = create<RaidState>((set, get) => ({
           filter: `code=eq.${code}`,
         },
         (payload) => {
+          console.log('[RaidStore] Realtime event:', payload.eventType);
           if (payload.eventType === 'UPDATE') {
-            // Always re-fetch full row to get complete JSONB data (players, damage_log)
             fetchFullRoom();
           } else if (payload.eventType === 'DELETE') {
             get().resetRaid();
           }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('[RaidStore] Subscription status:', status);
+        if (status === 'SUBSCRIBED') {
+          // Fetch latest state once subscription is confirmed
+          fetchFullRoom();
+        }
+      });
 
-    set({ channel });
+    // Polling fallback: periodically fetch room state during waiting phase
+    const pollInterval = setInterval(() => {
+      const currentRoom = get().room;
+      if (!currentRoom || currentRoom.phase !== 'waiting') {
+        clearInterval(pollInterval);
+        return;
+      }
+      fetchFullRoom();
+    }, 3000);
+
+    set({ channel, _pollInterval: pollInterval as unknown as number });
   },
 
   unsubscribeFromRoom: () => {
-    const { channel } = get();
+    const { channel, _pollInterval } = get();
+    if (_pollInterval) {
+      clearInterval(_pollInterval);
+    }
     if (channel && supabase) {
       supabase.removeChannel(channel);
-      set({ channel: null });
     }
+    set({ channel: null, _pollInterval: null });
   },
 
   setMonsterShaking: (v: boolean) => set({ monsterShaking: v }),
@@ -646,6 +667,7 @@ export const useRaidStore = create<RaidState>((set, get) => ({
       monsterShaking: false,
       questionStartedAt: null,
       channel: null,
+      _pollInterval: null,
     });
   },
 }));
