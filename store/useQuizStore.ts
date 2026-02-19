@@ -586,6 +586,176 @@ export const BADGES: Badge[] = [
             return state.quizHistory.slice(0, 10).every(h => h.percentage === 100);
         }
     },
+
+    // ===== 몬스터 레이드 =====
+    {
+        id: 'raid_first',
+        icon: '🗡️',
+        name: '첫 레이드',
+        description: '첫 번째 레이드를 완료했어요!',
+        condition: (state) => state.raidCount >= 1
+    },
+    {
+        id: 'raid_5',
+        icon: '⚔️',
+        name: '레이드 헌터',
+        description: '레이드 5회 완료!',
+        condition: (state) => state.raidCount >= 5
+    },
+    {
+        id: 'raid_10',
+        icon: '🏆',
+        name: '레이드 마스터',
+        description: '레이드 10회 완료!',
+        condition: (state) => state.raidCount >= 10
+    },
+    {
+        id: 'raid_25',
+        icon: '🎖️',
+        name: '레이드 왕',
+        description: '레이드 25회 완료!',
+        condition: (state) => state.raidCount >= 25
+    },
+    {
+        id: 'victory_first',
+        icon: '🎉',
+        name: '첫 승리',
+        description: '첫 번째 몬스터를 처치했어요!',
+        condition: (state) => state.raidVictories >= 1
+    },
+    {
+        id: 'victory_10',
+        icon: '💪',
+        name: '몬스터 킬러',
+        description: '몬스터 10마리 처치!',
+        condition: (state) => state.raidVictories >= 10
+    },
+    {
+        id: 'victory_25',
+        icon: '🔱',
+        name: '몬스터 슬레이어',
+        description: '몬스터 25마리 처치!',
+        condition: (state) => state.raidVictories >= 25
+    },
+    {
+        id: 'raid_perfect',
+        icon: '🎯',
+        name: '완벽한 레이드',
+        description: '레이드에서 100% 정확도 달성!',
+        condition: (state) => state.raidPerfectCount >= 1
+    },
+    {
+        id: 'raid_perfect_3',
+        icon: '💎',
+        name: '다이아몬드 레이드',
+        description: '퍼펙트 레이드 3회 달성!',
+        condition: (state) => state.raidPerfectCount >= 3
+    },
+    {
+        id: 'raid_combo_5',
+        icon: '🔥',
+        name: '콤보 파이터',
+        description: '레이드에서 5콤보 달성!',
+        condition: (state) => state.raidMaxCombo >= 5
+    },
+    {
+        id: 'raid_combo_10',
+        icon: '💥',
+        name: '콤보 마스터',
+        description: '레이드에서 10콤보 달성!',
+        condition: (state) => state.raidMaxCombo >= 10
+    },
+    {
+        id: 'raid_combo_15',
+        icon: '⚡',
+        name: '콤보의 신',
+        description: '레이드에서 15콤보 달성!',
+        condition: (state) => state.raidMaxCombo >= 15
+    },
+    {
+        id: 'boss_forest',
+        icon: '🌲',
+        name: '숲의 수호자',
+        description: '나무 골렘을 처치했어요!',
+        condition: (state) => state.raidBossesDefeated.includes('tree_golem')
+    },
+    {
+        id: 'boss_ice',
+        icon: '❄️',
+        name: '얼음 정복자',
+        description: '얼음 여왕을 처치했어요!',
+        condition: (state) => state.raidBossesDefeated.includes('ice_queen')
+    },
+    {
+        id: 'boss_volcano',
+        icon: '🌋',
+        name: '화산 탐험가',
+        description: '화염왕을 처치했어요!',
+        condition: (state) => state.raidBossesDefeated.includes('flame_king')
+    },
+    {
+        id: 'boss_haunted',
+        icon: '👻',
+        name: '어둠의 정복자',
+        description: '어둠의 군주를 처치했어요!',
+        condition: (state) => state.raidBossesDefeated.includes('dark_lord')
+    },
+    {
+        id: 'boss_all',
+        icon: '🐲',
+        name: '드래곤 슬레이어',
+        description: '모든 월드 보스를 처치했어요!',
+        condition: (state) => ['tree_golem', 'ice_queen', 'flame_king', 'dark_lord'].every(id => state.raidBossesDefeated.includes(id))
+    },
+    {
+        id: 'solo_first',
+        icon: '🎮',
+        name: '솔로 플레이어',
+        description: '솔로 레이드 첫 승리!',
+        condition: (state) => state.raidSoloVictories >= 1
+    },
+    {
+        id: 'solo_10',
+        icon: '🏅',
+        name: '고독한 영웅',
+        description: '솔로 레이드 10회 승리!',
+        condition: (state) => state.raidSoloVictories >= 10
+    },
+    {
+        id: 'multi_first',
+        icon: '🤝',
+        name: '팀워크',
+        description: '멀티플레이 레이드 첫 승리!',
+        condition: (state) => state.raidMultiVictories >= 1
+    },
+    {
+        id: 'raid_fast',
+        icon: '⏱️',
+        name: '스피드 클리어',
+        description: '60초 이내에 레이드 클리어!',
+        condition: (state) => state.raidFastClears >= 1
+    },
+    {
+        id: 'raid_fast_3',
+        icon: '🚀',
+        name: '번개 클리어',
+        description: '스피드 클리어 3회 달성!',
+        condition: (state) => state.raidFastClears >= 3
+    },
+    {
+        id: 'raid_damage_5000',
+        icon: '☄️',
+        name: '누적 파괴자',
+        description: '레이드 총 누적 데미지 5000 달성!',
+        condition: (state) => state.raidTotalDamage >= 5000
+    },
+    {
+        id: 'raid_damage_10000',
+        icon: '🌟',
+        name: '전설의 딜러',
+        description: '레이드 총 누적 데미지 10000 달성!',
+        condition: (state) => state.raidTotalDamage >= 10000
+    },
 ];
 
 interface QuizState {
@@ -612,6 +782,17 @@ interface QuizState {
     lastStudyDate: string | null;
     earnedBadges: string[]; // Badge IDs
 
+    // Raid Stats (persisted)
+    raidCount: number;
+    raidVictories: number;
+    raidBossesDefeated: string[];
+    raidTotalDamage: number;
+    raidMaxCombo: number;
+    raidSoloVictories: number;
+    raidMultiVictories: number;
+    raidPerfectCount: number;
+    raidFastClears: number;
+
     // Actions
     startQuiz: (unit: Unit, lesson: Lesson, mode: QuizMode) => void;
     startReviewQuiz: (mode: QuizMode) => void;
@@ -627,6 +808,17 @@ interface QuizState {
     // Gamification Actions
     addXp: (amount: number) => void;
     checkAchievements: (historyEntry: QuizHistoryEntry) => void;
+    recordRaidResult: (result: {
+        isVictory: boolean;
+        monsterId: string;
+        isBoss: boolean;
+        myDamage: number;
+        myCorrect: number;
+        myWrong: number;
+        maxCombo: number;
+        durationSec: number;
+        soloMode: boolean;
+    }) => string[]; // returns newly earned badge IDs
 }
 
 export const useQuizStore = create<QuizState>()(
@@ -653,6 +845,17 @@ export const useQuizStore = create<QuizState>()(
             streak: 0,
             lastStudyDate: null,
             earnedBadges: [],
+
+            // Raid Stats
+            raidCount: 0,
+            raidVictories: 0,
+            raidBossesDefeated: [],
+            raidTotalDamage: 0,
+            raidMaxCombo: 0,
+            raidSoloVictories: 0,
+            raidMultiVictories: 0,
+            raidPerfectCount: 0,
+            raidFastClears: 0,
 
             startQuiz: (unit, lesson, mode) => {
                 const shuffled = [...lesson.vocabulary].sort(() => Math.random() - 0.5);
@@ -863,7 +1066,53 @@ export const useQuizStore = create<QuizState>()(
                 if (badgeAdded) {
                     set({ earnedBadges: newBadges });
                 }
-            }
+            },
+
+            recordRaidResult: (result) => {
+                const state = get();
+                const totalAnswers = result.myCorrect + result.myWrong;
+                const isPerfect = totalAnswers > 0 && result.myCorrect === totalAnswers;
+                const isFastClear = result.isVictory && result.durationSec <= 60;
+
+                // Update raid stats
+                set({
+                    raidCount: state.raidCount + 1,
+                    raidVictories: state.raidVictories + (result.isVictory ? 1 : 0),
+                    raidBossesDefeated: result.isVictory && result.isBoss && !state.raidBossesDefeated.includes(result.monsterId)
+                        ? [...state.raidBossesDefeated, result.monsterId]
+                        : state.raidBossesDefeated,
+                    raidTotalDamage: state.raidTotalDamage + result.myDamage,
+                    raidMaxCombo: Math.max(state.raidMaxCombo, result.maxCombo),
+                    raidSoloVictories: state.raidSoloVictories + (result.isVictory && result.soloMode ? 1 : 0),
+                    raidMultiVictories: state.raidMultiVictories + (result.isVictory && !result.soloMode ? 1 : 0),
+                    raidPerfectCount: state.raidPerfectCount + (isPerfect ? 1 : 0),
+                    raidFastClears: state.raidFastClears + (isFastClear ? 1 : 0),
+                });
+
+                // Check badges
+                const updatedState = get();
+                const newBadges = [...updatedState.earnedBadges];
+                const newlyEarned: string[] = [];
+
+                BADGES.forEach(badge => {
+                    if (!newBadges.includes(badge.id)) {
+                        try {
+                            if (badge.condition(updatedState, {} as QuizHistoryEntry)) {
+                                newBadges.push(badge.id);
+                                newlyEarned.push(badge.id);
+                            }
+                        } catch {
+                            // Skip badges that require valid historyEntry
+                        }
+                    }
+                });
+
+                if (newlyEarned.length > 0) {
+                    set({ earnedBadges: newBadges });
+                }
+
+                return newlyEarned;
+            },
         }),
         {
             name: 'quiz-storage',
@@ -876,6 +1125,15 @@ export const useQuizStore = create<QuizState>()(
                 lastStudyDate: state.lastStudyDate,
                 earnedBadges: state.earnedBadges,
                 lessonProgress: state.lessonProgress,
+                raidCount: state.raidCount,
+                raidVictories: state.raidVictories,
+                raidBossesDefeated: state.raidBossesDefeated,
+                raidTotalDamage: state.raidTotalDamage,
+                raidMaxCombo: state.raidMaxCombo,
+                raidSoloVictories: state.raidSoloVictories,
+                raidMultiVictories: state.raidMultiVictories,
+                raidPerfectCount: state.raidPerfectCount,
+                raidFastClears: state.raidFastClears,
             }),
             version: 1,
             migrate: (persistedState: any, version) => {

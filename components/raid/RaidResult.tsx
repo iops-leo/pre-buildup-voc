@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useRaidStore } from '@/store/useRaidStore';
-import { useRaidStatsStore, RAID_BADGES } from '@/store/useRaidStatsStore';
+import { useQuizStore, BADGES } from '@/store/useQuizStore';
 import { getMonsterById } from '@/data/monsters';
 import { useRouter } from 'next/navigation';
 import { Trophy, Target, Zap, RotateCcw, Home } from 'lucide-react';
@@ -68,11 +68,12 @@ function useConfetti(active: boolean) {
 
 export function RaidResult() {
   const { room, myPlayerId, resetRaid, soloMode, maxComboInRaid } = useRaidStore();
-  const { recordRaidResult, newBadges, clearNewBadges, earnedRaidBadges } = useRaidStatsStore();
+  const recordRaidResult = useQuizStore(s => s.recordRaidResult);
   const router = useRouter();
   const isVictory = room?.isVictory ?? false;
   const confettiRef = useConfetti(isVictory);
   const hasRecorded = useRef(false);
+  const [newBadgeIds, setNewBadgeIds] = useState<string[]>([]);
 
   if (!room) return null;
 
@@ -90,7 +91,7 @@ export function RaidResult() {
       ? Math.floor((room.endedAt - room.startedAt) / 1000)
       : 999;
 
-    recordRaidResult({
+    const newlyEarned = recordRaidResult({
       isVictory: room.isVictory,
       monsterId: room.monsterId,
       isBoss: monsterData?.isBoss ?? false,
@@ -102,9 +103,9 @@ export function RaidResult() {
       soloMode,
     });
 
-    return () => {
-      clearNewBadges();
-    };
+    if (newlyEarned.length > 0) {
+      setNewBadgeIds(newlyEarned);
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -277,7 +278,7 @@ export function RaidResult() {
         </motion.div>
 
         {/* Newly earned badges */}
-        {newBadges.length > 0 && (
+        {newBadgeIds.length > 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -288,8 +289,8 @@ export function RaidResult() {
               {'🏅'} 새로 획득한 뱃지!
             </h3>
             <div className="flex flex-wrap gap-2">
-              {newBadges.map(badgeId => {
-                const badge = RAID_BADGES.find(b => b.id === badgeId);
+              {newBadgeIds.map(badgeId => {
+                const badge = BADGES.find(b => b.id === badgeId);
                 if (!badge) return null;
                 return (
                   <motion.div
@@ -310,37 +311,6 @@ export function RaidResult() {
             </div>
           </motion.div>
         )}
-
-        {/* Raid badges collection */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.47 }}
-          className="rounded-2xl bg-slate-900 border border-slate-800 p-4"
-        >
-          <h3 className="text-sm font-bold text-slate-400 mb-3">
-            레이드 뱃지 ({earnedRaidBadges.length}/{RAID_BADGES.length})
-          </h3>
-          <div className="flex flex-wrap gap-1.5">
-            {RAID_BADGES.map(badge => {
-              const isEarned = earnedRaidBadges.includes(badge.id);
-              const isNew = newBadges.includes(badge.id);
-              return (
-                <div
-                  key={badge.id}
-                  className={`w-9 h-9 rounded-lg flex items-center justify-center text-lg
-                    ${isNew ? 'bg-yellow-900/50 border-2 border-yellow-500 animate-pulse' :
-                      isEarned ? 'bg-slate-800 border border-slate-600' :
-                      'bg-slate-800/50 border border-slate-800 grayscale opacity-30'}
-                  `}
-                  title={`${badge.name}: ${badge.description}`}
-                >
-                  {badge.icon}
-                </div>
-              );
-            })}
-          </div>
-        </motion.div>
 
         {/* Action buttons */}
         <motion.div
