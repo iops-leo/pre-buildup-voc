@@ -81,6 +81,7 @@ interface RaidState {
   answerResult: 'correct' | 'wrong' | null;
   lastDamage: number | null;
   comboCount: number;
+  maxComboInRaid: number;
   monsterShaking: boolean;
   questionStartedAt: number | null;
 
@@ -182,6 +183,7 @@ export const useRaidStore = create<RaidState>((set, get) => ({
   answerResult: null,
   lastDamage: null,
   comboCount: 0,
+  maxComboInRaid: 0,
   monsterShaking: false,
   questionStartedAt: null,
 
@@ -490,7 +492,7 @@ export const useRaidStore = create<RaidState>((set, get) => ({
 
     const me = room.players.find((p) => p.id === myPlayerId);
     const baseDamage = me?.config
-      ? ({ easy: 10, normal: 15, hard: 25 } as Record<Difficulty, number>)[
+      ? ({ easy: 10, normal: 20, hard: 40 } as Record<Difficulty, number>)[
           me.config.difficulty
         ]
       : 10;
@@ -553,6 +555,7 @@ export const useRaidStore = create<RaidState>((set, get) => ({
         answerResult: 'correct',
         lastDamage: damage,
         comboCount: newCombo,
+        maxComboInRaid: Math.max(state.maxComboInRaid || 0, newCombo),
         monsterShaking: true,
         phase: isVictory ? 'result' : state.phase,
       }));
@@ -804,6 +807,7 @@ export const useRaidStore = create<RaidState>((set, get) => ({
       answerResult: null,
       lastDamage: null,
       comboCount: 0,
+      maxComboInRaid: 0,
       monsterShaking: false,
       questionStartedAt: null,
       channel: null,

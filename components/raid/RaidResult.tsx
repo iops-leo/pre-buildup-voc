@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { useRaidStore } from '@/store/useRaidStore';
+import { useRaidStatsStore, RAID_BADGES } from '@/store/useRaidStatsStore';
 import { getMonsterById } from '@/data/monsters';
 import { useRouter } from 'next/navigation';
 import { Trophy, Target, Zap, RotateCcw, Home } from 'lucide-react';
@@ -66,16 +67,46 @@ function useConfetti(active: boolean) {
 }
 
 export function RaidResult() {
-  const { room, myPlayerId, resetRaid } = useRaidStore();
+  const { room, myPlayerId, resetRaid, soloMode, maxComboInRaid } = useRaidStore();
+  const { recordRaidResult, newBadges, clearNewBadges, earnedRaidBadges } = useRaidStatsStore();
   const router = useRouter();
   const isVictory = room?.isVictory ?? false;
   const confettiRef = useConfetti(isVictory);
+  const hasRecorded = useRef(false);
 
   if (!room) return null;
 
   const monster = getMonsterById(room.monsterId);
   const me = room.players.find((p) => p.id === myPlayerId);
   const partner = room.players.find((p) => p.id !== myPlayerId);
+
+  // Record raid result for badge tracking (once on mount)
+  useEffect(() => {
+    if (!room || !me || hasRecorded.current) return;
+    hasRecorded.current = true;
+
+    const monsterData = getMonsterById(room.monsterId);
+    const durationSec = room.startedAt && room.endedAt
+      ? Math.floor((room.endedAt - room.startedAt) / 1000)
+      : 999;
+
+    recordRaidResult({
+      isVictory: room.isVictory,
+      monsterId: room.monsterId,
+      isBoss: monsterData?.isBoss ?? false,
+      myDamage: me.damageDealt,
+      myCorrect: me.answersCorrect,
+      myWrong: me.answersWrong,
+      maxCombo: maxComboInRaid,
+      durationSec,
+      soloMode,
+    });
+
+    return () => {
+      clearNewBadges();
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const totalDamage = room.players.reduce((sum, p) => sum + p.damageDealt, 0);
   const totalCorrect = room.players.reduce((sum, p) => sum + p.answersCorrect, 0);
@@ -243,6 +274,72 @@ export function RaidResult() {
               </motion.div>
             );
           })}
+        </motion.div>
+
+        {/* Newly earned badges */}
+        {newBadges.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.45 }}
+            className="rounded-2xl bg-gradient-to-br from-yellow-950/50 to-amber-950/30 border border-yellow-800 p-4"
+          >
+            <h3 className="text-sm font-bold text-yellow-400 mb-3 flex items-center gap-2">
+              {'🏅'} 새로 획득한 뱃지!
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {newBadges.map(badgeId => {
+                const badge = RAID_BADGES.find(b => b.id === badgeId);
+                if (!badge) return null;
+                return (
+                  <motion.div
+                    key={badgeId}
+                    initial={{ scale: 0, rotate: -180 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ type: 'spring', delay: 0.5 }}
+                    className="flex items-center gap-2 bg-yellow-900/40 border border-yellow-700 rounded-xl px-3 py-2"
+                  >
+                    <span className="text-2xl">{badge.icon}</span>
+                    <div>
+                      <div className="text-yellow-300 font-bold text-xs">{badge.name}</div>
+                      <div className="text-yellow-500/70 text-[10px]">{badge.description}</div>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Raid badges collection */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.47 }}
+          className="rounded-2xl bg-slate-900 border border-slate-800 p-4"
+        >
+          <h3 className="text-sm font-bold text-slate-400 mb-3">
+            레이드 뱃지 ({earnedRaidBadges.length}/{RAID_BADGES.length})
+          </h3>
+          <div className="flex flex-wrap gap-1.5">
+            {RAID_BADGES.map(badge => {
+              const isEarned = earnedRaidBadges.includes(badge.id);
+              const isNew = newBadges.includes(badge.id);
+              return (
+                <div
+                  key={badge.id}
+                  className={`w-9 h-9 rounded-lg flex items-center justify-center text-lg
+                    ${isNew ? 'bg-yellow-900/50 border-2 border-yellow-500 animate-pulse' :
+                      isEarned ? 'bg-slate-800 border border-slate-600' :
+                      'bg-slate-800/50 border border-slate-800 grayscale opacity-30'}
+                  `}
+                  title={`${badge.name}: ${badge.description}`}
+                >
+                  {badge.icon}
+                </div>
+              );
+            })}
+          </div>
         </motion.div>
 
         {/* Action buttons */}
