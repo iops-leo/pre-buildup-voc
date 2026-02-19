@@ -65,8 +65,10 @@ export function useAI() {
       const data = await res.json();
       const content = data.content || '';
 
-      // Cache the result
-      aiCache.set(cacheKey, { data: content, timestamp: Date.now() });
+      // Only cache non-empty results
+      if (content.trim()) {
+        aiCache.set(cacheKey, { data: content, timestamp: Date.now() });
+      }
 
       setIsLoading(false);
       return content;

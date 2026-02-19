@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     const { type, context } = await req.json();
 
     let userPrompt = '';
-    let maxTokens = 300;
+    let maxTokens = 1024;
 
     switch (type) {
       case 'explain_wrong':
@@ -31,7 +31,6 @@ export async function POST(req: NextRequest) {
 1. 초등학생이 이해할 수 있는 짧은 예문 2개 (영어 + 한국어 해석)
 2. 재미있는 기억법 1개
 JSON 형식으로 답해줘: {"examples": [{"en": "...", "ko": "..."}], "hint": "..."}`;
-        maxTokens = 400;
         break;
 
       case 'quiz_feedback':
@@ -76,6 +75,11 @@ JSON 형식으로 답해줘: {"examples": [{"en": "...", "ko": "..."}], "hint": 
 
     const data = await response.json();
     const content = data.choices?.[0]?.message?.content || '';
+
+    if (!content.trim()) {
+      console.error('AI returned empty content. Response:', JSON.stringify(data).slice(0, 500));
+      return NextResponse.json({ error: 'AI returned empty response' }, { status: 502 });
+    }
 
     return NextResponse.json({ content });
   } catch (error) {
