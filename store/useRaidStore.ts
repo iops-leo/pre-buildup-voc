@@ -101,7 +101,13 @@ interface RaidState {
 }
 
 function generateRoomCode(): string {
-  return Math.random().toString(36).substring(2, 8).toUpperCase();
+  // 헷갈리는 문자 제외: 0/O, 1/I/L
+  const chars = '23456789ABCDEFGHJKMNPQRSTUVWXYZ';
+  let code = '';
+  for (let i = 0; i < 6; i++) {
+    code += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return code;
 }
 
 function generatePlayerId(): string {
