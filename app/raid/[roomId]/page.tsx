@@ -12,8 +12,9 @@ export default function RaidRoomPage() {
   const router = useRouter();
   const roomId = params?.roomId as string;
 
-  const { room, phase, myPlayerId } = useRaidStore();
+  const { room, phase, myPlayerId, rejoinRoom } = useRaidStore();
   const [mounted, setMounted] = useState(false);
+  const [rejoining, setRejoining] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -21,13 +22,30 @@ export default function RaidRoomPage() {
 
   useEffect(() => {
     if (!mounted) return;
-    // If no room is loaded or room code doesn't match, redirect to lobby
-    if (!room || room.code !== roomId || !myPlayerId) {
-      router.replace('/raid');
+    // 이미 방에 있으면 무시
+    if (room && room.code === roomId && myPlayerId) return;
+    // 재접속 시도
+    if (!rejoining) {
+      setRejoining(true);
+      rejoinRoom(roomId).then((success) => {
+        if (!success) {
+          router.replace('/raid');
+        }
+        setRejoining(false);
+      });
     }
-  }, [mounted, room, roomId, myPlayerId]);
+  }, [mounted, room, roomId, myPlayerId, rejoining, rejoinRoom, router]);
 
-  if (!mounted) return null;
+  if (!mounted || rejoining) {
+    return (
+      <main className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-4xl mb-3 animate-bounce">⚔️</div>
+          <div className="text-slate-400 text-sm">방에 재접속 중...</div>
+        </div>
+      </main>
+    );
+  }
   if (!room || !myPlayerId) return null;
 
   // Use room.phase as source of truth

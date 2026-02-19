@@ -94,6 +94,8 @@ interface RaidState {
   loadNextQuestion: () => void;
   submitAnswer: (answer: string) => Promise<void>;
   kickPlayer: (playerId: string) => Promise<void>;
+  rejoinRoom: (code: string) => Promise<boolean>;
+  saveSession: () => void;
   resetRaid: () => void;
   setMonsterShaking: (v: boolean) => void;
   clearAnswerResult: () => void;
@@ -253,6 +255,7 @@ export const useRaidStore = create<RaidState>((set, get) => ({
     }
 
     set({ room, myPlayerId: playerId, phase: 'waiting' });
+    get().saveSession();
     return code;
   },
 
@@ -288,6 +291,7 @@ export const useRaidStore = create<RaidState>((set, get) => ({
     };
 
     set({ room, myPlayerId: playerId, phase: 'waiting', soloMode: true });
+    get().saveSession();
     return code;
   },
 
@@ -353,6 +357,7 @@ export const useRaidStore = create<RaidState>((set, get) => ({
       console.log('[RaidStore] Successfully joined room:', room.code);
       // 먼저 로컬 상태 설정 (myPlayerId 포함) → 그 다음 구독 시작
       set({ room, myPlayerId: playerId, phase: 'waiting' });
+      get().saveSession();
 
       // Subscribe to realtime updates (myPlayerId가 세팅된 후)
       get().subscribeToRoom(normalizedCode);
@@ -714,12 +719,82 @@ export const useRaidStore = create<RaidState>((set, get) => ({
     }));
   },
 
+  rejoinRoom: async (code: string) => {
+    const sessionRaw = typeof window !== 'undefined' ? sessionStorage.getItem('raid_session') : null;
+    if (!sessionRaw) return false;
+
+    try {
+      const session = JSON.parse(sessionRaw);
+      if (session.roomCode !== code) return false;
+
+      // 솔로 모드: sessionStorage에서 전체 복원
+      if (session.soloMode && session.room) {
+        set({
+          room: session.room,
+          myPlayerId: session.myPlayerId,
+          phase: session.room.phase,
+          soloMode: true,
+        });
+        return true;
+      }
+
+      // 멀티플레이어: Supabase에서 재조회
+      if (!isSupabaseConfigured()) return false;
+
+      const { data, error } = await db()
+        .from('raid_rooms')
+        .select('*')
+        .eq('code', code)
+        .single();
+
+      if (error || !data) return false;
+
+      const dbRow = data as RaidRoomRow;
+      // 내가 아직 방에 있는지 확인
+      if (!dbRow.players.find((p: RaidPlayer) => p.id === session.myPlayerId)) {
+        sessionStorage.removeItem('raid_session');
+        return false;
+      }
+
+      const room = dbRowToRoom(dbRow);
+      set({
+        room,
+        myPlayerId: session.myPlayerId,
+        phase: room.phase,
+        soloMode: false,
+      });
+
+      // 구독 재개
+      get().subscribeToRoom(code);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
+  saveSession: () => {
+    const { room, myPlayerId, soloMode } = get();
+    if (!room || !myPlayerId) return;
+
+    const session = {
+      roomCode: room.code,
+      myPlayerId,
+      soloMode,
+      // 솔로 모드에서만 전체 room 저장 (Supabase 없으므로)
+      room: soloMode ? room : undefined,
+    };
+    sessionStorage.setItem('raid_session', JSON.stringify(session));
+  },
+
   setMonsterShaking: (v: boolean) => set({ monsterShaking: v }),
 
   clearAnswerResult: () => set({ answerResult: null, lastDamage: null }),
 
   resetRaid: () => {
     get().unsubscribeFromRoom();
+    if (typeof window !== 'undefined') {
+      sessionStorage.removeItem('raid_session');
+    }
     set({
       room: null,
       myPlayerId: null,
