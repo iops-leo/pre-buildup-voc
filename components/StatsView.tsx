@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useMemo } from 'react';
-import { useQuizStore, QuizHistoryEntry, getLevelTitle, BADGES } from '@/store/useQuizStore';
+import React, { useMemo, useState } from 'react';
+import { useQuizStore, QuizHistoryEntry, getLevelTitle, BADGES, Badge } from '@/store/useQuizStore';
+import { BadgeModal } from './BadgeModal';
 import { motion } from 'framer-motion';
 import {
     ArrowLeft, TrendingUp, Target, Clock, Calendar, Award, Flame,
@@ -26,6 +27,7 @@ export const StatsView = ({ onBack }: StatsViewProps) => {
         lessonProgress
     } = useQuizStore();
 
+    const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
     const currentTitle = getLevelTitle(level);
 
     // Calculate statistics
@@ -212,13 +214,14 @@ export const StatsView = ({ onBack }: StatsViewProps) => {
                     {BADGES.map(badge => {
                         const earned = earnedBadges.includes(badge.id);
                         return (
-                            <div
+                            <button
                                 key={badge.id}
+                                onClick={() => { playClick(); setSelectedBadge(badge); }}
                                 className={clsx(
-                                    "p-3 rounded-xl border flex items-center gap-3",
+                                    "p-3 rounded-xl border flex items-center gap-3 text-left transition-all",
                                     earned
-                                        ? "bg-slate-800 border-slate-700"
-                                        : "bg-slate-900/50 border-slate-800 opacity-40"
+                                        ? "bg-slate-800 border-slate-700 hover:bg-slate-700 hover:border-slate-600"
+                                        : "bg-slate-900/50 border-slate-800 opacity-40 hover:opacity-60"
                                 )}
                             >
                                 <span className="text-2xl">{earned ? badge.icon : '🔒'}</span>
@@ -226,7 +229,7 @@ export const StatsView = ({ onBack }: StatsViewProps) => {
                                     <p className="font-bold text-sm text-white">{badge.name}</p>
                                     <p className="text-[10px] text-slate-400">{badge.description}</p>
                                 </div>
-                            </div>
+                            </button>
                         );
                     })}
                 </div>
@@ -258,6 +261,13 @@ export const StatsView = ({ onBack }: StatsViewProps) => {
             )}
 
             <div className="h-10" />
+
+            <BadgeModal
+                badge={selectedBadge}
+                isOpen={selectedBadge !== null}
+                onClose={() => setSelectedBadge(null)}
+                isEarned={selectedBadge ? earnedBadges.includes(selectedBadge.id) : false}
+            />
         </div>
     );
 };

@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X } from 'lucide-react';
 import { Badge, BADGES } from '@/store/useQuizStore';
@@ -88,9 +89,14 @@ export function BadgeModal({ badge, isOpen, onClose, isEarned }: BadgeModalProps
 interface BadgeGridProps {
   earnedBadges: string[];
   onBadgeClick: (badge: Badge) => void;
+  collapsed?: boolean;
 }
 
-export function BadgeGrid({ earnedBadges, onBadgeClick }: BadgeGridProps) {
+const COLS = 7;
+
+export function BadgeGrid({ earnedBadges, onBadgeClick, collapsed = false }: BadgeGridProps) {
+  const [expanded, setExpanded] = useState(false);
+
   // Sort: earned first, then unearned
   const sortedBadges = [...BADGES].sort((a, b) => {
     const aEarned = earnedBadges.includes(a.id);
@@ -100,25 +106,41 @@ export function BadgeGrid({ earnedBadges, onBadgeClick }: BadgeGridProps) {
     return 0;
   });
 
+  const showCollapsed = collapsed && !expanded;
+  const visibleBadges = showCollapsed ? sortedBadges.slice(0, COLS) : sortedBadges;
+  const hiddenCount = sortedBadges.length - COLS;
+
   return (
-    <div className="grid grid-cols-5 gap-2">
-      {sortedBadges.map(badge => {
-        const isEarned = earnedBadges.includes(badge.id);
-        return (
-          <button
-            key={badge.id}
-            onClick={() => onBadgeClick(badge)}
-            className={`aspect-square rounded-xl flex items-center justify-center text-2xl transition-all ${
-              isEarned
-                ? 'bg-slate-800 hover:bg-slate-700 border border-slate-600'
-                : 'bg-slate-900 border border-slate-800 grayscale opacity-40 hover:opacity-60'
-            }`}
-            title={badge.name}
-          >
-            {badge.icon}
-          </button>
-        );
-      })}
+    <div>
+      <div className={showCollapsed ? '' : 'max-h-32 overflow-y-auto'}>
+        <div className="grid grid-cols-7 sm:grid-cols-8 md:grid-cols-10 gap-2">
+          {visibleBadges.map(badge => {
+            const isEarned = earnedBadges.includes(badge.id);
+            return (
+              <button
+                key={badge.id}
+                onClick={() => onBadgeClick(badge)}
+                className={`aspect-square rounded-lg flex items-center justify-center text-lg transition-all ${
+                  isEarned
+                    ? 'bg-slate-800 hover:bg-slate-700 border border-slate-600'
+                    : 'bg-slate-900 border border-slate-800 grayscale opacity-40 hover:opacity-60'
+                }`}
+                title={badge.name}
+              >
+                {badge.icon}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      {collapsed && hiddenCount > 0 && (
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="w-full mt-2 py-1.5 text-xs text-slate-400 hover:text-slate-300 transition-colors"
+        >
+          {expanded ? '접기' : `+${hiddenCount}개 더보기`}
+        </button>
+      )}
     </div>
   );
 }

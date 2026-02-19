@@ -73,6 +73,16 @@ export const LessonSelector = ({ onNavigate }: LessonSelectorProps) => {
 
     return (
         <div className="w-full max-w-4xl mx-auto p-3 md:p-6 space-y-6 md:space-y-8 animate-in fade-in duration-500">
+            {/* Main Header */}
+            <header className="text-center space-y-1 md:space-y-2 pt-2 md:pt-4">
+                <h1 className="text-3xl md:text-5xl font-black tracking-tight text-white font-display">
+                    {VOCABULARY_DATA.book_title}
+                </h1>
+                <p className="text-slate-400 text-sm md:text-base">
+                    학습할 레슨을 선택하세요
+                </p>
+            </header>
+
             {/* Gamification Dashboard - Compact for Mobile/Tablet */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
                 {/* Profile / Level Card */}
@@ -97,7 +107,7 @@ export const LessonSelector = ({ onNavigate }: LessonSelectorProps) => {
                                 <h2 className={clsx("text-lg md:text-xl font-black", currentTitle.color)}>
                                     {currentTitle.title}
                                 </h2>
-                                <p className="text-slate-400 text-xs font-medium">Keep evolving!</p>
+                                <p className="text-slate-400 text-xs font-medium">계속 성장 중!</p>
                             </div>
                             <span className="text-xs md:text-sm font-mono text-blue-400 font-bold">{Math.floor(xp)} XP</span>
                         </div>
@@ -109,7 +119,7 @@ export const LessonSelector = ({ onNavigate }: LessonSelectorProps) => {
                             />
                         </div>
                         <p className="text-[10px] md:text-xs text-slate-500 text-right">
-                            {1000 - Math.floor(currentLevelXp)} XP to next level
+                            {1000 - Math.floor(currentLevelXp)} XP 다음 레벨까지
                         </p>
                     </div>
                 </div>
@@ -126,80 +136,11 @@ export const LessonSelector = ({ onNavigate }: LessonSelectorProps) => {
                         </div>
                         <div className="text-left md:text-center">
                             <div className="text-2xl md:text-3xl font-black text-white leading-none">{streak}</div>
-                            <div className="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider">Day Streak</div>
+                            <div className="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-wider">연속 학습</div>
                         </div>
                     </div>
                 </div>
             </div>
-
-            {/* Badges Section */}
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 md:p-4">
-                <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-sm font-bold text-slate-400">
-                        뱃지 컬렉션 ({earnedBadges.length}/{BADGES.length})
-                    </h3>
-                </div>
-                <BadgeGrid earnedBadges={earnedBadges} onBadgeClick={handleBadgeClick} />
-            </div>
-
-            {/* Badge Modal */}
-            <BadgeModal
-                badge={selectedBadge}
-                isOpen={badgeModalOpen}
-                onClose={() => setBadgeModalOpen(false)}
-                isEarned={selectedBadge ? earnedBadges.includes(selectedBadge.id) : false}
-            />
-
-            {/* Navigation Menu */}
-            <div className="grid grid-cols-4 gap-3">
-                <button
-                    onClick={() => { playClick(); onNavigate?.('stats'); }}
-                    className="flex flex-col items-center gap-2 p-4 bg-slate-900 border border-slate-800 rounded-xl hover:bg-slate-800 transition-colors group"
-                >
-                    <div className="p-3 rounded-full bg-blue-500/10 text-blue-400 group-hover:bg-blue-500/20 transition-colors">
-                        <BarChart3 size={22} />
-                    </div>
-                    <span className="text-xs font-bold text-slate-300">학습 통계</span>
-                </button>
-                <button
-                    onClick={() => { playClick(); onNavigate?.('game'); }}
-                    className="flex flex-col items-center gap-2 p-4 bg-slate-900 border border-slate-800 rounded-xl hover:bg-slate-800 transition-colors group"
-                >
-                    <div className="p-3 rounded-full bg-rose-500/10 text-rose-400 group-hover:bg-rose-500/20 transition-colors">
-                        <Timer size={22} />
-                    </div>
-                    <span className="text-xs font-bold text-slate-300">타이머 챌린지</span>
-                </button>
-                <Link
-                    href="/raid"
-                    onClick={() => playClick()}
-                    className="flex flex-col items-center gap-2 p-4 bg-slate-900 border border-slate-800 rounded-xl hover:bg-slate-800 transition-colors group"
-                >
-                    <div className="p-3 rounded-full bg-purple-500/10 text-purple-400 group-hover:bg-purple-500/20 transition-colors">
-                        <Swords size={22} />
-                    </div>
-                    <span className="text-xs font-bold text-slate-300">몬스터 레이드</span>
-                </Link>
-                <button
-                    onClick={() => { playClick(); onNavigate?.('settings'); }}
-                    className="flex flex-col items-center gap-2 p-4 bg-slate-900 border border-slate-800 rounded-xl hover:bg-slate-800 transition-colors group"
-                >
-                    <div className="p-3 rounded-full bg-slate-500/10 text-slate-400 group-hover:bg-slate-500/20 transition-colors">
-                        <Settings size={22} />
-                    </div>
-                    <span className="text-xs font-bold text-slate-300">설정</span>
-                </button>
-            </div>
-
-            {/* Main Header */}
-            <header className="text-center space-y-1 md:space-y-2 pt-2 md:pt-4">
-                <h1 className="text-3xl md:text-5xl font-black tracking-tight text-white font-display">
-                    {VOCABULARY_DATA.book_title}
-                </h1>
-                <p className="text-slate-400 text-sm md:text-base">
-                    Choose a lesson to assist your journey.
-                </p>
-            </header>
 
             {/* Review Button */}
             {persistentWrongAnswers.length > 0 && (
@@ -214,16 +155,75 @@ export const LessonSelector = ({ onNavigate }: LessonSelectorProps) => {
                             <RefreshCw size={20} className="group-hover:rotate-180 transition-transform duration-700" />
                         </div>
                         <div className="text-left text-white flex-1">
-                            <h3 className="text-base md:text-lg font-bold">Review Waiting</h3>
+                            <h3 className="text-base md:text-lg font-bold">복습 대기</h3>
                             <p className="opacity-90 text-xs md:text-sm">
                                 <span className="font-extrabold mr-1 bg-white text-orange-600 px-1.5 rounded-md">{persistentWrongAnswers.length}</span>
-                                words
+                                단어 · 스펠링 모드
                             </p>
                         </div>
                         <ChevronRight size={18} className="text-white z-10" />
                     </div>
                 </motion.button>
             )}
+
+            {/* Navigation Menu */}
+            <div className="grid grid-cols-4 gap-3">
+                <button
+                    onClick={() => { playClick(); onNavigate?.('stats'); }}
+                    className="flex flex-col items-center gap-2 p-4 bg-slate-900 border border-slate-800 rounded-2xl hover:bg-slate-800 transition-colors group touch-manipulation"
+                >
+                    <div className="p-3 rounded-full bg-blue-500/10 text-blue-400 group-hover:bg-blue-500/20 transition-colors">
+                        <BarChart3 size={22} />
+                    </div>
+                    <span className="text-xs font-bold text-slate-300">학습 통계</span>
+                </button>
+                <button
+                    onClick={() => { playClick(); onNavigate?.('game'); }}
+                    className="flex flex-col items-center gap-2 p-4 bg-slate-900 border border-slate-800 rounded-2xl hover:bg-slate-800 transition-colors group touch-manipulation"
+                >
+                    <div className="p-3 rounded-full bg-rose-500/10 text-rose-400 group-hover:bg-rose-500/20 transition-colors">
+                        <Timer size={22} />
+                    </div>
+                    <span className="text-xs font-bold text-slate-300">타이머 챌린지</span>
+                </button>
+                <Link
+                    href="/raid"
+                    onClick={() => playClick()}
+                    className="flex flex-col items-center gap-2 p-4 bg-slate-900 border border-slate-800 rounded-2xl hover:bg-slate-800 transition-colors group touch-manipulation"
+                >
+                    <div className="p-3 rounded-full bg-purple-500/10 text-purple-400 group-hover:bg-purple-500/20 transition-colors">
+                        <Swords size={22} />
+                    </div>
+                    <span className="text-xs font-bold text-slate-300">몬스터 레이드</span>
+                </Link>
+                <button
+                    onClick={() => { playClick(); onNavigate?.('settings'); }}
+                    className="flex flex-col items-center gap-2 p-4 bg-slate-900 border border-slate-800 rounded-2xl hover:bg-slate-800 transition-colors group touch-manipulation"
+                >
+                    <div className="p-3 rounded-full bg-slate-500/10 text-slate-400 group-hover:bg-slate-500/20 transition-colors">
+                        <Settings size={22} />
+                    </div>
+                    <span className="text-xs font-bold text-slate-300">설정</span>
+                </button>
+            </div>
+
+            {/* Badges Section */}
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-3 md:p-4">
+                <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-bold text-slate-400">
+                        뱃지 컬렉션 ({earnedBadges.length}/{BADGES.length})
+                    </h3>
+                </div>
+                <BadgeGrid earnedBadges={earnedBadges} onBadgeClick={handleBadgeClick} collapsed />
+            </div>
+
+            {/* Badge Modal */}
+            <BadgeModal
+                badge={selectedBadge}
+                isOpen={badgeModalOpen}
+                onClose={() => setBadgeModalOpen(false)}
+                isEarned={selectedBadge ? earnedBadges.includes(selectedBadge.id) : false}
+            />
 
             {/* Lesson Grid */}
             <div className="space-y-6 md:space-y-8 pb-10">
@@ -265,14 +265,20 @@ interface LessonCardProps {
 }
 
 const LessonCard = ({ unit, lesson, bestScore, onSelect, onPreview }: LessonCardProps) => {
+    const previewWords = lesson.vocabulary
+        .slice(0, 3)
+        .map(v => v.word.length > 12 ? v.word.slice(0, 12) + '…' : v.word)
+        .join(', ');
+
     return (
-        <div className="group relative flex flex-col justify-between bg-slate-900 border border-slate-800 rounded-xl p-4 md:p-6 hover:bg-slate-800 transition-colors duration-200 shadow-sm">
+        <div className="group relative flex flex-col justify-between bg-slate-900 border border-slate-800 rounded-2xl p-4 md:p-6 hover:bg-slate-800 transition-colors duration-200 shadow-sm">
             <div className="flex justify-between items-start mb-3">
                 <div>
                     <h3 className="text-base md:text-lg font-bold text-slate-100 group-hover:text-blue-400 transition-colors">
                         Lesson {lesson.lesson}
                     </h3>
-                    <p className="text-xs md:text-sm text-slate-400 mt-0.5 font-medium">{lesson.vocabulary.length} words</p>
+                    <p className="text-xs md:text-sm text-slate-400 mt-0.5 font-medium">{lesson.vocabulary.length} 단어</p>
+                    <p className="text-[10px] md:text-xs text-slate-500 mt-0.5 truncate max-w-[160px]">{previewWords}...</p>
                 </div>
                 {bestScore !== null ? (
                     <div className={clsx(
@@ -297,7 +303,7 @@ const LessonCard = ({ unit, lesson, bestScore, onSelect, onPreview }: LessonCard
                 className="w-full mb-3 py-2 px-3 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:bg-slate-700 hover:text-white transition-colors flex items-center justify-center gap-2 text-sm font-medium active:scale-[0.98] touch-manipulation"
             >
                 <BookOpen size={16} />
-                문제보기
+                단어 미리보기
             </button>
 
             <div className="grid grid-cols-2 gap-2">
@@ -364,7 +370,7 @@ const ModeButton = ({ label, subLabel, color, icon, onClick, fullWidth }: { labe
                 {icon}
                 {label}
             </span>
-            <span className="text-[9px] md:text-[10px] opacity-90 mt-px font-medium">{subLabel}</span>
+            <span className="text-[11px] md:text-xs opacity-90 mt-px font-medium">{subLabel}</span>
         </button>
     );
 };
