@@ -599,18 +599,44 @@ export const useRaidStore = create<RaidState>((set, get) => ({
 
       if (error || !data) return;
 
-      const { myPlayerId: currentPlayerId } = get();
+      const { myPlayerId: currentPlayerId, room: currentRoom } = get();
+      const dbRow = data as RaidRoomRow;
+
       // 레이스 컨디션 방지: 내가 아직 DB에 반영 안 됐으면 덮어쓰지 않음
-      if (currentPlayerId && !(data as RaidRoomRow).players.find((p: RaidPlayer) => p.id === currentPlayerId)) {
+      if (currentPlayerId && !dbRow.players.find((p: RaidPlayer) => p.id === currentPlayerId)) {
         console.log('[RaidStore] fetchFullRoom: skipping — my player not in DB yet');
         return;
       }
 
-      const room = dbRowToRoom(data as RaidRoomRow);
-      set((state) => ({
-        room,
-        phase: room.phase,
-      }));
+      const remoteRoom = dbRowToRoom(dbRow);
+
+      // 전투 중: 내 플레이어 데이터는 로컬 유지, 상대방 + 몬스터 HP는 DB에서 병합
+      if (currentRoom && currentPlayerId && currentRoom.phase === 'battle') {
+        const myLocalPlayer = currentRoom.players.find((p) => p.id === currentPlayerId);
+        const mergedPlayers = remoteRoom.players.map((p) =>
+          p.id === currentPlayerId && myLocalPlayer ? myLocalPlayer : p
+        );
+        // 몬스터 HP: 더 낮은 쪽 사용 (둘 다 데미지를 줬으므로)
+        const mergedHp = Math.min(remoteRoom.monsterCurrentHp, currentRoom.monsterCurrentHp);
+        const isVictory = mergedHp <= 0;
+        set((state) => ({
+          room: state.room ? {
+            ...state.room,
+            players: mergedPlayers,
+            monsterCurrentHp: mergedHp,
+            phase: isVictory ? 'result' : remoteRoom.phase,
+            isVictory,
+            endedAt: isVictory ? Date.now() : remoteRoom.endedAt,
+            damageLog: remoteRoom.damageLog,
+          } : null,
+          phase: isVictory ? 'result' : remoteRoom.phase,
+        }));
+      } else {
+        set((state) => ({
+          room: remoteRoom,
+          phase: remoteRoom.phase,
+        }));
+      }
     };
 
     const channel = db()
@@ -640,15 +666,15 @@ export const useRaidStore = create<RaidState>((set, get) => ({
         }
       });
 
-    // Polling fallback: periodically fetch room state during waiting phase
+    // Polling fallback: periodically fetch room state (waiting + battle phases)
     const pollInterval = setInterval(() => {
       const currentRoom = get().room;
-      if (!currentRoom || currentRoom.phase !== 'waiting') {
+      if (!currentRoom || currentRoom.phase === 'result') {
         clearInterval(pollInterval);
         return;
       }
       fetchFullRoom();
-    }, 3000);
+    }, 2000);
 
     set({ channel, _pollInterval: pollInterval as unknown as number });
   },
