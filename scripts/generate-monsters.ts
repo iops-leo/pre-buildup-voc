@@ -7,7 +7,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
-const GEMINI_API_KEY = 'AIzaSyDo5-DahXe5q-4Do3mWaQ8ozd_vE_xqNFQ';
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 const OUTPUT_DIR = path.join(__dirname, '../public/monsters');
 
 // 몬스터 정의
