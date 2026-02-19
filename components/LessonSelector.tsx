@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { VOCABULARY_DATA, Unit, Lesson } from '@/data/vocabulary';
-import { useQuizStore, QuizHistoryEntry, BADGES, getLevelTitle } from '@/store/useQuizStore';
+import { useQuizStore, QuizHistoryEntry, BADGES, getLevelTitle, Badge } from '@/store/useQuizStore';
 import { BookOpen, Star, RefreshCw, Trophy, ChevronRight, GraduationCap, Flame, Medal, Mic, PenTool, BarChart3, Settings, Timer, Swords } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import clsx from 'clsx';
 import { useSound } from '@/hooks/useSound';
+import { BadgeModal, BadgeGrid } from './BadgeModal';
 
 // View types for navigation
 type ViewType = 'home' | 'stats' | 'settings' | 'game';
@@ -30,6 +31,16 @@ export const LessonSelector = ({ onNavigate }: LessonSelectorProps) => {
 
     // SFX
     const { playClick } = useSound();
+
+    // Badge modal state
+    const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
+    const [badgeModalOpen, setBadgeModalOpen] = useState(false);
+
+    const handleBadgeClick = (badge: Badge) => {
+        playClick();
+        setSelectedBadge(badge);
+        setBadgeModalOpen(true);
+    };
 
     // Get current title based on level
     const currentTitle = getLevelTitle(level);
@@ -121,24 +132,23 @@ export const LessonSelector = ({ onNavigate }: LessonSelectorProps) => {
                 </div>
             </div>
 
-            {/* Badges Section (Compact) */}
-            {earnedBadges.length > 0 && (
-                <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 md:p-4 overflow-x-auto scrollbar-hide">
-                    <div className="flex gap-2 min-w-max">
-                        {BADGES.filter(b => earnedBadges.includes(b.id)).map(badge => (
-                            <motion.div
-                                key={badge.id}
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                className="flex items-center gap-1.5 bg-slate-800 px-2.5 py-1.5 rounded-lg border border-slate-700 shrink-0"
-                            >
-                                <span className="text-lg">{badge.icon}</span>
-                                <span className="text-[10px] md:text-xs font-bold text-slate-300">{badge.name}</span>
-                            </motion.div>
-                        ))}
-                    </div>
+            {/* Badges Section */}
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-3 md:p-4">
+                <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-sm font-bold text-slate-400">
+                        뱃지 컬렉션 ({earnedBadges.length}/{BADGES.length})
+                    </h3>
                 </div>
-            )}
+                <BadgeGrid earnedBadges={earnedBadges} onBadgeClick={handleBadgeClick} />
+            </div>
+
+            {/* Badge Modal */}
+            <BadgeModal
+                badge={selectedBadge}
+                isOpen={badgeModalOpen}
+                onClose={() => setBadgeModalOpen(false)}
+                isEarned={selectedBadge ? earnedBadges.includes(selectedBadge.id) : false}
+            />
 
             {/* Navigation Menu */}
             <div className="grid grid-cols-4 gap-3">

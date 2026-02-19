@@ -613,16 +613,20 @@ export const useQuizStore = create<QuizState>()(
             },
 
             checkAchievements: (historyEntry) => {
+                // Re-fetch state to get the latest values after endQuiz updates
                 const state = get();
                 const newBadges = [...state.earnedBadges];
                 let badgeAdded = false;
 
                 BADGES.forEach(badge => {
                     if (!newBadges.includes(badge.id)) {
-                        if (badge.condition(state, historyEntry)) {
-                            newBadges.push(badge.id);
-                            badgeAdded = true;
-                            // Optionally trigger a toast/notification here via UI components
+                        try {
+                            if (badge.condition(state, historyEntry)) {
+                                newBadges.push(badge.id);
+                                badgeAdded = true;
+                            }
+                        } catch {
+                            // Skip badge if condition throws
                         }
                     }
                 });
