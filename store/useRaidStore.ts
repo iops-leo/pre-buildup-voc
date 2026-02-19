@@ -93,6 +93,7 @@ interface RaidState {
   startBattle: () => Promise<void>;
   loadNextQuestion: () => void;
   submitAnswer: (answer: string) => Promise<void>;
+  kickPlayer: (playerId: string) => Promise<void>;
   resetRaid: () => void;
   setMonsterShaking: (v: boolean) => void;
   clearAnswerResult: () => void;
@@ -653,6 +654,30 @@ export const useRaidStore = create<RaidState>((set, get) => ({
       supabase.removeChannel(channel);
     }
     set({ channel: null, _pollInterval: null });
+  },
+
+  kickPlayer: async (playerId: string) => {
+    const { room, myPlayerId } = get();
+    if (!room || !myPlayerId) return;
+
+    // 방장만 내보내기 가능
+    const me = room.players.find((p) => p.id === myPlayerId);
+    if (me?.role !== 'host') return;
+
+    const updatedPlayers = room.players.filter((p) => p.id !== playerId);
+
+    if (isSupabaseConfigured()) {
+      await db()
+        .from('raid_rooms')
+        .update({
+          players: updatedPlayers.map(playerToDbFormat),
+        })
+        .eq('code', room.code);
+    }
+
+    set((state) => ({
+      room: state.room ? { ...state.room, players: updatedPlayers } : null,
+    }));
   },
 
   setMonsterShaking: (v: boolean) => set({ monsterShaking: v }),

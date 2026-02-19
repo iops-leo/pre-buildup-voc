@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useRaidStore, PlayerConfig } from '@/store/useRaidStore';
 import { getMonsterById } from '@/data/monsters';
@@ -12,10 +12,12 @@ import {
   allCategories,
 } from '@/data/questions';
 import { VOCABULARY_DATA } from '@/data/vocabulary';
-import { Copy, Check, Users, Swords, User } from 'lucide-react';
+import { Copy, Check, Users, Swords, User, UserX } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 export function RaidWaitingRoom() {
-  const { room, myPlayerId, soloMode, setPlayerConfig, startBattle } = useRaidStore();
+  const router = useRouter();
+  const { room, myPlayerId, soloMode, setPlayerConfig, startBattle, kickPlayer, resetRaid } = useRaidStore();
   const [copied, setCopied] = useState(false);
 
   const [selectedSubject, setSelectedSubject] = useState<Subject>('math');
@@ -24,6 +26,14 @@ export function RaidWaitingRoom() {
   const [selectedVocabUnit, setSelectedVocabUnit] = useState<number>(1);
   const [selectedVocabLesson, setSelectedVocabLesson] = useState<number>(1);
   const [configured, setConfigured] = useState(false);
+
+  // 강퇴 감지: 내가 players에 없으면 로비로
+  useEffect(() => {
+    if (room && myPlayerId && !room.players.find((p) => p.id === myPlayerId)) {
+      resetRaid();
+      router.replace('/raid');
+    }
+  }, [room, myPlayerId, resetRaid, router]);
 
   if (!room) return null;
 
@@ -182,8 +192,16 @@ export function RaidWaitingRoom() {
                   <div className="flex items-center gap-2">
                     <span className="text-lg">{player.role === 'host' ? '👑' : '🎮'}</span>
                     <span className="text-sm font-bold text-white truncate">{player.name}</span>
-                    {player.id === myPlayerId && (
+                    {player.id === myPlayerId ? (
                       <span className="text-xs text-blue-400 ml-auto">(나)</span>
+                    ) : isHost && (
+                      <button
+                        onClick={() => kickPlayer(player.id)}
+                        className="ml-auto p-1 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-900/30 transition-colors"
+                        title="내보내기"
+                      >
+                        <UserX size={14} />
+                      </button>
                     )}
                   </div>
                   {player.config ? (

@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { useRaidStore } from '@/store/useRaidStore';
 import { monsterWorlds, Monster } from '@/data/monsters';
 import { useRouter } from 'next/navigation';
-import { Swords, Users, ChevronRight, ArrowLeft, User } from 'lucide-react';
+import { Swords, Users, ChevronRight, ArrowLeft, User, Loader2 } from 'lucide-react';
 
 type LobbyMode = 'main' | 'create' | 'join' | 'solo';
 
@@ -17,6 +17,7 @@ export function RaidLobby() {
   const [selectedMonsterId, setSelectedMonsterId] = useState('green_slime');
   const [joinCode, setJoinCode] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const allMonsters: Monster[] = monsterWorlds.flatMap((w) => w.monsters);
 
@@ -26,11 +27,18 @@ export function RaidLobby() {
       return;
     }
     setError('');
-    const code = await createRoom(playerName.trim(), selectedMonsterId);
-    if (code) {
-      router.push(`/raid/${code}`);
-    } else {
-      setError('서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.');
+    setLoading(true);
+    try {
+      const code = await createRoom(playerName.trim(), selectedMonsterId);
+      if (code) {
+        router.push(`/raid/${code}`);
+      } else {
+        setError('서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.');
+        setLoading(false);
+      }
+    } catch {
+      setError('서버 연결에 실패했습니다.');
+      setLoading(false);
     }
   }
 
@@ -44,11 +52,18 @@ export function RaidLobby() {
       return;
     }
     setError('');
-    const success = await joinRoom(joinCode.trim().toUpperCase(), playerName.trim());
-    if (success) {
-      router.push(`/raid/${joinCode.trim().toUpperCase()}`);
-    } else {
-      setError('방을 찾을 수 없거나 이미 가득 찼습니다. 코드를 확인해주세요.');
+    setLoading(true);
+    try {
+      const success = await joinRoom(joinCode.trim().toUpperCase(), playerName.trim());
+      if (success) {
+        router.push(`/raid/${joinCode.trim().toUpperCase()}`);
+      } else {
+        setError('방을 찾을 수 없거나 이미 가득 찼습니다. 코드를 확인해주세요.');
+        setLoading(false);
+      }
+    } catch {
+      setError('서버 연결에 실패했습니다.');
+      setLoading(false);
     }
   }
 
@@ -215,9 +230,14 @@ export function RaidLobby() {
 
               <button
                 onClick={handleCreate}
-                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-500 hover:to-violet-500 text-white font-black text-lg transition-all hover:scale-[1.02] active:scale-[0.98]"
+                disabled={loading}
+                className={`w-full py-3.5 rounded-xl text-white font-black text-lg transition-all flex items-center justify-center gap-2 ${
+                  loading
+                    ? 'bg-slate-700 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-purple-600 to-violet-600 hover:from-purple-500 hover:to-violet-500 hover:scale-[1.02] active:scale-[0.98]'
+                }`}
               >
-                방 만들기 ⚔️
+                {loading ? <><Loader2 size={20} className="animate-spin" /> 방 만들기 중...</> : '방 만들기 ⚔️'}
               </button>
             </div>
           </motion.div>
@@ -345,9 +365,14 @@ export function RaidLobby() {
 
               <button
                 onClick={handleJoin}
-                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-black text-lg transition-all hover:scale-[1.02] active:scale-[0.98]"
+                disabled={loading}
+                className={`w-full py-3.5 rounded-xl text-white font-black text-lg transition-all flex items-center justify-center gap-2 ${
+                  loading
+                    ? 'bg-slate-700 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 hover:scale-[1.02] active:scale-[0.98]'
+                }`}
               >
-                입장하기 🚀
+                {loading ? <><Loader2 size={20} className="animate-spin" /> 입장 중...</> : '입장하기 🚀'}
               </button>
             </div>
           </motion.div>
