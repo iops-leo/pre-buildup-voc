@@ -20,8 +20,8 @@ export function RaidWaitingRoom() {
   const { room, myPlayerId, soloMode, setPlayerConfig, startBattle, kickPlayer, resetRaid } = useRaidStore();
   const [copied, setCopied] = useState(false);
 
-  const [selectedSubject, setSelectedSubject] = useState<Subject>('math');
-  const [selectedCategory, setSelectedCategory] = useState<string>('addition');
+  const [selectedSubject, setSelectedSubject] = useState<Subject>(soloMode ? 'english' : 'math');
+  const [selectedCategory, setSelectedCategory] = useState<string>(soloMode ? '' : 'addition');
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>('easy');
   const [selectedVocabUnit, setSelectedVocabUnit] = useState<number>(1);
   const [selectedVocabLesson, setSelectedVocabLesson] = useState<number>(1);
@@ -243,7 +243,9 @@ export function RaidWaitingRoom() {
             <div>
               <label className="text-xs text-slate-400 font-medium block mb-2">과목 선택</label>
               <div className="grid grid-cols-2 gap-2">
-                {(Object.keys(subjectInfo) as Subject[]).map((subj) => (
+                {(Object.keys(subjectInfo) as Subject[])
+                  .filter((subj) => !soloMode || subj === 'english')
+                  .map((subj) => (
                   <button
                     key={subj}
                     onClick={() => handleCategoryChange(subj)}

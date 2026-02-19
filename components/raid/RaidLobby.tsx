@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useRaidStore } from '@/store/useRaidStore';
 import { monsterWorlds, Monster } from '@/data/monsters';
@@ -18,6 +18,18 @@ export function RaidLobby() {
   const [joinCode, setJoinCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // localStorage에서 이름 복원
+  useEffect(() => {
+    const saved = localStorage.getItem('raid_player_name');
+    if (saved) setPlayerName(saved);
+  }, []);
+
+  function updatePlayerName(name: string) {
+    setPlayerName(name);
+    setError('');
+    if (name.trim()) localStorage.setItem('raid_player_name', name.trim());
+  }
 
   const allMonsters: Monster[] = monsterWorlds.flatMap((w) => w.monsters);
 
@@ -190,7 +202,7 @@ export function RaidLobby() {
                 <input
                   type="text"
                   value={playerName}
-                  onChange={(e) => { setPlayerName(e.target.value); setError(''); }}
+                  onChange={(e) => updatePlayerName(e.target.value)}
                   placeholder="이름을 입력하세요"
                   maxLength={12}
                   className="w-full px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-white placeholder:text-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
@@ -268,7 +280,7 @@ export function RaidLobby() {
                 <input
                   type="text"
                   value={playerName}
-                  onChange={(e) => { setPlayerName(e.target.value); setError(''); }}
+                  onChange={(e) => updatePlayerName(e.target.value)}
                   placeholder="이름을 입력하세요"
                   maxLength={12}
                   className="w-full px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-white placeholder:text-slate-500 focus:outline-none focus:border-emerald-500 transition-colors"
@@ -340,7 +352,7 @@ export function RaidLobby() {
                 <input
                   type="text"
                   value={playerName}
-                  onChange={(e) => { setPlayerName(e.target.value); setError(''); }}
+                  onChange={(e) => updatePlayerName(e.target.value)}
                   placeholder="이름을 입력하세요"
                   maxLength={12}
                   className="w-full px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-white placeholder:text-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
