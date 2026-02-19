@@ -537,6 +537,23 @@ export const useRaidStore = create<RaidState>((set, get) => ({
     // Unsubscribe from previous channel
     get().unsubscribeFromRoom();
 
+    // Helper: fetch the full row from DB (realtime payload may omit JSONB columns)
+    const fetchFullRoom = async () => {
+      const { data, error } = await db()
+        .from('raid_rooms')
+        .select('*')
+        .eq('code', code)
+        .single();
+
+      if (error || !data) return;
+
+      const room = dbRowToRoom(data as RaidRoomRow);
+      set((state) => ({
+        room,
+        phase: room.phase,
+      }));
+    };
+
     const channel = db()
       .channel(`raid_room_${code}`)
       .on(
@@ -548,19 +565,9 @@ export const useRaidStore = create<RaidState>((set, get) => ({
           filter: `code=eq.${code}`,
         },
         (payload) => {
-          const { myPlayerId } = get();
-          if (payload.eventType === 'UPDATE' && payload.new) {
-            const newRow = payload.new as RaidRoomRow;
-            const room = dbRowToRoom(newRow);
-
-            set((state) => ({
-              room,
-              phase: room.phase,
-              // Don't override local battle state from other player's updates
-              ...(room.phase === 'battle' && state.currentQuestion
-                ? {}
-                : {}),
-            }));
+          if (payload.eventType === 'UPDATE') {
+            // Always re-fetch full row to get complete JSONB data (players, damage_log)
+            fetchFullRoom();
           } else if (payload.eventType === 'DELETE') {
             get().resetRaid();
           }
