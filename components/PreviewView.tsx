@@ -1,16 +1,21 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useQuizStore, QuizMode } from '@/store/useQuizStore';
-import { motion } from 'framer-motion';
-import { ArrowLeft, Volume2, BookOpen, Mic, PenTool } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ArrowLeft, Volume2, BookOpen, Mic, PenTool, Sparkles, Loader2 } from 'lucide-react';
 import clsx from 'clsx';
 import { useTTS } from '@/hooks/useTTS';
 import { useSound } from '@/hooks/useSound';
+import { useAI } from '@/hooks/useAI';
 
 export const PreviewView = () => {
     const store = useQuizStore();
     const { currentUnit, currentLesson, questions, resetQuiz, startQuiz } = store;
     const { speak, isSpeaking } = useTTS();
     const { playClick } = useSound();
+    const { ask } = useAI();
+    const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
+    const [aiData, setAiData] = useState<Record<number, { examples: { en: string; ko: string }[]; hint: string } | null>>({});
+    const [loadingIdx, setLoadingIdx] = useState<number | null>(null);
 
     const handleBack = () => {
         playClick();
@@ -21,6 +26,33 @@ export const PreviewView = () => {
         playClick();
         if (currentUnit && currentLesson) {
             startQuiz(currentUnit, currentLesson, mode);
+        }
+    };
+
+    const handleAIExpand = async (idx: number, word: { word: string; meaning: string }) => {
+        if (expandedIdx === idx) {
+            setExpandedIdx(null);
+            return;
+        }
+        setExpandedIdx(idx);
+        if (aiData[idx]) return; // Already fetched
+
+        setLoadingIdx(idx);
+        const content = await ask('example_sentence', {
+            word: word.word,
+            meaning: word.meaning,
+        });
+        setLoadingIdx(null);
+
+        if (content) {
+            try {
+                // Try to parse JSON response
+                const parsed = JSON.parse(content);
+                setAiData(prev => ({ ...prev, [idx]: parsed }));
+            } catch {
+                // If not valid JSON, show as plain text hint
+                setAiData(prev => ({ ...prev, [idx]: { examples: [], hint: content } }));
+            }
         }
     };
 
@@ -56,37 +88,109 @@ export const PreviewView = () => {
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: idx * 0.03 }}
-                            className="bg-slate-900 border border-slate-800 rounded-xl p-4 md:p-5 hover:bg-slate-800/50 transition-colors"
+                            className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden hover:bg-slate-800/50 transition-colors"
                         >
-                            <div className="flex items-start justify-between gap-3">
-                                <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2 mb-1">
-                                        <span className="text-xs font-mono text-slate-600 bg-slate-800 px-1.5 py-0.5 rounded">
-                                            {idx + 1}
-                                        </span>
-                                        <h3 className="text-lg md:text-xl font-bold text-white break-keep">
-                                            {word.word}
-                                        </h3>
+                            <div className="p-4 md:p-5">
+                                <div className="flex items-start justify-between gap-3">
+                                    <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <span className="text-xs font-mono text-slate-600 bg-slate-800 px-1.5 py-0.5 rounded">
+                                                {idx + 1}
+                                            </span>
+                                            <h3 className="text-lg md:text-xl font-bold text-white break-keep">
+                                                {word.word}
+                                            </h3>
+                                        </div>
+                                        <p className="text-base md:text-lg text-blue-400 font-medium mb-2 break-keep">
+                                            {word.meaning}
+                                        </p>
+                                        <p className="text-sm text-slate-500 leading-relaxed">
+                                            {word.definition}
+                                        </p>
                                     </div>
-                                    <p className="text-base md:text-lg text-blue-400 font-medium mb-2 break-keep">
-                                        {word.meaning}
-                                    </p>
-                                    <p className="text-sm text-slate-500 leading-relaxed">
-                                        {word.definition}
-                                    </p>
+                                    <div className="flex items-center gap-1.5 shrink-0">
+                                        <button
+                                            onClick={() => handleAIExpand(idx, word)}
+                                            className={clsx(
+                                                "p-2.5 rounded-full transition-all duration-150 active:scale-95 touch-manipulation",
+                                                expandedIdx === idx
+                                                    ? "bg-violet-600 text-white"
+                                                    : "bg-slate-800 text-violet-400 hover:bg-violet-900 hover:text-violet-300"
+                                            )}
+                                        >
+                                            {loadingIdx === idx ? <Loader2 size={18} className="animate-spin" /> : <Sparkles size={18} />}
+                                        </button>
+                                        <button
+                                            onClick={() => speak(word.word)}
+                                            className={clsx(
+                                                "p-2.5 rounded-full transition-all duration-150 active:scale-95 touch-manipulation shrink-0",
+                                                isSpeaking
+                                                    ? "bg-blue-600 text-white"
+                                                    : "bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white"
+                                            )}
+                                        >
+                                            <Volume2 size={18} />
+                                        </button>
+                                    </div>
                                 </div>
-                                <button
-                                    onClick={() => speak(word.word)}
-                                    className={clsx(
-                                        "p-2.5 rounded-full transition-all duration-150 active:scale-95 touch-manipulation shrink-0",
-                                        isSpeaking
-                                            ? "bg-blue-600 text-white"
-                                            : "bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-white"
-                                    )}
-                                >
-                                    <Volume2 size={18} />
-                                </button>
                             </div>
+
+                            {/* AI Enhanced Content */}
+                            <AnimatePresence>
+                                {expandedIdx === idx && (
+                                    <motion.div
+                                        initial={{ height: 0, opacity: 0 }}
+                                        animate={{ height: 'auto', opacity: 1 }}
+                                        exit={{ height: 0, opacity: 0 }}
+                                        transition={{ duration: 0.2 }}
+                                        className="overflow-hidden"
+                                    >
+                                        <div className="px-4 pb-4 md:px-5 md:pb-5">
+                                            <div className="bg-violet-950/40 border border-violet-800/30 rounded-xl p-4 space-y-3">
+                                                <div className="flex items-center gap-2">
+                                                    <Sparkles size={14} className="text-violet-400" />
+                                                    <span className="text-xs font-bold text-violet-300">AI 학습 도우미</span>
+                                                </div>
+
+                                                {!aiData[idx] && loadingIdx === idx && (
+                                                    <div className="flex items-center gap-2 text-violet-400/60 text-sm py-2">
+                                                        <Loader2 size={14} className="animate-spin" />
+                                                        예문과 기억법을 만들고 있어요...
+                                                    </div>
+                                                )}
+
+                                                {!aiData[idx] && loadingIdx !== idx && (
+                                                    <p className="text-sm text-slate-500">AI 데이터를 불러올 수 없어요.</p>
+                                                )}
+
+                                                {aiData[idx] && (
+                                                    <>
+                                                        {aiData[idx]!.examples.length > 0 && (
+                                                            <div className="space-y-2">
+                                                                <p className="text-xs font-bold text-slate-400">예문</p>
+                                                                {aiData[idx]!.examples.map((ex, i) => (
+                                                                    <div key={i} className="bg-slate-900/50 rounded-lg p-2.5">
+                                                                        <p className="text-sm text-white font-medium">{ex.en}</p>
+                                                                        <p className="text-xs text-slate-400 mt-0.5">{ex.ko}</p>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                        {aiData[idx]!.hint && (
+                                                            <div>
+                                                                <p className="text-xs font-bold text-slate-400 mb-1">기억법</p>
+                                                                <p className="text-sm text-amber-300 bg-amber-950/30 border border-amber-800/30 rounded-lg p-2.5 whitespace-pre-line">
+                                                                    {aiData[idx]!.hint}
+                                                                </p>
+                                                            </div>
+                                                        )}
+                                                    </>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </motion.div>
                     ))}
                 </div>

@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useQuizStore, QuizHistoryEntry, getLevelTitle } from '@/store/useQuizStore';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Home, RefreshCw, Trophy, Clock, Target, TrendingUp, Award, Share2, Volume2, Crown } from 'lucide-react';
+import { Home, RefreshCw, Trophy, Clock, Target, TrendingUp, Award, Share2, Volume2, Crown, Sparkles, Loader2 } from 'lucide-react';
 import clsx from 'clsx';
 import { useTTS } from '@/hooks/useTTS';
 import { useSound } from '@/hooks/useSound';
+import { useAI } from '@/hooks/useAI';
 import confetti from 'canvas-confetti';
 
 export const ResultView = () => {
@@ -13,6 +14,11 @@ export const ResultView = () => {
     const { playLevelUp, playClick } = useSound();
     const { speak } = useTTS(); // Hook must be called before any conditional returns
     const [showCertificate, setShowCertificate] = useState(false);
+    const { ask, isLoading: aiLoading } = useAI();
+    const [aiExplanations, setAiExplanations] = useState<Record<string, string>>({});
+    const [expandedWord, setExpandedWord] = useState<string | null>(null);
+    const [quizFeedback, setQuizFeedback] = useState<string | null>(null);
+    const [feedbackLoading, setFeedbackLoading] = useState(false);
 
     // The latest history entry is the current result
     const result = quizHistory[0];
@@ -46,6 +52,24 @@ export const ResultView = () => {
         }
     }, [result, playLevelUp]);
 
+    // AI quiz feedback
+    useEffect(() => {
+        if (!result || result.totalQuestions - result.correctAnswers <= 0) return;
+        setFeedbackLoading(true);
+        ask('quiz_feedback', {
+            percentage: result.percentage,
+            correct: result.correctAnswers,
+            total: result.totalQuestions,
+            duration: result.durationSeconds,
+            wrongWords: store.wrongAnswers.map(w => w.word),
+            mode: result.mode,
+        }).then(content => {
+            if (content) setQuizFeedback(content);
+            setFeedbackLoading(false);
+        });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     // If no result (shouldn't happen directly), fallback
     if (!result) return null;
 
@@ -61,6 +85,23 @@ export const ResultView = () => {
     const handleDashboard = () => {
         playClick();
         resetQuiz();
+    };
+
+    const handleAIExplain = async (word: { word: string; meaning: string }) => {
+        const key = word.word;
+        if (expandedWord === key) {
+            setExpandedWord(null);
+            return;
+        }
+        setExpandedWord(key);
+        if (aiExplanations[key]) return; // Already fetched
+        const content = await ask('explain_wrong', {
+            meaning: word.meaning,
+            correctAnswer: word.word,
+        });
+        if (content) {
+            setAiExplanations(prev => ({ ...prev, [key]: content }));
+        }
     };
 
     return (
@@ -202,19 +243,84 @@ export const ResultView = () => {
                     <h3 className="text-lg font-bold text-slate-300 px-2 flex items-center gap-2">
                         <RefreshCw size={18} className="text-orange-400" /> Review Incorrect Answers
                     </h3>
+
+                    {/* AI Quiz Feedback */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-gradient-to-br from-violet-950/50 to-purple-950/30 border border-violet-800/50 rounded-2xl p-4"
+                    >
+                        <div className="flex items-center gap-2 mb-2">
+                            <Sparkles size={16} className="text-violet-400" />
+                            <span className="text-sm font-bold text-violet-300">AI 학습 분석</span>
+                        </div>
+                        {feedbackLoading ? (
+                            <div className="flex items-center gap-2 text-violet-400/60 text-sm">
+                                <Loader2 size={14} className="animate-spin" />
+                                분석 중...
+                            </div>
+                        ) : quizFeedback ? (
+                            <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-line">{quizFeedback}</p>
+                        ) : (
+                            <p className="text-sm text-slate-500">AI 분석을 불러올 수 없어요.</p>
+                        )}
+                    </motion.div>
+
                     <div className="bg-slate-900 border border-slate-800 rounded-2xl divide-y divide-slate-800 shadow-sm">
                         {store.wrongAnswers.map((word, idx) => (
-                            <div key={idx} className="p-4 flex items-center justify-between group hover:bg-slate-800 transition-colors">
-                                <div>
-                                    <div className="text-lg font-bold text-slate-200">{word.word}</div>
-                                    <div className="text-sm text-slate-500">{word.meaning}</div>
+                            <div key={idx} className="group">
+                                <div className="p-4 flex items-center justify-between hover:bg-slate-800/50 transition-colors">
+                                    <div className="flex-1 min-w-0">
+                                        <div className="text-lg font-bold text-slate-200">{word.word}</div>
+                                        <div className="text-sm text-slate-500">{word.meaning}</div>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 shrink-0">
+                                        <button
+                                            onClick={() => handleAIExplain(word)}
+                                            className={clsx(
+                                                "p-2 rounded-full transition-all active:scale-95",
+                                                expandedWord === word.word
+                                                    ? "bg-violet-600 text-white"
+                                                    : "bg-slate-800 text-violet-400 hover:bg-violet-900 hover:text-violet-300"
+                                            )}
+                                        >
+                                            <Sparkles size={16} />
+                                        </button>
+                                        <button
+                                            onClick={() => speak(word.word)}
+                                            className="p-2 rounded-full bg-slate-800 text-slate-400 hover:bg-blue-600 hover:text-white transition-all active:scale-95"
+                                        >
+                                            <Volume2 size={16} />
+                                        </button>
+                                    </div>
                                 </div>
-                                <button
-                                    onClick={() => speak(word.word)}
-                                    className="p-2 rounded-full bg-slate-800 text-slate-400 hover:bg-blue-600 hover:text-white transition-all active:scale-95"
-                                >
-                                    <Volume2 size={16} />
-                                </button>
+                                {/* AI Explanation */}
+                                <AnimatePresence>
+                                    {expandedWord === word.word && (
+                                        <motion.div
+                                            initial={{ height: 0, opacity: 0 }}
+                                            animate={{ height: 'auto', opacity: 1 }}
+                                            exit={{ height: 0, opacity: 0 }}
+                                            transition={{ duration: 0.2 }}
+                                            className="overflow-hidden"
+                                        >
+                                            <div className="px-4 pb-4">
+                                                <div className="bg-violet-950/40 border border-violet-800/30 rounded-xl p-3">
+                                                    {aiExplanations[word.word] ? (
+                                                        <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-line">
+                                                            {aiExplanations[word.word]}
+                                                        </p>
+                                                    ) : (
+                                                        <div className="flex items-center gap-2 text-violet-400/60 text-sm">
+                                                            <Loader2 size={14} className="animate-spin" />
+                                                            AI가 설명을 준비하고 있어요...
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
                             </div>
                         ))}
                     </div>
