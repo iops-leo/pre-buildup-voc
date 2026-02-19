@@ -674,7 +674,7 @@ export const useRaidStore = create<RaidState>((set, get) => ({
         return;
       }
       fetchFullRoom();
-    }, 2000);
+    }, 1000);
 
     set({ channel, _pollInterval: pollInterval as unknown as number });
   },
