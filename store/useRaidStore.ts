@@ -345,16 +345,17 @@ export const useRaidStore = create<RaidState>((set, get) => ({
         return false;
       }
 
-      // Subscribe to realtime updates
-      get().subscribeToRoom(normalizedCode);
-
       const room = dbRowToRoom({
         ...existingRoom,
         players: [...existingRoom.players, guestPlayer],
       });
 
       console.log('[RaidStore] Successfully joined room:', room.code);
+      // 먼저 로컬 상태 설정 (myPlayerId 포함) → 그 다음 구독 시작
       set({ room, myPlayerId: playerId, phase: 'waiting' });
+
+      // Subscribe to realtime updates (myPlayerId가 세팅된 후)
+      get().subscribeToRoom(normalizedCode);
       return true;
     } catch (err) {
       console.error('[RaidStore] Network error joining room:', err);
@@ -597,6 +598,13 @@ export const useRaidStore = create<RaidState>((set, get) => ({
         .single();
 
       if (error || !data) return;
+
+      const { myPlayerId: currentPlayerId } = get();
+      // 레이스 컨디션 방지: 내가 아직 DB에 반영 안 됐으면 덮어쓰지 않음
+      if (currentPlayerId && !(data as RaidRoomRow).players.find((p: RaidPlayer) => p.id === currentPlayerId)) {
+        console.log('[RaidStore] fetchFullRoom: skipping — my player not in DB yet');
+        return;
+      }
 
       const room = dbRowToRoom(data as RaidRoomRow);
       set((state) => ({

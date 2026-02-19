@@ -27,13 +27,20 @@ export function RaidWaitingRoom() {
   const [selectedVocabLesson, setSelectedVocabLesson] = useState<number>(1);
   const [configured, setConfigured] = useState(false);
 
-  // 강퇴 감지: 내가 players에 없으면 로비로
+  // 강퇴 감지: 내가 players에 없고, 2명 이상이었다가 줄어든 경우에만 (레이스 컨디션 방지)
+  const [wasInRoom, setWasInRoom] = useState(false);
   useEffect(() => {
-    if (room && myPlayerId && !room.players.find((p) => p.id === myPlayerId)) {
-      resetRaid();
-      router.replace('/raid');
+    if (room && myPlayerId) {
+      const amIInRoom = room.players.some((p) => p.id === myPlayerId);
+      if (amIInRoom) {
+        setWasInRoom(true);
+      } else if (wasInRoom) {
+        // 이전에 방에 있었는데 지금 없음 → 강퇴됨
+        resetRaid();
+        router.replace('/raid');
+      }
     }
-  }, [room, myPlayerId, resetRaid, router]);
+  }, [room, myPlayerId, wasInRoom, resetRaid, router]);
 
   if (!room) return null;
 
