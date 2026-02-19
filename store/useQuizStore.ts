@@ -357,6 +357,235 @@ export const BADGES: Badge[] = [
             return days >= 3;
         }
     },
+
+    // 재미있는 특수 뱃지들
+    {
+        id: 'lucky_7',
+        icon: '🎰',
+        name: '럭키 세븐',
+        description: '점수가 77%였어요!',
+        condition: (state, history) => history.percentage === 77
+    },
+    {
+        id: 'triple_7',
+        icon: '🍀',
+        name: '대박 777',
+        description: 'XP가 777을 넘었어요!',
+        condition: (state) => state.xp >= 777 && state.xp < 1000
+    },
+    {
+        id: 'half_half',
+        icon: '⚖️',
+        name: '반반 치킨',
+        description: '정확히 50%를 맞았어요!',
+        condition: (state, history) => history.percentage === 50
+    },
+    {
+        id: 'almost_perfect',
+        icon: '😭',
+        name: '아깝다!',
+        description: '한 문제만 틀렸어요...',
+        condition: (state, history) => history.totalQuestions > 5 && history.correctAnswers === history.totalQuestions - 1
+    },
+    {
+        id: 'close_call',
+        icon: '😅',
+        name: '아슬아슬',
+        description: '70% 딱 맞춰서 통과!',
+        condition: (state, history) => history.percentage === 70
+    },
+    {
+        id: 'zero_hero',
+        icon: '💀',
+        name: '다시 태어나자',
+        description: '0점을 경험했어요... 괜찮아!',
+        condition: (state, history) => history.percentage === 0 && history.totalQuestions >= 5
+    },
+    {
+        id: 'first_blood',
+        icon: '🩸',
+        name: '첫 피',
+        description: '첫 문제를 틀렸지만 결국 100점!',
+        condition: (state, history) => history.percentage === 100 && history.totalQuestions >= 5
+    },
+    {
+        id: 'marathon',
+        icon: '🏃',
+        name: '마라톤 러너',
+        description: '하루에 10개 퀴즈 완료!',
+        condition: (state, history) => {
+            const today = new Date(history.date).toDateString();
+            const todayCount = state.quizHistory.filter(h => new Date(h.date).toDateString() === today).length;
+            return todayCount >= 10;
+        }
+    },
+    {
+        id: 'grinder',
+        icon: '⚙️',
+        name: '그라인더',
+        description: '하루에 20개 퀴즈 완료!',
+        condition: (state, history) => {
+            const today = new Date(history.date).toDateString();
+            const todayCount = state.quizHistory.filter(h => new Date(h.date).toDateString() === today).length;
+            return todayCount >= 20;
+        }
+    },
+    {
+        id: 'lunch_break',
+        icon: '🍱',
+        name: '점심시간 공부',
+        description: '12시~1시 사이에 학습했어요!',
+        condition: (state, history) => {
+            const hour = new Date(history.date).getHours();
+            return hour === 12;
+        }
+    },
+    {
+        id: 'midnight',
+        icon: '🌙',
+        name: '자정의 학생',
+        description: '자정(0시)에 공부했어요!',
+        condition: (state, history) => {
+            const hour = new Date(history.date).getHours();
+            return hour === 0;
+        }
+    },
+    {
+        id: 'new_year',
+        icon: '🎆',
+        name: '새해 첫 공부',
+        description: '1월 1일에 공부했어요!',
+        condition: (state, history) => {
+            const date = new Date(history.date);
+            return date.getMonth() === 0 && date.getDate() === 1;
+        }
+    },
+    {
+        id: 'christmas',
+        icon: '🎄',
+        name: '크리스마스 공부',
+        description: '12월 25일에도 공부했어요!',
+        condition: (state, history) => {
+            const date = new Date(history.date);
+            return date.getMonth() === 11 && date.getDate() === 25;
+        }
+    },
+    {
+        id: 'halloween',
+        icon: '🎃',
+        name: '할로윈 학습',
+        description: '10월 31일에 공부했어요!',
+        condition: (state, history) => {
+            const date = new Date(history.date);
+            return date.getMonth() === 9 && date.getDate() === 31;
+        }
+    },
+    {
+        id: 'valentines',
+        icon: '💕',
+        name: '발렌타인 공부',
+        description: '2월 14일에 공부했어요!',
+        condition: (state, history) => {
+            const date = new Date(history.date);
+            return date.getMonth() === 1 && date.getDate() === 14;
+        }
+    },
+    {
+        id: 'childrens_day',
+        icon: '🎈',
+        name: '어린이날 학습',
+        description: '5월 5일에도 공부했어요!',
+        condition: (state, history) => {
+            const date = new Date(history.date);
+            return date.getMonth() === 4 && date.getDate() === 5;
+        }
+    },
+    {
+        id: 'friday_13',
+        icon: '👻',
+        name: '13일의 금요일',
+        description: '13일의 금요일에 공부했어요!',
+        condition: (state, history) => {
+            const date = new Date(history.date);
+            return date.getDay() === 5 && date.getDate() === 13;
+        }
+    },
+    {
+        id: 'word_destroyer',
+        icon: '💥',
+        name: '단어 파괴자',
+        description: '총 500문제 정답!',
+        condition: (state) => state.quizHistory.reduce((acc, h) => acc + h.correctAnswers, 0) >= 500
+    },
+    {
+        id: 'word_terminator',
+        icon: '🤖',
+        name: '터미네이터',
+        description: '총 1000문제 정답!',
+        condition: (state) => state.quizHistory.reduce((acc, h) => acc + h.correctAnswers, 0) >= 1000
+    },
+    {
+        id: 'perfectionist',
+        icon: '💎',
+        name: '퍼펙셔니스트',
+        description: '100점 20회 달성!',
+        condition: (state) => state.quizHistory.filter(h => h.percentage === 100).length >= 20
+    },
+    {
+        id: 'diamond_hands',
+        icon: '💠',
+        name: '다이아몬드 핸드',
+        description: '50일 연속 학습!',
+        condition: (state) => state.streak >= 50
+    },
+    {
+        id: 'centurion',
+        icon: '🏛️',
+        name: '센추리온',
+        description: '100일 연속 학습!',
+        condition: (state) => state.streak >= 100
+    },
+    {
+        id: 'speaking_star',
+        icon: '⭐',
+        name: '말하기 스타',
+        description: '말하기 모드에서 100점!',
+        condition: (state, history) => history.mode === 'speaking' && history.percentage === 100
+    },
+    {
+        id: 'spelling_ace',
+        icon: '🅰️',
+        name: '스펠링 에이스',
+        description: '스펠링 모드에서 100점!',
+        condition: (state, history) => history.mode === 'spelling' && history.percentage === 100
+    },
+    {
+        id: 'quick_learner',
+        icon: '🧠',
+        name: '빠른 학습자',
+        description: '첫 퀴즈에서 90% 이상!',
+        condition: (state, history) => state.quizHistory.length === 1 && history.percentage >= 90
+    },
+    {
+        id: 'unstoppable',
+        icon: '🚂',
+        name: '멈출 수 없어',
+        description: '5개 퀴즈 연속 80% 이상!',
+        condition: (state) => {
+            if (state.quizHistory.length < 5) return false;
+            return state.quizHistory.slice(0, 5).every(h => h.percentage >= 80);
+        }
+    },
+    {
+        id: 'legend',
+        icon: '👑',
+        name: '레전드',
+        description: '10개 퀴즈 연속 100점!',
+        condition: (state) => {
+            if (state.quizHistory.length < 10) return false;
+            return state.quizHistory.slice(0, 10).every(h => h.percentage === 100);
+        }
+    },
 ];
 
 interface QuizState {
