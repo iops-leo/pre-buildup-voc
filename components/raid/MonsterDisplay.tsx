@@ -12,6 +12,7 @@ interface MonsterDisplayProps {
   isShaking: boolean;
   lastDamage: number | null;
   comboCount: number;
+  showMiss?: boolean;
 }
 
 const traitConfig: Record<MonsterTrait, { label: string; color: string; emoji: string }> = {
@@ -39,6 +40,7 @@ export function MonsterDisplay({
   isShaking,
   lastDamage,
   comboCount,
+  showMiss = false,
 }: MonsterDisplayProps) {
   const hpPercent = Math.max(0, (currentHp / maxHp) * 100);
   const [imgError, setImgError] = useState(false);
@@ -97,7 +99,7 @@ export function MonsterDisplay({
           <AnimatePresence>
             {lastDamage !== null && lastDamage > 0 && (
               <motion.div
-                key={Date.now()}
+                key={`damage-${Date.now()}`}
                 initial={{ opacity: 1, y: 0, scale: 1 }}
                 animate={{ opacity: 0, y: -60, scale: 1.5 }}
                 exit={{ opacity: 0 }}
@@ -106,6 +108,24 @@ export function MonsterDisplay({
               >
                 <span className={`font-black text-2xl drop-shadow-lg ${comboCount >= 3 ? 'text-yellow-300' : 'text-red-400'}`}>
                   -{lastDamage}
+                </span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Miss popup */}
+          <AnimatePresence>
+            {showMiss && (
+              <motion.div
+                key={`miss-${Date.now()}`}
+                initial={{ opacity: 1, y: 0, scale: 1, rotate: -10 }}
+                animate={{ opacity: 0, y: -50, scale: 1.3, rotate: 10 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.6 }}
+                className="absolute -top-4 left-1/2 -translate-x-1/2 pointer-events-none z-10"
+              >
+                <span className="font-black text-2xl text-slate-400 drop-shadow-lg">
+                  MISS! 💨
                 </span>
               </motion.div>
             )}

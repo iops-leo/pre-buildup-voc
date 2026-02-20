@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRaidStore } from '@/store/useRaidStore';
 import { getMonsterById } from '@/data/monsters';
 import { MonsterDisplay } from './MonsterDisplay';
 import { QuestionPanel } from './QuestionPanel';
 import { PlayerStatus } from './PlayerStatus';
-import { Flame, Zap } from 'lucide-react';
+import { Flame, Zap, Battery } from 'lucide-react';
 
 export function RaidBattle() {
   const {
@@ -21,9 +21,13 @@ export function RaidBattle() {
     setMonsterShaking,
     loadNextQuestion,
     phase,
+    energy,
+    maxEnergy,
   } = useRaidStore();
 
   const shakeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const missTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [showMiss, setShowMiss] = useState(false);
 
   // Load first question on mount
   useEffect(() => {
@@ -44,6 +48,20 @@ export function RaidBattle() {
       if (shakeTimeoutRef.current) clearTimeout(shakeTimeoutRef.current);
     };
   }, [monsterShaking]);
+
+  // Show MISS popup when answer is wrong
+  useEffect(() => {
+    if (answerResult === 'wrong') {
+      setShowMiss(true);
+      if (missTimeoutRef.current) clearTimeout(missTimeoutRef.current);
+      missTimeoutRef.current = setTimeout(() => {
+        setShowMiss(false);
+      }, 600);
+    }
+    return () => {
+      if (missTimeoutRef.current) clearTimeout(missTimeoutRef.current);
+    };
+  }, [answerResult]);
 
   if (!room) return null;
 
@@ -100,6 +118,37 @@ export function RaidBattle() {
         </div>
       </div>
 
+      {/* Energy bar */}
+      <div className="px-4 py-2 bg-slate-900/50 border-b border-slate-800/30">
+        <div className="flex items-center gap-2">
+          <Battery size={14} className={energy >= maxEnergy ? 'text-cyan-400' : 'text-slate-500'} />
+          <div className="flex-1 h-2 bg-slate-800 rounded-full overflow-hidden">
+            <motion.div
+              className={`h-full rounded-full ${
+                energy >= maxEnergy
+                  ? 'bg-gradient-to-r from-cyan-400 to-blue-400'
+                  : 'bg-gradient-to-r from-cyan-700 to-blue-700'
+              }`}
+              animate={{ width: `${(energy / maxEnergy) * 100}%` }}
+              transition={{ duration: 0.3 }}
+            />
+          </div>
+          <span className={`text-xs font-bold ${energy >= maxEnergy ? 'text-cyan-400' : 'text-slate-500'}`}>
+            {energy}/{maxEnergy}
+          </span>
+          {energy >= maxEnergy && (
+            <motion.span
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-xs text-cyan-400 font-bold"
+            >
+              ⚡ MAX!
+            </motion.span>
+          )}
+        </div>
+        <p className="text-xs text-slate-600 mt-1">틀리면 에너지가 충전돼요</p>
+      </div>
+
       {/* Main content */}
       <div className="flex-1 flex flex-col gap-3 p-4 overflow-y-auto">
         {/* Monster display */}
@@ -114,6 +163,7 @@ export function RaidBattle() {
             isShaking={monsterShaking}
             lastDamage={answerResult === 'correct' ? lastDamage : null}
             comboCount={comboCount}
+            showMiss={showMiss}
           />
         </motion.div>
 

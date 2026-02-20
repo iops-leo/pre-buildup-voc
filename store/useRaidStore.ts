@@ -84,6 +84,8 @@ interface RaidState {
   maxComboInRaid: number;
   monsterShaking: boolean;
   questionStartedAt: number | null;
+  energy: number;
+  maxEnergy: number;
 
   // Actions
   createRoom: (playerName: string, monsterId: string) => Promise<string>;
@@ -186,6 +188,8 @@ export const useRaidStore = create<RaidState>((set, get) => ({
   maxComboInRaid: 0,
   monsterShaking: false,
   questionStartedAt: null,
+  energy: 0,
+  maxEnergy: 100,
 
   createRoom: async (playerName: string, monsterId: string) => {
     const code = generateRoomCode();
@@ -577,6 +581,9 @@ export const useRaidStore = create<RaidState>((set, get) => ({
           .eq('code', room.code);
       }
 
+      // 틀렸을 때 에너지 충전 (+10 고정)
+      const energyGain = 10;
+
       set((state) => ({
         room: state.room
           ? {
@@ -587,6 +594,7 @@ export const useRaidStore = create<RaidState>((set, get) => ({
         answerResult: 'wrong',
         lastDamage: 0,
         comboCount: 0,
+        energy: Math.min(state.energy + energyGain, state.maxEnergy),
       }));
     }
   },
@@ -812,6 +820,7 @@ export const useRaidStore = create<RaidState>((set, get) => ({
       questionStartedAt: null,
       channel: null,
       _pollInterval: null,
+      energy: 0,
     });
   },
 }));
