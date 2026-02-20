@@ -11,13 +11,20 @@ type LobbyMode = 'main' | 'create' | 'join' | 'solo';
 
 export function RaidLobby() {
   const router = useRouter();
-  const { createRoom, createSoloRoom, joinRoom } = useRaidStore();
+  const { createRoom, createSoloRoom, joinRoom, resetRaid, room } = useRaidStore();
   const [mode, setMode] = useState<LobbyMode>('main');
   const [playerName, setPlayerName] = useState('');
   const [selectedMonsterId, setSelectedMonsterId] = useState('green_slime');
   const [joinCode, setJoinCode] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // 로비에 진입할 때 기존 레이드 상태 정리 (뒤로가기 등으로 돌아온 경우)
+  useEffect(() => {
+    if (room) {
+      resetRaid();
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // localStorage에서 이름 복원
   useEffect(() => {

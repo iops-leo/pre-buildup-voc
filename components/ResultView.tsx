@@ -7,6 +7,7 @@ import { useTTS } from '@/hooks/useTTS';
 import { useSound } from '@/hooks/useSound';
 import { useAI } from '@/hooks/useAI';
 import confetti from 'canvas-confetti';
+import ReactMarkdown from 'react-markdown';
 
 export const ResultView = () => {
     const store = useQuizStore();
@@ -264,7 +265,9 @@ export const ResultView = () => {
                                 분석 중...
                             </div>
                         ) : quizFeedback ? (
-                            <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-line">{quizFeedback}</p>
+                            <div className="text-sm text-slate-300 leading-relaxed prose prose-invert prose-sm max-w-none prose-strong:text-violet-300 prose-strong:font-bold">
+                                <ReactMarkdown>{quizFeedback}</ReactMarkdown>
+                            </div>
                         ) : (
                             <p className="text-sm text-slate-500">AI 분석을 불러올 수 없어요.</p>
                         )}
@@ -311,9 +314,9 @@ export const ResultView = () => {
                                             <div className="px-4 pb-4">
                                                 <div className="bg-violet-950/40 border border-violet-800/30 rounded-xl p-3">
                                                     {aiExplanations[word.word] ? (
-                                                        <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-line">
-                                                            {aiExplanations[word.word]}
-                                                        </p>
+                                                        <div className="text-sm text-slate-300 leading-relaxed prose prose-invert prose-sm max-w-none prose-strong:text-violet-300 prose-strong:font-bold">
+                                                            <ReactMarkdown>{aiExplanations[word.word]}</ReactMarkdown>
+                                                        </div>
                                                     ) : (
                                                         <div className="flex items-center gap-2 text-violet-400/60 text-sm">
                                                             <Loader2 size={14} className="animate-spin" />
