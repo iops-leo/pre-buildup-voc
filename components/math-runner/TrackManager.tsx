@@ -76,7 +76,10 @@ function generateProblem(gameMode: 'math' | 'english', level: MathLevel) {
     }
 
     // Ensure negative answers aren't confusing, clamp to positive or use abs in logic
-    if ((wrongAnswer as number) < 0) wrongAnswer = Math.abs(wrongAnswer as number) + 2;
+    if (typeof wrongAnswer === 'number') {
+        if (wrongAnswer < 0) wrongAnswer = Math.abs(wrongAnswer) + 2;
+        if (wrongAnswer === answer) wrongAnswer = answer + 3; // Prevent identical options
+    }
 
     return { expression, answer, wrongAnswer };
 }

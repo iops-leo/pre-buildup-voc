@@ -12,13 +12,11 @@ const mockVocabulary: Vocabulary[] = [
 
 const mockLesson: Lesson = {
   lesson: 1,
-  title: 'Emotions',
   vocabulary: mockVocabulary,
 };
 
 const mockUnit: Unit = {
   unit: 1,
-  title: 'Feelings',
   lessons: [mockLesson],
 };
 

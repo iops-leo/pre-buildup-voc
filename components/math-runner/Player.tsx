@@ -95,10 +95,10 @@ function SoldierInstance({ position }: { position: THREE.Vector3 }) {
     }, [actions]);
 
     return (
-        <group ref={group} position={position} dispose={null}>
+        <group ref={group} position={position} rotation={[0, Math.PI, 0]} dispose={null}>
             <group name="Scene">
                 {/* Math.PI is 180 degrees. Rotating to face forward (negative Z), Soldier scale applies here */}
-                <group name="Character" rotation={[0, Math.PI, 0]} scale={0.8}>
+                <group name="Character" rotation={[-Math.PI / 2, 0, 0]} scale={0.8}>
                     <primitive object={nodes.mixamorigHips} />
                     <skinnedMesh castShadow name="vanguard_Mesh" geometry={nodes.vanguard_Mesh.geometry} material={materials.VanguardBodyMat} skeleton={nodes.vanguard_Mesh.skeleton} />
                     <skinnedMesh castShadow name="vanguard_visor" geometry={nodes.vanguard_visor.geometry} material={materials.Vanguard_VisorMat} skeleton={nodes.vanguard_visor.skeleton} />
