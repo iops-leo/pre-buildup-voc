@@ -117,6 +117,31 @@ export default function MathRunnerPage() {
                         </button>
                     </div>
                 )}
+
+                {gameState === 'win' && (
+                    <div className="bg-emerald-900/90 backdrop-blur-xl p-8 rounded-3xl border-2 border-emerald-400 shadow-[0_0_40px_rgba(52,211,153,0.5)] flex flex-col items-center mt-20 pointer-events-auto">
+                        <h2 className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-green-300 drop-shadow-lg mb-4">YOU WIN!</h2>
+                        <div className="text-emerald-100 text-xl font-bold mb-8">기지를 성공적으로 지켜냈습니다!</div>
+
+                        <div className="flex gap-6 mb-8 text-white text-lg">
+                            <div className="flex flex-col items-center bg-black/40 px-6 py-4 rounded-2xl border border-white/10">
+                                <span className="text-gray-400 text-sm mb-1">통과한 난이도</span>
+                                <span className="font-bold capitalize text-xl">{gameMode} - {level}</span>
+                            </div>
+                            <div className="flex flex-col items-center bg-black/40 px-6 py-4 rounded-2xl border border-white/10">
+                                <span className="text-gray-400 text-sm mb-1">살려낸 병사 수</span>
+                                <span className="font-black text-3xl text-emerald-400">{playerCount} 명</span>
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={resetGame}
+                            className="px-12 py-5 rounded-2xl bg-gradient-to-r from-yellow-400 to-orange-500 text-slate-900 font-black text-2xl shadow-xl hover:scale-105 transition-transform"
+                        >
+                            다시 플레이
+                        </button>
+                    </div>
+                )}
             </div>
 
             {/* Bottom HUD - soldier counts (Only visible while playing) */}

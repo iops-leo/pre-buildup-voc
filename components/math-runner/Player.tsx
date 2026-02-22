@@ -57,8 +57,15 @@ export default function Player() {
         const gameState = useMathRunnerStore.getState().gameState;
         if (gameState !== 'playing') return; // Do not move if game is over or in menu
 
-        // Constant forward movement, increasing speed gradually
         const currentTranslation = bodyRef.current.translation();
+
+        // Win Condition Check
+        if (currentTranslation.z <= -3000) {
+            useMathRunnerStore.setState({ gameState: 'win' });
+            return;
+        }
+
+        // Constant forward movement, increasing speed gradually
         const baseSpeed = useMathRunnerStore.getState().currentSpeed;
         const activeSpeed = Math.min(28, baseSpeed + Math.abs(currentTranslation.z) * 0.005);
 

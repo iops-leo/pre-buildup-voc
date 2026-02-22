@@ -3,7 +3,7 @@ import { create } from "zustand";
 export type MathLevel = "easy" | "medium" | "hard";
 
 interface MathRunnerState {
-  gameState: "menu" | "playing" | "gameover";
+  gameState: "menu" | "playing" | "gameover" | "win";
   gameMode: "math" | "english";
   playerCount: number;
   playerZ: number;
@@ -13,7 +13,7 @@ interface MathRunnerState {
   pendingQuestion: string;
   nextEnemyCount: number;
   totalEnemiesDefeated: number;
-  setGameState: (state: "menu" | "playing" | "gameover") => void;
+  setGameState: (state: "menu" | "playing" | "gameover" | "win") => void;
   setGameMode: (mode: "math" | "english") => void;
   setLevel: (level: MathLevel) => void;
   setPlayerCount: (count: number) => void;

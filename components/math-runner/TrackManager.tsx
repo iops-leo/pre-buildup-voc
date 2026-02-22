@@ -8,6 +8,7 @@ import Obstacle from "./Obstacle";
 
 const SEGMENT_LENGTH = 100;
 const VISIBLE_SEGMENTS = 3;
+const GOAL_Z = -3000; // Finish line distance
 
 interface EnemyData {
     id: string;
@@ -29,6 +30,7 @@ interface TrackSegment {
     wrongAnswer: number | string;
     enemies: EnemyData[];
     obstacles: ObstacleData[];
+    isFinishLine?: boolean;
 }
 
 import { VOCABULARY_DATA } from "@/data/vocabulary";
@@ -208,7 +210,29 @@ export default function TrackManager() {
             lastZ.current = expectedLastSegmentZ;
             setSegments(prev => {
                 const store = useMathRunnerStore.getState();
-                const newSeg = createSegment(expectedLastSegmentZ, store.gameMode, store.level);
+
+                let newSeg: TrackSegment;
+
+                if (expectedLastSegmentZ <= GOAL_Z) {
+                    // Spawn the finish line instead of a normal problem segment
+                    // Only do this once
+                    const alreadyHasFinish = prev.some(s => s.isFinishLine);
+                    if (alreadyHasFinish) {
+                        return prev.filter(seg => seg.z <= -(currentSegmentIndex - 1) * SEGMENT_LENGTH);
+                    }
+                    newSeg = {
+                        z: GOAL_Z,
+                        expression: "FINISH!",
+                        answer: 0,
+                        wrongAnswer: 0,
+                        enemies: [],
+                        obstacles: [],
+                        isFinishLine: true
+                    };
+                } else {
+                    newSeg = createSegment(expectedLastSegmentZ, store.gameMode, store.level);
+                }
+
                 const newSegs = [...prev, newSeg];
                 return newSegs.filter(seg => seg.z <= -(currentSegmentIndex - 1) * SEGMENT_LENGTH);
             });
@@ -233,7 +257,7 @@ export default function TrackManager() {
                                     key={enemy.id}
                                     position={enemy.position}
                                     count={enemy.count}
-                                    onDefeated={() => {}}
+                                    onDefeated={() => { }}
                                 />
                             ))}
                             {seg.obstacles.map((obs) => (
@@ -244,6 +268,26 @@ export default function TrackManager() {
                                     damage={obs.damage}
                                 />
                             ))}
+                            {seg.isFinishLine && (
+                                <group position={[0, 0, seg.z]}>
+                                    <mesh position={[0, 0, 0]}>
+                                        <boxGeometry args={[10, 0.2, 2]} />
+                                        <meshStandardMaterial color="#FFD700" emissive="#FFD700" emissiveIntensity={0.5} />
+                                    </mesh>
+                                    <mesh position={[-5, 4, 0]}>
+                                        <cylinderGeometry args={[0.2, 0.2, 8]} />
+                                        <meshStandardMaterial color="#888888" />
+                                    </mesh>
+                                    <mesh position={[5, 4, 0]}>
+                                        <cylinderGeometry args={[0.2, 0.2, 8]} />
+                                        <meshStandardMaterial color="#888888" />
+                                    </mesh>
+                                    <mesh position={[0, 7, 0]}>
+                                        <boxGeometry args={[10, 2, 0.2]} />
+                                        <meshStandardMaterial color="#FF0000" />
+                                    </mesh>
+                                </group>
+                            )}
                         </>
                     )}
                 </group>
