@@ -45,8 +45,8 @@ export default function Player() {
     });
 
     return (
-        <RigidBody ref={bodyRef} position={[0, 1, 0]} colliders={false} lockRotations>
-            <CapsuleCollider args={[0.15, 0.15]} />
+        <RigidBody ref={bodyRef} position={[0, 0.5, 0]} colliders={false} lockRotations>
+            <CapsuleCollider args={[0.3, 0.2]} />
             <SoldierCrowd count={playerCount} />
         </RigidBody>
     );
@@ -57,11 +57,11 @@ function SoldierCrowd({ count }: { count: number }) {
     const soldiers = useMemo(() => {
         const arr = [];
         for (let i = 0; i < count; i++) {
-            const pos = new THREE.Vector3(0, -0.2, 0);
+            const pos = new THREE.Vector3(0, -0.5, 0);
             if (i > 0) {
                 const angle = i * Math.PI * 0.4;
-                const radius = 0.3 * Math.sqrt(i);
-                pos.set(Math.cos(angle) * radius, -0.2, Math.sin(angle) * radius);
+                const radius = 0.4 * Math.sqrt(i);
+                pos.set(Math.cos(angle) * radius, -0.5, Math.sin(angle) * radius);
             }
             arr.push({ id: i, position: pos });
         }
@@ -96,10 +96,9 @@ function SoldierInstance({ position }: { position: THREE.Vector3 }) {
     }, [actions]);
 
     return (
-        <group ref={group} position={position} rotation={[0, Math.PI, 0]} dispose={null}>
+        <group ref={group} position={position} rotation={[0, 0, 0]} dispose={null}>
             <group name="Scene">
-                {/* Math.PI is 180 degrees. Rotating to face forward (negative Z), Soldier scale applies here */}
-                <group name="Character" rotation={[-Math.PI / 2, 0, 0]} scale={0.15}>
+                <group name="Character" rotation={[-Math.PI / 2, 0, 0]} scale={0.01}>
                     <primitive object={nodes.mixamorigHips} />
                     <skinnedMesh castShadow name="vanguard_Mesh" geometry={nodes.vanguard_Mesh.geometry} material={materials.VanguardBodyMat} skeleton={nodes.vanguard_Mesh.skeleton} />
                     <skinnedMesh castShadow name="vanguard_visor" geometry={nodes.vanguard_visor.geometry} material={materials.Vanguard_VisorMat} skeleton={nodes.vanguard_visor.skeleton} />
