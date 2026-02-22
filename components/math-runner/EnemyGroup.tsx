@@ -159,7 +159,7 @@ function EnemySoldier({ position }: { position: THREE.Vector3 }) {
     return (
         <group ref={group} position={position} rotation={[0, 0, 0]} dispose={null}>
             <group name="Scene">
-                <group name="Character" rotation={[-Math.PI / 2, 0, 0]} scale={0.8}>
+                <group name="Character" rotation={[-Math.PI / 2, 0, 0]} scale={0.01}>
                     <primitive object={nodes.mixamorigHips} />
                     <skinnedMesh
                         castShadow

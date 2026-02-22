@@ -89,29 +89,29 @@ export default function Player() {
 function SoldierCrowd({ count }: { count: number }) {
     const soldiers = useMemo(() => {
         const arr: { id: number; position: THREE.Vector3 }[] = [];
-        let placed = 0;
-        let ring = 0;
-        while (placed < count) {
-            if (ring === 0) {
-                arr.push({ id: placed, position: new THREE.Vector3(0, -0.5, 0) });
-                placed++;
+
+        for (let i = 0; i < count; i++) {
+            if (i === 0) {
+                arr.push({ id: i, position: new THREE.Vector3(0, -0.5, 0) });
             } else {
-                // Add tiny organic randomness to the crowd
-                const r = 0.35 * ring + (Math.random() * 0.1);
-                const soldiersInRing = 6 * ring;
-                for (let j = 0; j < soldiersInRing && placed < count; j++) {
-                    const angle = (j / soldiersInRing) * Math.PI * 2 + (Math.random() * 0.2);
-                    // Constraint width so they don't fall off too easily
-                    const xOffset = Math.cos(angle) * r;
-                    const zOffset = Math.sin(angle) * r;
-                    arr.push({
-                        id: placed,
-                        position: new THREE.Vector3(xOffset * 0.8, -0.5, zOffset),
-                    });
-                    placed++;
-                }
+                // Determine a pseudo-random angle based on the ID, but spiraling outwards
+                const golden_ratio = (1 + Math.sqrt(5)) / 2;
+                const theta = 2 * Math.PI * i / golden_ratio;
+
+                // Radius expands strictly with sqrt(i) to ensure they pack tightly instead of forming rings
+                // Added a small ±0.1 random jitter for organic look
+                const r = 0.4 * Math.sqrt(i) + (Math.random() * 0.1 - 0.05);
+
+                // Limit the width so the crowd doesn't overflow the track easily.
+                // Squeeze X coordinates slightly.
+                const xOffset = Math.cos(theta) * r * 0.8;
+                const zOffset = Math.sin(theta) * r;
+
+                arr.push({
+                    id: i,
+                    position: new THREE.Vector3(xOffset, -0.5, zOffset),
+                });
             }
-            ring++;
         }
         return arr;
     }, [count]);

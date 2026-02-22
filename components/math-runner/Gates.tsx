@@ -71,14 +71,15 @@ export default function Gates({ position, mathExpression, answer, wrongAnswer }:
                 </mesh>
                 <Text
                     position={[-2.5, 2, 0.6]}
-                    fontSize={1}
+                    fontSize={1.2}
                     color="white"
                     anchorX="center"
                     anchorY="middle"
                     maxWidth={3}
                     textAlign="center"
+                    fontWeight="bold"
                 >
-                    {leftAnswer}
+                    {`[ ${leftAnswer} ]`}
                 </Text>
             </RigidBody>
 
@@ -95,14 +96,15 @@ export default function Gates({ position, mathExpression, answer, wrongAnswer }:
                 </mesh>
                 <Text
                     position={[2.5, 2, 0.6]}
-                    fontSize={1}
+                    fontSize={1.2}
                     color="white"
                     anchorX="center"
                     anchorY="middle"
                     maxWidth={3}
                     textAlign="center"
+                    fontWeight="bold"
                 >
-                    {rightAnswer}
+                    {`[ ${rightAnswer} ]`}
                 </Text>
             </RigidBody>
 
@@ -114,14 +116,15 @@ export default function Gates({ position, mathExpression, answer, wrongAnswer }:
             {/* Floating Feedback Text */}
             {passed && hitTime && Date.now() - hitTime < 1000 && (
                 <Text
-                    position={[0, 3 + ((Date.now() - hitTime) / 1000) * 3, 0]}
-                    fontSize={2}
+                    position={[0, 4 + ((Date.now() - hitTime) / 1000) * 4, 0]}
+                    fontSize={3.5}
                     color={hitType === "correct" ? "#00ff00" : "#ff0000"}
-                    outlineWidth={0.1}
+                    outlineWidth={0.15}
                     outlineColor="#000000"
                     material-depthTest={false}
+                    fontWeight="black"
                 >
-                    {hitType === "correct" ? "+10" : "-10"}
+                    {hitType === "correct" ? "+10 명" : "-10 명"}
                 </Text>
             )}
         </group>
