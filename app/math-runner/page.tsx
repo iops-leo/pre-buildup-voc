@@ -119,12 +119,20 @@ export default function MathRunnerPage() {
                             </div>
                         </div>
 
-                        <button
-                            onClick={resetGame}
-                            className="px-10 py-4 rounded-xl bg-white text-red-900 font-black text-2xl shadow-lg hover:scale-105 transition-transform"
-                        >
-                            TRY AGAIN
-                        </button>
+                        <div className="flex gap-4">
+                            <button
+                                onClick={() => setGameState('menu')}
+                                className="px-8 py-4 rounded-xl bg-white/20 text-white font-bold text-xl shadow-lg hover:scale-105 transition-transform border border-white/30"
+                            >
+                                홈으로
+                            </button>
+                            <button
+                                onClick={resetGame}
+                                className="px-10 py-4 rounded-xl bg-white text-red-900 font-black text-2xl shadow-lg hover:scale-105 transition-transform"
+                            >
+                                다시하기
+                            </button>
+                        </div>
                     </div>
                 )}
 
@@ -156,12 +164,20 @@ export default function MathRunnerPage() {
                             </div>
                         </div>
 
-                        <button
-                            onClick={resetGame}
-                            className="px-12 py-5 rounded-2xl bg-gradient-to-r from-yellow-400 to-orange-500 text-slate-900 font-black text-2xl shadow-xl hover:scale-105 transition-transform"
-                        >
-                            다시 플레이
-                        </button>
+                        <div className="flex gap-4">
+                            <button
+                                onClick={() => setGameState('menu')}
+                                className="px-8 py-5 rounded-2xl bg-white/20 text-white font-bold text-xl shadow-lg hover:scale-105 transition-transform border border-white/30"
+                            >
+                                홈으로
+                            </button>
+                            <button
+                                onClick={resetGame}
+                                className="px-12 py-5 rounded-2xl bg-gradient-to-r from-yellow-400 to-orange-500 text-slate-900 font-black text-2xl shadow-xl hover:scale-105 transition-transform"
+                            >
+                                다시 플레이
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>
