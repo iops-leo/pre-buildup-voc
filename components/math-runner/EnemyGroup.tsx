@@ -51,8 +51,8 @@ export default function EnemyGroup({ position, count, onDefeated }: EnemyGroupPr
                 <CuboidCollider args={[2, 1.5, 2]} position={[0, 0.5, 0]} />
             </RigidBody>
 
-            {/* Enemy soldiers */}
-            <EnemyCrowd count={count} />
+            {/* Enemy soldiers - cap visual at 15 for performance */}
+            <EnemyCrowd count={Math.min(count, 15)} />
 
             {/* Red count indicator above group */}
             <mesh position={[0, 3.5, 0]}>

@@ -129,11 +129,11 @@ export default function MathRunnerPage() {
                 )}
 
                 {gameState === 'win' && (
-                    <div className="bg-emerald-900/90 backdrop-blur-xl p-8 rounded-3xl border-2 border-emerald-400 shadow-[0_0_40px_rgba(52,211,153,0.5)] flex flex-col items-center mt-20 pointer-events-auto relative overflow-hidden">
+                    <div className="bg-emerald-900/90 backdrop-blur-xl p-8 rounded-3xl border-2 border-emerald-400 shadow-[0_0_40px_rgba(52,211,153,0.5)] flex flex-col items-center mt-20 pointer-events-auto relative">
 
                         {/* New Record Animation */}
                         {playerCount >= bestScore && bestScore > 0 && (
-                            <div className="absolute -top-4 -right-4 bg-gradient-to-br from-yellow-300 to-orange-500 text-red-900 font-black text-sm px-6 py-2 rotate-12 shadow-lg animate-pulse border-2 border-white rounded-xl">
+                            <div className="absolute -top-3 -right-3 z-20 bg-gradient-to-br from-yellow-300 to-orange-500 text-red-900 font-black text-sm px-6 py-2 rotate-12 shadow-lg animate-pulse border-2 border-white rounded-xl">
                                 NEW RECORD!
                             </div>
                         )}

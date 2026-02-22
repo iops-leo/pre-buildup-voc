@@ -123,13 +123,12 @@ function generateEnglishProblem() {
 }
 
 function generateEnemies(segZ: number, level: MathLevel): EnemyData[] {
-    const chance = level === 'easy' ? 0.3 : level === 'medium' ? 0.5 : 0.7;
-    if (Math.random() > chance) return [];
+    // Always spawn enemies, count scales with difficulty
     const count = level === 'easy'
-        ? Math.floor(Math.random() * 3) + 2
+        ? Math.floor(Math.random() * 4) + 3
         : level === 'medium'
-            ? Math.floor(Math.random() * 5) + 3
-            : Math.floor(Math.random() * 8) + 5;
+            ? Math.floor(Math.random() * 6) + 5
+            : Math.floor(Math.random() * 10) + 8;
     const x = (Math.random() - 0.5) * 6;
     const z = segZ - 15 - Math.random() * 25;
     return [{ id: `e${segZ}-${Math.random()}`, position: [x, 0.5, z], count }];
@@ -140,9 +139,9 @@ function generateObstacles(segZ: number, level: MathLevel): ObstacleData[] {
     const numObstacles = level === 'easy' ? 1 : level === 'medium' ? 2 : 3;
     const types: ('rock' | 'barrier' | 'cone')[] = ['rock', 'barrier', 'cone'];
     for (let i = 0; i < numObstacles; i++) {
-        if (Math.random() > 0.5) continue;
+        if (Math.random() > 0.6) continue;
         const type = types[Math.floor(Math.random() * types.length)];
-        const damage = type === 'barrier' ? 5 : type === 'rock' ? 3 : 2;
+        const damage = type === 'barrier' ? 8 : type === 'rock' ? 5 : 3;
         const x = (Math.random() - 0.5) * 8;
         const z = segZ - 55 - Math.random() * 35;
         results.push({ id: `o${segZ}-${i}-${Math.random()}`, position: [x, type === 'barrier' ? 0.75 : 0.5, z], type, damage });

@@ -103,7 +103,7 @@ export default function Player() {
     return (
         <RigidBody ref={bodyRef} position={[0, 0.5, 0]} colliders={false} lockRotations>
             <CapsuleCollider args={[0.3, 0.2]} />
-            <SoldierCrowd count={playerCount} />
+            <SoldierCrowd count={Math.min(playerCount, 30)} />
         </RigidBody>
     );
 }
