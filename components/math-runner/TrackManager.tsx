@@ -8,7 +8,7 @@ import Obstacle from "./Obstacle";
 
 const SEGMENT_LENGTH = 100;
 const VISIBLE_SEGMENTS = 3;
-const GOAL_Z = -3000; // Finish line distance
+const GOAL_Z = -1500; // Finish line distance
 
 interface EnemyData {
     id: string;

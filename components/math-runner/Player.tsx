@@ -74,7 +74,7 @@ export default function Player() {
         const currentTranslation = bodyRef.current.translation();
 
         // Win Condition Check
-        if (currentTranslation.z <= -3000) {
+        if (currentTranslation.z <= -1500) {
             useMathRunnerStore.setState({ gameState: 'win' });
             return;
         }
