@@ -1,4 +1,5 @@
 "use client";
+import { useEffect } from "react";
 
 import MathRunnerScene from "@/components/math-runner/Scene";
 import { useMathRunnerStore, MathLevel } from "@/store/useMathRunnerStore";
@@ -15,8 +16,17 @@ export default function MathRunnerPage() {
     const resetGame = useMathRunnerStore(state => state.resetGame);
     const nextEnemyCount = useMathRunnerStore(state => state.nextEnemyCount);
     const totalEnemiesDefeated = useMathRunnerStore(state => state.totalEnemiesDefeated);
+    const bestScore = useMathRunnerStore(state => state.bestScore);
+    const setBestScore = useMathRunnerStore(state => state.setBestScore);
 
     const levels: MathLevel[] = ['easy', 'medium', 'hard'];
+
+    // Handle high score updates when winning
+    useEffect(() => {
+        if (gameState === 'win' && playerCount > bestScore) {
+            setBestScore(playerCount);
+        }
+    }, [gameState, playerCount, bestScore, setBestScore]);
 
     return (
         <main className="w-full h-screen bg-sky-900 overflow-hidden relative font-sans">
@@ -119,17 +129,29 @@ export default function MathRunnerPage() {
                 )}
 
                 {gameState === 'win' && (
-                    <div className="bg-emerald-900/90 backdrop-blur-xl p-8 rounded-3xl border-2 border-emerald-400 shadow-[0_0_40px_rgba(52,211,153,0.5)] flex flex-col items-center mt-20 pointer-events-auto">
+                    <div className="bg-emerald-900/90 backdrop-blur-xl p-8 rounded-3xl border-2 border-emerald-400 shadow-[0_0_40px_rgba(52,211,153,0.5)] flex flex-col items-center mt-20 pointer-events-auto relative overflow-hidden">
+
+                        {/* New Record Animation */}
+                        {playerCount >= bestScore && bestScore > 0 && (
+                            <div className="absolute -top-4 -right-4 bg-gradient-to-br from-yellow-300 to-orange-500 text-red-900 font-black text-sm px-6 py-2 rotate-12 shadow-lg animate-pulse border-2 border-white rounded-xl">
+                                NEW RECORD!
+                            </div>
+                        )}
+
                         <h2 className="text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-green-300 drop-shadow-lg mb-4">YOU WIN!</h2>
                         <div className="text-emerald-100 text-xl font-bold mb-8">기지를 성공적으로 지켜냈습니다!</div>
 
-                        <div className="flex gap-6 mb-8 text-white text-lg">
-                            <div className="flex flex-col items-center bg-black/40 px-6 py-4 rounded-2xl border border-white/10">
+                        <div className="flex gap-4 mb-8 text-white text-lg w-full justify-center">
+                            <div className="flex flex-col items-center bg-black/40 px-5 py-4 rounded-2xl border border-white/10 flex-1">
                                 <span className="text-gray-400 text-sm mb-1">통과한 난이도</span>
                                 <span className="font-bold capitalize text-xl">{gameMode} - {level}</span>
                             </div>
-                            <div className="flex flex-col items-center bg-black/40 px-6 py-4 rounded-2xl border border-white/10">
-                                <span className="text-gray-400 text-sm mb-1">살려낸 병사 수</span>
+                            <div className="flex flex-col items-center bg-black/40 px-5 py-4 rounded-2xl border border-emerald-500/50 flex-1 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+                                <span className="text-emerald-300 text-sm mb-1 font-bold">내 최고 점수</span>
+                                <span className="font-black text-3xl text-yellow-400">{Math.max(playerCount, bestScore)} 명</span>
+                            </div>
+                            <div className="flex flex-col items-center bg-black/40 px-5 py-4 rounded-2xl border border-white/10 flex-1">
+                                <span className="text-gray-400 text-sm mb-1">이번 기록</span>
                                 <span className="font-black text-3xl text-emerald-400">{playerCount} 명</span>
                             </div>
                         </div>

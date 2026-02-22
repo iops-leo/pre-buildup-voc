@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 export type MathLevel = "easy" | "medium" | "hard";
 
@@ -13,6 +14,7 @@ interface MathRunnerState {
   pendingQuestion: string;
   nextEnemyCount: number;
   totalEnemiesDefeated: number;
+  bestScore: number;
   setGameState: (state: "menu" | "playing" | "gameover" | "win") => void;
   setGameMode: (mode: "math" | "english") => void;
   setLevel: (level: MathLevel) => void;
@@ -27,66 +29,77 @@ interface MathRunnerState {
   addEnemiesDefeated: (count: number) => void;
   setPendingQuestion: (question: string) => void;
   setCurrentSpeed: (speed: number) => void;
+  setBestScore: (score: number) => void;
   resetGame: () => void;
 }
 
-export const useMathRunnerStore = create<MathRunnerState>((set) => ({
-  gameState: "menu",
-  gameMode: "math",
-  playerCount: 1,
-  playerZ: 0,
-  currentSpeed: 10,
-  currentQuestion: "Get Ready!",
-  level: "easy",
-  pendingQuestion: "",
-  nextEnemyCount: 0,
-  totalEnemiesDefeated: 0,
-  setGameState: (state) => set({ gameState: state }),
-  setGameMode: (mode) => set({ gameMode: mode }),
-  setLevel: (level) => set({ level }),
-  setPlayerCount: (count) => set({ playerCount: Math.max(0, count) }),
-  setCurrentQuestion: (question) => set({ currentQuestion: question }),
-  addPlayers: (amount) =>
-    set((state) => ({ playerCount: state.playerCount + amount })),
-  multiplyPlayers: (multiplier) =>
-    set((state) => ({ playerCount: state.playerCount * multiplier })),
-  subtractPlayers: (amount) =>
-    set((state) => {
-      const newCount = Math.max(0, state.playerCount - amount);
-      return {
-        playerCount: newCount,
-        gameState: newCount <= 0 ? "gameover" : state.gameState,
-      };
-    }),
-  dividePlayers: (divisor) =>
-    set((state) => {
-      const newCount = Math.max(0, Math.floor(state.playerCount / divisor));
-      return {
-        playerCount: newCount,
-        gameState: newCount <= 0 ? "gameover" : state.gameState,
-      };
-    }),
-  advanceQuestion: () =>
-    set((state) => ({
-      currentQuestion: state.pendingQuestion || state.currentQuestion,
-      pendingQuestion: "",
-    })),
-  setNextEnemyCount: (count) => set({ nextEnemyCount: count }),
-  addEnemiesDefeated: (count) =>
-    set((state) => ({
-      totalEnemiesDefeated: state.totalEnemiesDefeated + count,
-    })),
-  setPendingQuestion: (question) => set({ pendingQuestion: question }),
-  setCurrentSpeed: (speed) => set({ currentSpeed: speed }),
-  resetGame: () =>
-    set({
-      gameState: "playing",
+export const useMathRunnerStore = create<MathRunnerState>()(
+  persist(
+    (set) => ({
+      gameState: "menu",
+      gameMode: "math",
       playerCount: 1,
       playerZ: 0,
       currentSpeed: 10,
       currentQuestion: "Get Ready!",
+      level: "easy",
       pendingQuestion: "",
       nextEnemyCount: 0,
       totalEnemiesDefeated: 0,
+      bestScore: 0,
+      setGameState: (state) => set({ gameState: state }),
+      setGameMode: (mode) => set({ gameMode: mode }),
+      setLevel: (level) => set({ level }),
+      setPlayerCount: (count) => set({ playerCount: Math.max(0, count) }),
+      setCurrentQuestion: (question) => set({ currentQuestion: question }),
+      addPlayers: (amount) =>
+        set((state) => ({ playerCount: state.playerCount + amount })),
+      multiplyPlayers: (multiplier) =>
+        set((state) => ({ playerCount: state.playerCount * multiplier })),
+      subtractPlayers: (amount) =>
+        set((state) => {
+          const newCount = Math.max(0, state.playerCount - amount);
+          return {
+            playerCount: newCount,
+            gameState: newCount <= 0 ? "gameover" : state.gameState,
+          };
+        }),
+      dividePlayers: (divisor) =>
+        set((state) => {
+          const newCount = Math.max(0, Math.floor(state.playerCount / divisor));
+          return {
+            playerCount: newCount,
+            gameState: newCount <= 0 ? "gameover" : state.gameState,
+          };
+        }),
+      advanceQuestion: () =>
+        set((state) => ({
+          currentQuestion: state.pendingQuestion || state.currentQuestion,
+          pendingQuestion: "",
+        })),
+      setNextEnemyCount: (count) => set({ nextEnemyCount: count }),
+      addEnemiesDefeated: (count) =>
+        set((state) => ({
+          totalEnemiesDefeated: state.totalEnemiesDefeated + count,
+        })),
+      setPendingQuestion: (question) => set({ pendingQuestion: question }),
+      setCurrentSpeed: (speed) => set({ currentSpeed: speed }),
+      setBestScore: (score) => set({ bestScore: score }),
+      resetGame: () =>
+        set({
+          gameState: "playing",
+          playerCount: 1,
+          playerZ: 0,
+          currentSpeed: 10,
+          currentQuestion: "Get Ready!",
+          pendingQuestion: "",
+          nextEnemyCount: 0,
+          totalEnemiesDefeated: 0,
+        }),
     }),
-}));
+    {
+      name: "math-runner-storage",
+      partialize: (state) => ({ bestScore: state.bestScore }), // Only persist bestScore
+    }
+  )
+);
