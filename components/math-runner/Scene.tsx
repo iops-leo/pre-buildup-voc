@@ -1,6 +1,7 @@
 "use client";
 
 import { Canvas } from "@react-three/fiber";
+import { Suspense } from "react";
 import { Physics } from "@react-three/rapier";
 import { Sky, Environment } from "@react-three/drei";
 import Player from "./Player";
@@ -33,10 +34,12 @@ export default function MathRunnerScene() {
             <Environment preset="city" />
 
             {/* Physics World */}
-            <Physics>
-                <TrackManager />
-                <Player />
-            </Physics>
+            <Suspense fallback={null}>
+                <Physics>
+                    <TrackManager />
+                    <Player />
+                </Physics>
+            </Suspense>
         </Canvas>
     );
 }

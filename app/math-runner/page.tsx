@@ -1,6 +1,5 @@
 "use client";
 
-import { Suspense } from "react";
 import MathRunnerScene from "@/components/math-runner/Scene";
 import { useMathRunnerStore, MathLevel } from "@/store/useMathRunnerStore";
 
@@ -18,9 +17,7 @@ export default function MathRunnerPage() {
         <main className="w-full h-screen bg-sky-900 overflow-hidden relative font-sans">
             {/* 3D Canvas goes here */}
             <div className="absolute inset-0">
-                <Suspense fallback={<div className="w-full h-full flex items-center justify-center text-white text-2xl">Loading Game...</div>}>
-                    <MathRunnerScene />
-                </Suspense>
+                <MathRunnerScene />
             </div>
 
             {/* 2D UI Overlay overlay */}

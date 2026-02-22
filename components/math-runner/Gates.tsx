@@ -3,6 +3,9 @@ import { RigidBody, CuboidCollider, IntersectionEnterPayload } from "@react-thre
 import { useState } from "react";
 import { useMathRunnerStore } from "@/store/useMathRunnerStore";
 
+const gateColliderArgs: [number, number, number] = [2, 2, 0.5];
+const gateBoxArgs: [number, number, number] = [4, 4, 1];
+
 export default function Gates({ position, mathExpression, answer, wrongAnswer }: {
     position: [number, number, number],
     mathExpression: string,
@@ -10,10 +13,8 @@ export default function Gates({ position, mathExpression, answer, wrongAnswer }:
     wrongAnswer: number | string
 }) {
     const [passed, setPassed] = useState(false);
-    const { addPlayers, subtractPlayers } = useMathRunnerStore((state) => ({
-        addPlayers: state.addPlayers,
-        subtractPlayers: state.subtractPlayers
-    }));
+    const addPlayers = useMathRunnerStore((state) => state.addPlayers);
+    const subtractPlayers = useMathRunnerStore((state) => state.subtractPlayers);
 
     const handleCorrect = (e: IntersectionEnterPayload) => {
         if (passed) return;
@@ -33,9 +34,9 @@ export default function Gates({ position, mathExpression, answer, wrongAnswer }:
         <group position={position}>
             {/* Left Gate (Answer) */}
             <RigidBody type="fixed" sensor onIntersectionEnter={handleCorrect}>
-                <CuboidCollider args={[2, 2, 0.5]} position={[-2.5, 2, 0]} />
+                <CuboidCollider args={gateColliderArgs} position={[-2.5, 2, 0]} />
                 <mesh position={[-2.5, 2, 0]}>
-                    <boxGeometry args={[4, 4, 1]} />
+                    <boxGeometry args={gateBoxArgs} />
                     <meshStandardMaterial color={passed ? "rgba(0, 255, 0, 0.1)" : "rgba(0, 255, 0, 0.3)"} transparent />
                 </mesh>
                 <Text
@@ -51,9 +52,9 @@ export default function Gates({ position, mathExpression, answer, wrongAnswer }:
 
             {/* Right Gate (Wrong) */}
             <RigidBody type="fixed" sensor onIntersectionEnter={handleWrong}>
-                <CuboidCollider args={[2, 2, 0.5]} position={[2.5, 2, 0]} />
+                <CuboidCollider args={gateColliderArgs} position={[2.5, 2, 0]} />
                 <mesh position={[2.5, 2, 0]}>
-                    <boxGeometry args={[4, 4, 1]} />
+                    <boxGeometry args={gateBoxArgs} />
                     <meshStandardMaterial color={passed ? "rgba(255, 0, 0, 0.1)" : "rgba(255, 0, 0, 0.3)"} transparent />
                 </mesh>
                 <Text
