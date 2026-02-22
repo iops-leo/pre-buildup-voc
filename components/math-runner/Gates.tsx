@@ -3,8 +3,8 @@ import { RigidBody, CuboidCollider, IntersectionEnterPayload } from "@react-thre
 import { useState, useMemo } from "react";
 import { useMathRunnerStore } from "@/store/useMathRunnerStore";
 
-const gateColliderArgs: [number, number, number] = [2, 2, 0.5];
-const gateBoxArgs: [number, number, number] = [4, 4, 1];
+const gateColliderArgs: [number, number, number] = [2.75, 1.75, 0.15];
+const gateBoxArgs: [number, number, number] = [5.5, 3.5, 0.15];
 
 export default function Gates({ position, mathExpression, answer, wrongAnswer }: {
     position: [number, number, number],
@@ -15,10 +15,8 @@ export default function Gates({ position, mathExpression, answer, wrongAnswer }:
     const [passed, setPassed] = useState(false);
     const [hitType, setHitType] = useState<"correct" | "wrong" | null>(null);
     const [hitTime, setHitTime] = useState<number | null>(null);
-    // Randomize whether the left gate is the correct answer. We use useMemo to only set once when spawned.
     const isLeftCorrect = useMemo(() => Math.random() > 0.5, []);
 
-    // Assign answers and handlers based on randomization
     const leftAnswer = isLeftCorrect ? answer : wrongAnswer;
     const rightAnswer = isLeftCorrect ? wrongAnswer : answer;
 
@@ -56,62 +54,75 @@ export default function Gates({ position, mathExpression, answer, wrongAnswer }:
     const leftHandler = isLeftCorrect ? handleCorrect : handleWrong;
     const rightHandler = isLeftCorrect ? handleWrong : handleCorrect;
 
+    const leftColor = passed
+        ? (isLeftCorrect ? "#4CAF50" : "#F44336")
+        : "#42A5F5";
+    const rightColor = passed
+        ? (!isLeftCorrect ? "#4CAF50" : "#F44336")
+        : "#42A5F5";
+
     return (
         <group position={position}>
             {/* Left Gate */}
             <RigidBody type="fixed" sensor onIntersectionEnter={leftHandler}>
-                <CuboidCollider args={gateColliderArgs} position={[-2.5, 2, 0]} />
-                <mesh position={[-2.5, 2, 0]}>
+                <CuboidCollider args={gateColliderArgs} position={[-3, 1.75, 0]} />
+                <mesh position={[-3, 1.75, 0]}>
                     <boxGeometry args={gateBoxArgs} />
                     <meshStandardMaterial
-                        color={passed ? (isLeftCorrect ? "#00ff00" : "#ff0000") : "#4488ff"}
+                        color={leftColor}
                         transparent
-                        opacity={passed ? 0.3 : 0.6}
+                        opacity={passed ? 0.5 : 0.85}
                     />
                 </mesh>
                 <Text
-                    position={[-2.5, 2, 0.6]}
-                    fontSize={1.2}
+                    position={[-3, 1.75, 0.12]}
+                    fontSize={1.4}
                     color="white"
                     anchorX="center"
                     anchorY="middle"
-                    maxWidth={3}
+                    maxWidth={4}
                     textAlign="center"
                     fontWeight="bold"
                 >
-                    {`[ ${leftAnswer} ]`}
+                    {String(leftAnswer)}
                 </Text>
             </RigidBody>
 
             {/* Right Gate */}
             <RigidBody type="fixed" sensor onIntersectionEnter={rightHandler}>
-                <CuboidCollider args={gateColliderArgs} position={[2.5, 2, 0]} />
-                <mesh position={[2.5, 2, 0]}>
+                <CuboidCollider args={gateColliderArgs} position={[3, 1.75, 0]} />
+                <mesh position={[3, 1.75, 0]}>
                     <boxGeometry args={gateBoxArgs} />
                     <meshStandardMaterial
-                        color={passed ? (!isLeftCorrect ? "#00ff00" : "#ff0000") : "#4488ff"}
+                        color={rightColor}
                         transparent
-                        opacity={passed ? 0.3 : 0.6}
+                        opacity={passed ? 0.5 : 0.85}
                     />
                 </mesh>
                 <Text
-                    position={[2.5, 2, 0.6]}
-                    fontSize={1.2}
+                    position={[3, 1.75, 0.12]}
+                    fontSize={1.4}
                     color="white"
                     anchorX="center"
                     anchorY="middle"
-                    maxWidth={3}
+                    maxWidth={4}
                     textAlign="center"
                     fontWeight="bold"
                 >
-                    {`[ ${rightAnswer} ]`}
+                    {String(rightAnswer)}
                 </Text>
             </RigidBody>
 
             {/* Middle Bumper (Penalty for avoiding gates) */}
             <RigidBody type="fixed" sensor onIntersectionEnter={handleMiddle}>
-                <CuboidCollider args={[0.5, 2, 0.5]} position={[0, 2, 0]} />
+                <CuboidCollider args={[0.5, 1.75, 0.5]} position={[0, 1.75, 0]} />
             </RigidBody>
+
+            {/* Thin divider pole between the two gates */}
+            <mesh position={[0, 1.75, 0]}>
+                <cylinderGeometry args={[0.05, 0.05, 3.5, 8]} />
+                <meshStandardMaterial color="#78909C" />
+            </mesh>
 
             {/* Floating Feedback Text */}
             {passed && hitTime && Date.now() - hitTime < 1000 && (

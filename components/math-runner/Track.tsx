@@ -5,21 +5,21 @@ export default function Track({ position = [0, 0, 0], length = 100 }: { position
     return (
         <RigidBody type="fixed" colliders="cuboid">
             {/* Ground */}
-            <mesh receiveShadow position={[x, y - 0.5, z - length / 2]}>
-                <boxGeometry args={[20, 1, length]} />
-                <meshStandardMaterial color="#f0f0f0" />
+            <mesh receiveShadow position={[x, y - 0.15, z - length / 2]}>
+                <boxGeometry args={[12, 0.3, length]} />
+                <meshStandardMaterial color="#4dd0e1" />
             </mesh>
 
-            {/* Left Wall */}
-            <mesh receiveShadow position={[x - 5, y + 0.5, z - length / 2]}>
-                <boxGeometry args={[1, 2, length]} />
-                <meshStandardMaterial color="#cccccc" />
+            {/* Left Edge Strip */}
+            <mesh receiveShadow position={[x - 5.925, y + 0.01, z - length / 2]}>
+                <boxGeometry args={[0.15, 0.3, length]} />
+                <meshStandardMaterial color="#00acc1" />
             </mesh>
 
-            {/* Right Wall */}
-            <mesh receiveShadow position={[x + 5, y + 0.5, z - length / 2]}>
-                <boxGeometry args={[1, 2, length]} />
-                <meshStandardMaterial color="#cccccc" />
+            {/* Right Edge Strip */}
+            <mesh receiveShadow position={[x + 5.925, y + 0.01, z - length / 2]}>
+                <boxGeometry args={[0.15, 0.3, length]} />
+                <meshStandardMaterial color="#00acc1" />
             </mesh>
         </RigidBody>
     );

@@ -29,7 +29,7 @@ export default function MathRunnerPage() {
     }, [gameState, playerCount, bestScore, setBestScore]);
 
     return (
-        <main className="w-full h-screen bg-sky-900 overflow-hidden relative font-sans">
+        <main className="w-full h-screen bg-sky-200 overflow-hidden relative font-sans">
             {/* 3D Canvas - Hidden/obscured during menu */}
             <div className={`absolute inset-0 transition-opacity duration-1000 ${gameState === 'menu' ? 'opacity-0' : 'opacity-100'}`}>
                 <MathRunnerScene />

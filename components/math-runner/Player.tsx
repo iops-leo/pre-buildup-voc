@@ -1,10 +1,9 @@
-import { useFrame, useGraph } from "@react-three/fiber";
+import { useFrame } from "@react-three/fiber";
 import { RigidBody, CapsuleCollider } from "@react-three/rapier";
 import { useRef, useState, useEffect, useMemo } from "react";
 import * as THREE from "three";
 import { useMathRunnerStore } from "@/store/useMathRunnerStore";
-import { useGLTF, useAnimations } from "@react-three/drei";
-import { SkeletonUtils } from "three-stdlib";
+import { Text } from "@react-three/drei";
 
 export default function Player() {
     const bodyRef = useRef<any>(null);
@@ -104,6 +103,16 @@ export default function Player() {
         <RigidBody ref={bodyRef} position={[0, 0.5, 0]} colliders={false} lockRotations>
             <CapsuleCollider args={[0.3, 0.2]} />
             <SoldierCrowd count={Math.min(playerCount, 30)} />
+            <Text
+                position={[0, 2.5, 0]}
+                fontSize={1.5}
+                color="#2196F3"
+                fontWeight="bold"
+                outlineWidth={0.08}
+                outlineColor="#ffffff"
+            >
+                {playerCount}
+            </Text>
         </RigidBody>
     );
 }
@@ -141,50 +150,48 @@ function SoldierCrowd({ count }: { count: number }) {
     return (
         <group>
             {soldiers.map((s) => (
-                <SoldierInstance key={s.id} position={s.position} />
+                <Stickman key={s.id} position={s.position} id={s.id} />
             ))}
         </group>
     );
 }
 
-function SoldierInstance({ position }: { position: THREE.Vector3 }) {
-    const group = useRef<THREE.Group>(null);
-    const { scene, animations } = useGLTF("/models/Soldier.glb");
-    const clone = useMemo(() => SkeletonUtils.clone(scene), [scene]);
-    const { nodes, materials } = useGraph(clone) as any;
-    const { actions } = useAnimations(animations, group);
+function Stickman({ position, id }: { position: THREE.Vector3; id: number }) {
+    const groupRef = useRef<THREE.Group>(null);
 
-    useEffect(() => {
-        // Pause animation if game is over or in menu
-        const unsub = useMathRunnerStore.subscribe((state) => {
-            if (state.gameState !== 'playing') {
-                Object.values(actions).forEach(a => { if (a) a.paused = true; });
-            } else {
-                Object.values(actions).forEach(a => { if (a) a.paused = false; });
-            }
-        });
-
-        if (actions && actions['Run']) {
-            actions['Run'].reset().fadeIn(0.2).play();
-        } else if (actions && Object.keys(actions).length > 0) {
-            const firstAction = Object.keys(actions).find(a => a.toLowerCase().includes('run')) || Object.keys(actions)[0];
-            actions[firstAction]?.reset().fadeIn(0.2).play();
-        }
-
-        return () => unsub();
-    }, [actions]);
+    useFrame((state) => {
+        if (!groupRef.current) return;
+        // Simple bobbing animation with per-stickman phase offset
+        const t = state.clock.elapsedTime;
+        const phaseOffset = id * 0.4;
+        groupRef.current.position.y = position.y + Math.sin(t * 6 + phaseOffset) * 0.04;
+    });
 
     return (
-        <group ref={group} position={position} rotation={[0, 0, 0]} dispose={null}>
-            <group name="Scene">
-                <group name="Character" rotation={[-Math.PI / 2, 0, 0]} scale={0.01}>
-                    <primitive object={nodes.mixamorigHips} />
-                    <skinnedMesh castShadow name="vanguard_Mesh" geometry={nodes.vanguard_Mesh.geometry} material={materials.VanguardBodyMat} skeleton={nodes.vanguard_Mesh.skeleton} />
-                    <skinnedMesh castShadow name="vanguard_visor" geometry={nodes.vanguard_visor.geometry} material={materials.Vanguard_VisorMat} skeleton={nodes.vanguard_visor.skeleton} />
-                </group>
-            </group>
+        <group ref={groupRef} position={position}>
+            {/* Head - sphere */}
+            <mesh position={[0, 0.52, 0]} castShadow>
+                <sphereGeometry args={[0.12, 12, 12]} />
+                <meshStandardMaterial color="#4FC3F7" />
+            </mesh>
+
+            {/* Body - capsule */}
+            <mesh position={[0, 0.22, 0]} castShadow>
+                <capsuleGeometry args={[0.1, 0.25, 8, 16]} />
+                <meshStandardMaterial color="#2196F3" />
+            </mesh>
+
+            {/* Left leg */}
+            <mesh position={[-0.07, -0.12, 0]} castShadow>
+                <cylinderGeometry args={[0.04, 0.04, 0.2, 8]} />
+                <meshStandardMaterial color="#1976D2" />
+            </mesh>
+
+            {/* Right leg */}
+            <mesh position={[0.07, -0.12, 0]} castShadow>
+                <cylinderGeometry args={[0.04, 0.04, 0.2, 8]} />
+                <meshStandardMaterial color="#1976D2" />
+            </mesh>
         </group>
     );
 }
-
-useGLTF.preload('/models/Soldier.glb');

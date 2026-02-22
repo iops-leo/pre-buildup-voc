@@ -1,9 +1,7 @@
-import { useRef, useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import * as THREE from "three";
-import { useGraph } from "@react-three/fiber";
-import { useGLTF, useAnimations, Text } from "@react-three/drei";
+import { Text } from "@react-three/drei";
 import { RigidBody, CuboidCollider } from "@react-three/rapier";
-import { SkeletonUtils } from "three-stdlib";
 import { useMathRunnerStore } from "@/store/useMathRunnerStore";
 
 interface EnemyGroupProps {
@@ -51,22 +49,18 @@ export default function EnemyGroup({ position, count, onDefeated }: EnemyGroupPr
                 <CuboidCollider args={[2, 1.5, 2]} position={[0, 0.5, 0]} />
             </RigidBody>
 
-            {/* Enemy soldiers - cap visual at 15 for performance */}
+            {/* Enemy stickmen - cap visual at 15 for performance */}
             <EnemyCrowd count={Math.min(count, 15)} />
 
-            {/* Red count indicator above group */}
-            <mesh position={[0, 3.5, 0]}>
-                <sphereGeometry args={[0.3, 16, 16]} />
-                <meshStandardMaterial color="#ff2222" emissive="#ff0000" emissiveIntensity={0.6} />
-            </mesh>
+            {/* Count label above group */}
             <Text
-                position={[0, 4.3, 0]}
-                fontSize={0.8}
-                color="#ff4444"
+                position={[0, 2.5, 0]}
+                fontSize={1.2}
+                color="#F44336"
                 anchorX="center"
                 anchorY="middle"
-                outlineWidth={0.04}
-                outlineColor="#000000"
+                outlineWidth={0.06}
+                outlineColor="#ffffff"
             >
                 {count}
             </Text>
@@ -103,82 +97,46 @@ function EnemyCrowd({ count }: { count: number }) {
     return (
         <group>
             {soldiers.map((s) => (
-                <EnemySoldier key={s.id} position={s.position} />
+                <EnemyStickman key={s.id} position={s.position} />
             ))}
         </group>
     );
 }
 
-function EnemySoldier({ position }: { position: THREE.Vector3 }) {
-    const group = useRef<THREE.Group>(null);
-    const { scene, animations } = useGLTF("/models/Soldier.glb");
-    const clone = useMemo(() => SkeletonUtils.clone(scene), [scene]);
-    const { nodes, materials } = useGraph(clone) as any;
-    const { actions } = useAnimations(animations, group);
+function EnemyStickman({ position }: { position: THREE.Vector3 }) {
+    // Total height ~0.6 units:
+    //   head (sphere r=0.12): top at +0.12, center at 0.0 relative to stickman root
+    //   body (capsule r=0.1, h=0.25): center at -0.27
+    //   legs (cylinder r=0.04, h=0.2): center at -0.52 (left/right offset ±0.07)
+    // stickman root sits at y=+0.5 above ring position so feet land near y=0
 
-    useEffect(() => {
-        const unsub = useMathRunnerStore.subscribe((state) => {
-            if (state.gameState !== 'playing') {
-                Object.values(actions).forEach(a => { if (a) a.paused = true; });
-            } else {
-                Object.values(actions).forEach(a => { if (a) a.paused = false; });
-            }
-        });
-
-        if (!actions) return;
-        const idleAction =
-            actions["Idle"] ||
-            actions[Object.keys(actions).find((k) => k.toLowerCase().includes("idle")) ?? ""] ||
-            Object.values(actions)[0];
-        idleAction?.reset().fadeIn(0.2).play();
-
-        return () => unsub();
-    }, [actions]);
-
-    // Red-tinted material clones
-    const redBodyMat = useMemo(() => {
-        if (!materials?.VanguardBodyMat) return null;
-        const mat = (materials.VanguardBodyMat as THREE.MeshStandardMaterial).clone();
-        mat.color.set("#cc2222");
-        mat.emissive.set("#440000");
-        mat.emissiveIntensity = 0.3;
-        return mat;
-    }, [materials]);
-
-    const redVisorMat = useMemo(() => {
-        if (!materials?.Vanguard_VisorMat) return null;
-        const mat = (materials.Vanguard_VisorMat as THREE.MeshStandardMaterial).clone();
-        mat.color.set("#ff0000");
-        mat.emissive.set("#ff0000");
-        mat.emissiveIntensity = 0.5;
-        return mat;
-    }, [materials]);
-
-    if (!nodes?.mixamorigHips || !nodes?.vanguard_Mesh || !nodes?.vanguard_visor) return null;
+    const rootY = position.y + 0.5;
 
     return (
-        <group ref={group} position={position} rotation={[0, 0, 0]} dispose={null}>
-            <group name="Scene">
-                <group name="Character" rotation={[-Math.PI / 2, 0, 0]} scale={0.01}>
-                    <primitive object={nodes.mixamorigHips} />
-                    <skinnedMesh
-                        castShadow
-                        name="vanguard_Mesh"
-                        geometry={nodes.vanguard_Mesh.geometry}
-                        material={redBodyMat ?? materials.VanguardBodyMat}
-                        skeleton={nodes.vanguard_Mesh.skeleton}
-                    />
-                    <skinnedMesh
-                        castShadow
-                        name="vanguard_visor"
-                        geometry={nodes.vanguard_visor.geometry}
-                        material={redVisorMat ?? materials.Vanguard_VisorMat}
-                        skeleton={nodes.vanguard_visor.skeleton}
-                    />
-                </group>
-            </group>
+        <group position={[position.x, rootY, position.z]}>
+            {/* Head */}
+            <mesh position={[0, 0.0, 0]} castShadow>
+                <sphereGeometry args={[0.12, 8, 8]} />
+                <meshStandardMaterial color="#EF5350" />
+            </mesh>
+
+            {/* Body */}
+            <mesh position={[0, -0.27, 0]} castShadow>
+                <capsuleGeometry args={[0.1, 0.25, 8, 16]} />
+                <meshStandardMaterial color="#F44336" />
+            </mesh>
+
+            {/* Left leg */}
+            <mesh position={[-0.07, -0.52, 0]} castShadow>
+                <cylinderGeometry args={[0.04, 0.04, 0.2, 8]} />
+                <meshStandardMaterial color="#C62828" />
+            </mesh>
+
+            {/* Right leg */}
+            <mesh position={[0.07, -0.52, 0]} castShadow>
+                <cylinderGeometry args={[0.04, 0.04, 0.2, 8]} />
+                <meshStandardMaterial color="#C62828" />
+            </mesh>
         </group>
     );
 }
-
-useGLTF.preload("/models/Soldier.glb");
