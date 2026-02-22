@@ -11,7 +11,7 @@ export default function MathRunnerScene() {
     return (
         <Canvas
             shadows
-            camera={{ position: [0, 5, 12], fov: 50 }}
+            camera={{ position: [0, 12, 18], fov: 60 }}
             className="w-full h-full"
         >
             <color attach="background" args={["#87CEEB"]} />

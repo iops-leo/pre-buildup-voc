@@ -47,7 +47,11 @@ export default function Gates({ position, mathExpression, answer, wrongAnswer }:
                 <CuboidCollider args={gateColliderArgs} position={[-2.5, 2, 0]} />
                 <mesh position={[-2.5, 2, 0]}>
                     <boxGeometry args={gateBoxArgs} />
-                    <meshStandardMaterial color={passed ? (isLeftCorrect ? "rgba(0, 255, 0, 0.1)" : "rgba(255, 0, 0, 0.1)") : "rgba(255, 255, 255, 0.2)"} transparent />
+                    <meshStandardMaterial
+                        color={passed ? (isLeftCorrect ? "#00ff00" : "#ff0000") : "#4488ff"}
+                        transparent
+                        opacity={passed ? 0.3 : 0.6}
+                    />
                 </mesh>
                 <Text
                     position={[-2.5, 2, 0.6]}
@@ -67,7 +71,11 @@ export default function Gates({ position, mathExpression, answer, wrongAnswer }:
                 <CuboidCollider args={gateColliderArgs} position={[2.5, 2, 0]} />
                 <mesh position={[2.5, 2, 0]}>
                     <boxGeometry args={gateBoxArgs} />
-                    <meshStandardMaterial color={passed ? (!isLeftCorrect ? "rgba(0, 255, 0, 0.1)" : "rgba(255, 0, 0, 0.1)") : "rgba(255, 255, 255, 0.2)"} transparent />
+                    <meshStandardMaterial
+                        color={passed ? (!isLeftCorrect ? "#00ff00" : "#ff0000") : "#4488ff"}
+                        transparent
+                        opacity={passed ? 0.3 : 0.6}
+                    />
                 </mesh>
                 <Text
                     position={[2.5, 2, 0.6]}

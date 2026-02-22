@@ -37,15 +37,16 @@ export default function Player() {
         // Update store with playerZ without triggering component re-render
         useMathRunnerStore.setState({ playerZ: newZ });
 
-        // Make camera follow the player loosely
+        // Make camera follow the player loosely — high and far back for better visibility
         state.camera.position.x = THREE.MathUtils.lerp(state.camera.position.x, newX, 2 * delta);
-        state.camera.position.z = newZ + 10;
-        state.camera.lookAt(newX, 0, newZ - 10);
+        state.camera.position.y = 12;
+        state.camera.position.z = newZ + 16;
+        state.camera.lookAt(newX, 0, newZ - 5);
     });
 
     return (
         <RigidBody ref={bodyRef} position={[0, 1, 0]} colliders={false} lockRotations>
-            <CapsuleCollider args={[0.5, 0.5]} />
+            <CapsuleCollider args={[0.3, 0.3]} />
             <SoldierCrowd count={playerCount} />
         </RigidBody>
     );
@@ -98,7 +99,7 @@ function SoldierInstance({ position }: { position: THREE.Vector3 }) {
         <group ref={group} position={position} rotation={[0, Math.PI, 0]} dispose={null}>
             <group name="Scene">
                 {/* Math.PI is 180 degrees. Rotating to face forward (negative Z), Soldier scale applies here */}
-                <group name="Character" rotation={[-Math.PI / 2, 0, 0]} scale={0.8}>
+                <group name="Character" rotation={[-Math.PI / 2, 0, 0]} scale={0.45}>
                     <primitive object={nodes.mixamorigHips} />
                     <skinnedMesh castShadow name="vanguard_Mesh" geometry={nodes.vanguard_Mesh.geometry} material={materials.VanguardBodyMat} skeleton={nodes.vanguard_Mesh.skeleton} />
                     <skinnedMesh castShadow name="vanguard_visor" geometry={nodes.vanguard_visor.geometry} material={materials.Vanguard_VisorMat} skeleton={nodes.vanguard_visor.skeleton} />
