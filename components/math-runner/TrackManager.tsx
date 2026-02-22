@@ -124,11 +124,12 @@ function generateEnglishProblem() {
 
 function generateEnemies(segZ: number, level: MathLevel): EnemyData[] {
     // Always spawn enemies, count scales with difficulty
+    // Correct gate = +10, so enemies should threaten that gain
     const count = level === 'easy'
-        ? Math.floor(Math.random() * 4) + 3
+        ? Math.floor(Math.random() * 5) + 8      // 8~12
         : level === 'medium'
-            ? Math.floor(Math.random() * 6) + 5
-            : Math.floor(Math.random() * 10) + 8;
+            ? Math.floor(Math.random() * 8) + 12  // 12~19
+            : Math.floor(Math.random() * 10) + 18; // 18~27
     const x = (Math.random() - 0.5) * 6;
     const z = segZ - 15 - Math.random() * 25;
     return [{ id: `e${segZ}-${Math.random()}`, position: [x, 0.5, z], count }];
