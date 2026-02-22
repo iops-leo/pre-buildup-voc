@@ -124,12 +124,7 @@ function generateEnglishProblem() {
 
 function generateEnemies(segZ: number, level: MathLevel): EnemyData[] {
     // Always spawn enemies, count scales with difficulty
-    // Correct gate = +10, so enemies should threaten that gain
-    const count = level === 'easy'
-        ? Math.floor(Math.random() * 5) + 8      // 8~12
-        : level === 'medium'
-            ? Math.floor(Math.random() * 8) + 12  // 12~19
-            : Math.floor(Math.random() * 10) + 18; // 18~27
+    const count = Math.floor(Math.random() * 6) + 8; // 8~13
     const x = (Math.random() - 0.5) * 6;
     const z = segZ - 15 - Math.random() * 25;
     return [{ id: `e${segZ}-${Math.random()}`, position: [x, 0.5, z], count }];
@@ -137,7 +132,7 @@ function generateEnemies(segZ: number, level: MathLevel): EnemyData[] {
 
 function generateObstacles(segZ: number, level: MathLevel): ObstacleData[] {
     const results: ObstacleData[] = [];
-    const numObstacles = level === 'easy' ? 1 : level === 'medium' ? 2 : 3;
+    const numObstacles = 2;
     const types: ('rock' | 'barrier' | 'cone')[] = ['rock', 'barrier', 'cone'];
     for (let i = 0; i < numObstacles; i++) {
         if (Math.random() > 0.6) continue;
