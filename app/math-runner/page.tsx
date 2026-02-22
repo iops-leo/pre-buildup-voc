@@ -86,7 +86,7 @@ export default function MathRunnerPage() {
                             </div>
 
                             <button
-                                onClick={() => setGameState('playing')}
+                                onClick={() => resetGame()}
                                 className="w-full py-5 rounded-2xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-black text-3xl shadow-[0_0_20px_rgba(34,197,94,0.4)] hover:scale-105 transition-transform"
                             >
                                 게임 시작

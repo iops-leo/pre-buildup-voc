@@ -51,11 +51,26 @@ export default function Player() {
         };
     }, []);
 
+    // Reset RigidBody position when playerZ resets to 0 (new game)
+    const prevPlayerZ = useRef(0);
+    useEffect(() => {
+        const unsub = useMathRunnerStore.subscribe((s) => {
+            if (s.gameState === 'playing' && s.playerZ === 0 && prevPlayerZ.current !== 0) {
+                if (bodyRef.current) {
+                    bodyRef.current.setTranslation({ x: 0, y: 0.5, z: 0 }, true);
+                    setTargetX(0);
+                }
+            }
+            prevPlayerZ.current = s.playerZ;
+        });
+        return () => unsub();
+    }, []);
+
     useFrame((state, delta) => {
         if (!bodyRef.current) return;
 
         const gameState = useMathRunnerStore.getState().gameState;
-        if (gameState !== 'playing') return; // Do not move if game is over or in menu
+        if (gameState !== 'playing') return;
 
         const currentTranslation = bodyRef.current.translation();
 

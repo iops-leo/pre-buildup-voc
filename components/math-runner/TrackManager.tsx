@@ -160,33 +160,41 @@ function createSegment(z: number, gameMode: 'math' | 'english', level: MathLevel
     };
 }
 
+function buildInitialSegments(gameMode: 'math' | 'english', level: MathLevel): TrackSegment[] {
+    return [
+        { z: 0, expression: "Start", answer: 0, wrongAnswer: 0, enemies: [], obstacles: [] },
+        createSegment(-SEGMENT_LENGTH, gameMode, level),
+        createSegment(-SEGMENT_LENGTH * 2, gameMode, level),
+    ];
+}
+
 export default function TrackManager() {
     const level = useMathRunnerStore(state => state.level);
     const gameMode = useMathRunnerStore(state => state.gameMode);
+    const gameState = useMathRunnerStore(state => state.gameState);
 
-    const [segments, setSegments] = useState<TrackSegment[]>(() => {
-        const seg1 = createSegment(-SEGMENT_LENGTH, gameMode, level);
-        const seg2 = createSegment(-SEGMENT_LENGTH * 2, gameMode, level);
-        return [
-            { z: 0, expression: "Start", answer: 0, wrongAnswer: 0, enemies: [], obstacles: [] },
-            seg1,
-            seg2,
-        ];
-    });
+    const [segments, setSegments] = useState<TrackSegment[]>(() =>
+        buildInitialSegments(gameMode, level)
+    );
     const lastZ = useRef(-SEGMENT_LENGTH * 2);
 
+    // Reset segments when game starts or restarts
     useEffect(() => {
-        const store = useMathRunnerStore.getState();
-        const seg1 = createSegment(-SEGMENT_LENGTH, store.gameMode, store.level);
-        const seg2 = createSegment(-SEGMENT_LENGTH * 2, store.gameMode, store.level);
-        setSegments([
-            { z: 0, expression: "Start", answer: 0, wrongAnswer: 0, enemies: [], obstacles: [] },
-            seg1,
-            seg2,
-        ]);
-        lastZ.current = -SEGMENT_LENGTH * 2;
-        useMathRunnerStore.getState().resetGame();
-    }, [gameMode]);
+        if (gameState === 'playing') {
+            const store = useMathRunnerStore.getState();
+            const newSegments = buildInitialSegments(store.gameMode, store.level);
+            setSegments(newSegments);
+            lastZ.current = -SEGMENT_LENGTH * 2;
+            // Set the first question immediately so it doesn't stay on "Get Ready!"
+            const firstProblem = newSegments[1];
+            if (firstProblem) {
+                useMathRunnerStore.setState({
+                    currentQuestion: firstProblem.expression,
+                    pendingQuestion: firstProblem.expression,
+                });
+            }
+        }
+    }, [gameState]);
 
     // If level changes significantly, we might want to regenerate upcoming questions,
     // but the simplest approach is just letting new spawned gates use the new level.
