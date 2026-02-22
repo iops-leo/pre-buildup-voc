@@ -3,15 +3,32 @@ import { useState, useRef, useEffect } from "react";
 import { useMathRunnerStore, MathLevel } from "@/store/useMathRunnerStore";
 import Track from "./Track";
 import Gates from "./Gates";
+import EnemyGroup from "./EnemyGroup";
+import Obstacle from "./Obstacle";
 
 const SEGMENT_LENGTH = 100;
 const VISIBLE_SEGMENTS = 3;
+
+interface EnemyData {
+    id: string;
+    position: [number, number, number];
+    count: number;
+}
+
+interface ObstacleData {
+    id: string;
+    position: [number, number, number];
+    type: 'rock' | 'barrier' | 'cone';
+    damage: number;
+}
 
 interface TrackSegment {
     z: number;
     expression: string;
     answer: number | string;
     wrongAnswer: number | string;
+    enemies: EnemyData[];
+    obstacles: ObstacleData[];
 }
 
 import { VOCABULARY_DATA } from "@/data/vocabulary";
@@ -103,28 +120,70 @@ function generateEnglishProblem() {
     };
 }
 
+function generateEnemies(segZ: number, level: MathLevel): EnemyData[] {
+    const chance = level === 'easy' ? 0.3 : level === 'medium' ? 0.5 : 0.7;
+    if (Math.random() > chance) return [];
+    const count = level === 'easy'
+        ? Math.floor(Math.random() * 3) + 2
+        : level === 'medium'
+            ? Math.floor(Math.random() * 5) + 3
+            : Math.floor(Math.random() * 8) + 5;
+    const x = (Math.random() - 0.5) * 6;
+    const z = segZ - 15 - Math.random() * 25;
+    return [{ id: `e${segZ}-${Math.random()}`, position: [x, 0.5, z], count }];
+}
+
+function generateObstacles(segZ: number, level: MathLevel): ObstacleData[] {
+    const results: ObstacleData[] = [];
+    const numObstacles = level === 'easy' ? 1 : level === 'medium' ? 2 : 3;
+    const types: ('rock' | 'barrier' | 'cone')[] = ['rock', 'barrier', 'cone'];
+    for (let i = 0; i < numObstacles; i++) {
+        if (Math.random() > 0.5) continue;
+        const type = types[Math.floor(Math.random() * types.length)];
+        const damage = type === 'barrier' ? 5 : type === 'rock' ? 3 : 2;
+        const x = (Math.random() - 0.5) * 8;
+        const z = segZ - 55 - Math.random() * 35;
+        results.push({ id: `o${segZ}-${i}-${Math.random()}`, position: [x, type === 'barrier' ? 0.75 : 0.5, z], type, damage });
+    }
+    return results;
+}
+
+function createSegment(z: number, gameMode: 'math' | 'english', level: MathLevel): TrackSegment {
+    const problem = generateProblem(gameMode, level);
+    return {
+        z,
+        ...problem,
+        enemies: generateEnemies(z, level),
+        obstacles: generateObstacles(z, level),
+    };
+}
+
 export default function TrackManager() {
     const level = useMathRunnerStore(state => state.level);
     const gameMode = useMathRunnerStore(state => state.gameMode);
 
-    // Key on gameMode to force a reset of the segments when toggling modes
-    const [segments, setSegments] = useState<TrackSegment[]>([
-        { z: 0, expression: "Start", answer: 0, wrongAnswer: 0 },
-        { z: -SEGMENT_LENGTH, ...generateProblem(gameMode, level) },
-        { z: -SEGMENT_LENGTH * 2, ...generateProblem(gameMode, level) },
-    ]);
+    const [segments, setSegments] = useState<TrackSegment[]>(() => {
+        const seg1 = createSegment(-SEGMENT_LENGTH, gameMode, level);
+        const seg2 = createSegment(-SEGMENT_LENGTH * 2, gameMode, level);
+        return [
+            { z: 0, expression: "Start", answer: 0, wrongAnswer: 0, enemies: [], obstacles: [] },
+            seg1,
+            seg2,
+        ];
+    });
     const lastZ = useRef(-SEGMENT_LENGTH * 2);
 
-    // Reset track and questions if the game mode changes so words/math are immediate
     useEffect(() => {
         const store = useMathRunnerStore.getState();
+        const seg1 = createSegment(-SEGMENT_LENGTH, store.gameMode, store.level);
+        const seg2 = createSegment(-SEGMENT_LENGTH * 2, store.gameMode, store.level);
         setSegments([
-            { z: 0, expression: "Start", answer: 0, wrongAnswer: 0 },
-            { z: -SEGMENT_LENGTH, ...generateProblem(store.gameMode, store.level) },
-            { z: -SEGMENT_LENGTH * 2, ...generateProblem(store.gameMode, store.level) },
+            { z: 0, expression: "Start", answer: 0, wrongAnswer: 0, enemies: [], obstacles: [] },
+            seg1,
+            seg2,
         ]);
         lastZ.current = -SEGMENT_LENGTH * 2;
-        useMathRunnerStore.setState({ currentQuestion: "Ready?", playerZ: 0, playerCount: 1 });
+        useMathRunnerStore.getState().resetGame();
     }, [gameMode]);
 
     // If level changes significantly, we might want to regenerate upcoming questions,
@@ -137,19 +196,20 @@ export default function TrackManager() {
         const currentSegmentIndex = Math.floor(playerZ / -SEGMENT_LENGTH);
         const expectedLastSegmentZ = -(currentSegmentIndex + VISIBLE_SEGMENTS - 1) * SEGMENT_LENGTH;
 
-        // Determine which segment the player is currently in to show the correct question
-        // If player is at -30, they are in segment 0 (0 to -100). The gate they are approaching is for segment 1 (-100).
         const upcomingSegmentIndex = currentSegmentIndex + 1;
         const upcomingSegment = segments.find(s => s.z === -upcomingSegmentIndex * SEGMENT_LENGTH);
         if (upcomingSegment) {
-            useMathRunnerStore.setState({ currentQuestion: upcomingSegment.expression || "Run!" });
+            useMathRunnerStore.setState({ pendingQuestion: upcomingSegment.expression || "Run!" });
+            const enemyCount = upcomingSegment.enemies.reduce((sum, e) => sum + e.count, 0);
+            useMathRunnerStore.setState({ nextEnemyCount: enemyCount });
         }
 
         if (expectedLastSegmentZ < lastZ.current) {
             lastZ.current = expectedLastSegmentZ;
             setSegments(prev => {
                 const store = useMathRunnerStore.getState();
-                const newSegs = [...prev, { z: expectedLastSegmentZ, ...generateProblem(store.gameMode, store.level) }];
+                const newSeg = createSegment(expectedLastSegmentZ, store.gameMode, store.level);
+                const newSegs = [...prev, newSeg];
                 return newSegs.filter(seg => seg.z <= -(currentSegmentIndex - 1) * SEGMENT_LENGTH);
             });
         }
@@ -161,12 +221,30 @@ export default function TrackManager() {
                 <group key={seg.z}>
                     <Track position={[0, 0, seg.z]} length={SEGMENT_LENGTH} />
                     {seg.z < 0 && (
-                        <Gates
-                            position={[0, 0, seg.z - Math.floor(SEGMENT_LENGTH / 2)]}
-                            mathExpression={seg.expression}
-                            answer={seg.answer}
-                            wrongAnswer={seg.wrongAnswer}
-                        />
+                        <>
+                            <Gates
+                                position={[0, 0, seg.z - Math.floor(SEGMENT_LENGTH / 2)]}
+                                mathExpression={seg.expression}
+                                answer={seg.answer}
+                                wrongAnswer={seg.wrongAnswer}
+                            />
+                            {seg.enemies.map((enemy) => (
+                                <EnemyGroup
+                                    key={enemy.id}
+                                    position={enemy.position}
+                                    count={enemy.count}
+                                    onDefeated={() => {}}
+                                />
+                            ))}
+                            {seg.obstacles.map((obs) => (
+                                <Obstacle
+                                    key={obs.id}
+                                    position={obs.position}
+                                    type={obs.type}
+                                    damage={obs.damage}
+                                />
+                            ))}
+                        </>
                     )}
                 </group>
             ))}

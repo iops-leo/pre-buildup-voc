@@ -10,6 +10,8 @@ export default function MathRunnerPage() {
     const gameMode = useMathRunnerStore(state => state.gameMode);
     const setLevel = useMathRunnerStore(state => state.setLevel);
     const setGameMode = useMathRunnerStore(state => state.setGameMode);
+    const nextEnemyCount = useMathRunnerStore(state => state.nextEnemyCount);
+    const totalEnemiesDefeated = useMathRunnerStore(state => state.totalEnemiesDefeated);
 
     const levels: MathLevel[] = ['easy', 'medium', 'hard'];
 
@@ -64,9 +66,26 @@ export default function MathRunnerPage() {
                     ))}
                 </div>
 
-                <div className="bg-white/20 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/30 text-white font-bold text-2xl shadow-xl flex gap-6">
-                    <span className="flex items-center gap-2">Crowd: <span className="text-green-300">{playerCount}</span></span>
-                    <span className="border-l border-white/30 pl-6 flex items-center gap-2">Question: <span className="text-yellow-300">{currentQuestion}</span></span>
+                <div className="bg-white/20 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/30 text-white font-bold text-2xl shadow-xl">
+                    <span className="text-yellow-300">{currentQuestion}</span>
+                </div>
+            </div>
+
+            {/* Bottom HUD - soldier counts */}
+            <div className="absolute bottom-0 left-0 w-full p-4 flex justify-between pointer-events-none z-10">
+                <div className="bg-blue-600/80 backdrop-blur-md px-4 py-2 rounded-xl border border-blue-400/40 text-white font-bold shadow-lg flex items-center gap-2">
+                    <span className="text-sm">내 병사</span>
+                    <span className="text-2xl text-blue-200">{playerCount}</span>
+                </div>
+                <div className="bg-red-600/80 backdrop-blur-md px-4 py-2 rounded-xl border border-red-400/40 text-white font-bold shadow-lg flex items-center gap-3">
+                    <div className="flex items-center gap-1">
+                        <span className="text-sm">다음 적</span>
+                        <span className="text-2xl text-red-200">{nextEnemyCount}</span>
+                    </div>
+                    <div className="border-l border-red-400/40 pl-3 flex items-center gap-1">
+                        <span className="text-sm">처치</span>
+                        <span className="text-lg text-red-200">{totalEnemiesDefeated}</span>
+                    </div>
                 </div>
             </div>
         </main>

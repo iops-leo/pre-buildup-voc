@@ -13,6 +13,7 @@ export default function Player() {
     // Basic movement controls
     const [targetX, setTargetX] = useState(0);
 
+    // Keyboard controls
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (e.key === "ArrowLeft") setTargetX((prev) => Math.max(prev - 2, -4));
@@ -20,6 +21,34 @@ export default function Player() {
         };
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
+    }, []);
+
+    // Touch/swipe controls for mobile
+    const touchStartX = useRef<number | null>(null);
+    useEffect(() => {
+        const handleTouchStart = (e: TouchEvent) => {
+            touchStartX.current = e.touches[0].clientX;
+        };
+        const handleTouchMove = (e: TouchEvent) => {
+            if (touchStartX.current === null) return;
+            const dx = e.touches[0].clientX - touchStartX.current;
+            if (Math.abs(dx) > 30) {
+                if (dx > 0) setTargetX((prev) => Math.min(prev + 2, 4));
+                else setTargetX((prev) => Math.max(prev - 2, -4));
+                touchStartX.current = e.touches[0].clientX;
+            }
+        };
+        const handleTouchEnd = () => {
+            touchStartX.current = null;
+        };
+        window.addEventListener("touchstart", handleTouchStart, { passive: true });
+        window.addEventListener("touchmove", handleTouchMove, { passive: true });
+        window.addEventListener("touchend", handleTouchEnd);
+        return () => {
+            window.removeEventListener("touchstart", handleTouchStart);
+            window.removeEventListener("touchmove", handleTouchMove);
+            window.removeEventListener("touchend", handleTouchEnd);
+        };
     }, []);
 
     useFrame((state, delta) => {
@@ -53,17 +82,27 @@ export default function Player() {
 }
 
 function SoldierCrowd({ count }: { count: number }) {
-    // Generate static local positions based on playerCount (spiral pattern)
     const soldiers = useMemo(() => {
-        const arr = [];
-        for (let i = 0; i < count; i++) {
-            const pos = new THREE.Vector3(0, -0.5, 0);
-            if (i > 0) {
-                const angle = i * Math.PI * 0.4;
-                const radius = 0.4 * Math.sqrt(i);
-                pos.set(Math.cos(angle) * radius, -0.5, Math.sin(angle) * radius);
+        const arr: { id: number; position: THREE.Vector3 }[] = [];
+        let placed = 0;
+        let ring = 0;
+        while (placed < count) {
+            if (ring === 0) {
+                arr.push({ id: placed, position: new THREE.Vector3(0, -0.5, 0) });
+                placed++;
+            } else {
+                const r = 0.35 * ring;
+                const soldiersInRing = 6 * ring;
+                for (let j = 0; j < soldiersInRing && placed < count; j++) {
+                    const angle = (j / soldiersInRing) * Math.PI * 2;
+                    arr.push({
+                        id: placed,
+                        position: new THREE.Vector3(Math.cos(angle) * r, -0.5, Math.sin(angle) * r),
+                    });
+                    placed++;
+                }
             }
-            arr.push({ id: i, position: pos });
+            ring++;
         }
         return arr;
     }, [count]);

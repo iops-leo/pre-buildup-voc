@@ -22,19 +22,20 @@ export default function Gates({ position, mathExpression, answer, wrongAnswer }:
 
     const addPlayers = useMathRunnerStore((state) => state.addPlayers);
     const subtractPlayers = useMathRunnerStore((state) => state.subtractPlayers);
+    const advanceQuestion = useMathRunnerStore((state) => state.advanceQuestion);
 
     const handleCorrect = (e: IntersectionEnterPayload) => {
         if (passed) return;
         setPassed(true);
-        console.log("Passed correct gate!");
         addPlayers(10);
+        advanceQuestion();
     };
 
     const handleWrong = (e: IntersectionEnterPayload) => {
         if (passed) return;
         setPassed(true);
-        console.log("Passed wrong gate!");
         subtractPlayers(10);
+        advanceQuestion();
     };
 
     const leftHandler = isLeftCorrect ? handleCorrect : handleWrong;
