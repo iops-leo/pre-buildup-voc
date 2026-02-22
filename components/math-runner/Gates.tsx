@@ -6,8 +6,8 @@ import { useMathRunnerStore } from "@/store/useMathRunnerStore";
 export default function Gates({ position, mathExpression, answer, wrongAnswer }: {
     position: [number, number, number],
     mathExpression: string,
-    answer: number,
-    wrongAnswer: number
+    answer: number | string,
+    wrongAnswer: number | string
 }) {
     const [passed, setPassed] = useState(false);
     const { addPlayers, subtractPlayers } = useMathRunnerStore((state) => ({

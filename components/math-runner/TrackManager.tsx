@@ -10,12 +10,18 @@ const VISIBLE_SEGMENTS = 3;
 interface TrackSegment {
     z: number;
     expression: string;
-    answer: number;
-    wrongAnswer: number;
+    answer: number | string;
+    wrongAnswer: number | string;
 }
 
-function generateProblem(level: MathLevel) {
-    let expression = "", answer = 0, wrongAnswer = 0;
+import { VOCABULARY_DATA } from "@/data/vocabulary";
+
+function generateProblem(gameMode: 'math' | 'english', level: MathLevel) {
+    if (gameMode === 'english') {
+        return generateEnglishProblem();
+    }
+
+    let expression = "", answer: number | string = 0, wrongAnswer: number | string = 0;
 
     if (level === 'easy') {
         const isAdd = Math.random() > 0.5;
@@ -42,7 +48,7 @@ function generateProblem(level: MathLevel) {
             const val1 = Math.floor(Math.random() * 40) + 10;
             const val2 = Math.floor(Math.random() * 40) + 10;
             answer = val1 + val2;
-            wrongAnswer = answer + (Math.random() > 0.5 ? 10 : -10);
+            wrongAnswer = answer as number + (Math.random() > 0.5 ? 10 : -10);
             expression = `${val1} + ${val2} = ?`;
         }
     } else { // hard
@@ -51,7 +57,7 @@ function generateProblem(level: MathLevel) {
             const val1 = Math.floor(Math.random() * 11) + 10;
             const val2 = Math.floor(Math.random() * 10) + 2;
             answer = val1 * val2;
-            wrongAnswer = answer + (Math.random() > 0.5 ? 10 : -10);
+            wrongAnswer = answer as number + (Math.random() > 0.5 ? 10 : -10);
             expression = `${val1} x ${val2} = ?`;
         } else if (type < 0.7) { // division
             const divisor = Math.floor(Math.random() * 9) + 2;
@@ -70,19 +76,53 @@ function generateProblem(level: MathLevel) {
     }
 
     // Ensure negative answers aren't confusing, clamp to positive or use abs in logic
-    if (wrongAnswer < 0) wrongAnswer = Math.abs(wrongAnswer) + 2;
+    if ((wrongAnswer as number) < 0) wrongAnswer = Math.abs(wrongAnswer as number) + 2;
 
     return { expression, answer, wrongAnswer };
 }
 
+function generateEnglishProblem() {
+    // Select two random words from the entire vocabulary pool
+    const allWords = VOCABULARY_DATA.units.flatMap(u => u.lessons.flatMap(l => l.vocabulary));
+
+    const correctTarget = allWords[Math.floor(Math.random() * allWords.length)];
+    let wrongTarget = allWords[Math.floor(Math.random() * allWords.length)];
+
+    // Ensure they are not the same
+    while (wrongTarget.word === correctTarget.word) {
+        wrongTarget = allWords[Math.floor(Math.random() * allWords.length)];
+    }
+
+    return {
+        expression: correctTarget.meaning,
+        answer: correctTarget.word,
+        wrongAnswer: wrongTarget.word
+    };
+}
+
 export default function TrackManager() {
     const level = useMathRunnerStore(state => state.level);
+    const gameMode = useMathRunnerStore(state => state.gameMode);
+
+    // Key on gameMode to force a reset of the segments when toggling modes
     const [segments, setSegments] = useState<TrackSegment[]>([
         { z: 0, expression: "Start", answer: 0, wrongAnswer: 0 },
-        { z: -SEGMENT_LENGTH, ...generateProblem('easy') },
-        { z: -SEGMENT_LENGTH * 2, ...generateProblem('easy') },
+        { z: -SEGMENT_LENGTH, ...generateProblem(gameMode, level) },
+        { z: -SEGMENT_LENGTH * 2, ...generateProblem(gameMode, level) },
     ]);
     const lastZ = useRef(-SEGMENT_LENGTH * 2);
+
+    // Reset track and questions if the game mode changes so words/math are immediate
+    useEffect(() => {
+        const store = useMathRunnerStore.getState();
+        setSegments([
+            { z: 0, expression: "Start", answer: 0, wrongAnswer: 0 },
+            { z: -SEGMENT_LENGTH, ...generateProblem(store.gameMode, store.level) },
+            { z: -SEGMENT_LENGTH * 2, ...generateProblem(store.gameMode, store.level) },
+        ]);
+        lastZ.current = -SEGMENT_LENGTH * 2;
+        useMathRunnerStore.setState({ currentQuestion: "Ready?", playerZ: 0, playerCount: 1 });
+    }, [gameMode]);
 
     // If level changes significantly, we might want to regenerate upcoming questions,
     // but the simplest approach is just letting new spawned gates use the new level.
@@ -105,7 +145,8 @@ export default function TrackManager() {
         if (expectedLastSegmentZ < lastZ.current) {
             lastZ.current = expectedLastSegmentZ;
             setSegments(prev => {
-                const newSegs = [...prev, { z: expectedLastSegmentZ, ...generateProblem(useMathRunnerStore.getState().level) }];
+                const store = useMathRunnerStore.getState();
+                const newSegs = [...prev, { z: expectedLastSegmentZ, ...generateProblem(store.gameMode, store.level) }];
                 return newSegs.filter(seg => seg.z <= -(currentSegmentIndex - 1) * SEGMENT_LENGTH);
             });
         }
