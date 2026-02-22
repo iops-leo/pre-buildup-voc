@@ -54,12 +54,17 @@ export default function Player() {
     useFrame((state, delta) => {
         if (!bodyRef.current) return;
 
-        // Constant forward movement
+        const gameState = useMathRunnerStore.getState().gameState;
+        if (gameState !== 'playing') return; // Do not move if game is over or in menu
+
+        // Constant forward movement, increasing speed gradually
         const currentTranslation = bodyRef.current.translation();
+        const baseSpeed = useMathRunnerStore.getState().currentSpeed;
+        const activeSpeed = Math.min(28, baseSpeed + Math.abs(currentTranslation.z) * 0.005);
 
         // Smoothly interpolate X position towards targetX
         const newX = THREE.MathUtils.lerp(currentTranslation.x, targetX, 10 * delta);
-        const newZ = currentTranslation.z - 10 * delta;
+        const newZ = currentTranslation.z - activeSpeed * delta;
 
         bodyRef.current.setTranslation({ x: newX, y: currentTranslation.y, z: newZ }, true);
 
@@ -91,13 +96,17 @@ function SoldierCrowd({ count }: { count: number }) {
                 arr.push({ id: placed, position: new THREE.Vector3(0, -0.5, 0) });
                 placed++;
             } else {
-                const r = 0.35 * ring;
+                // Add tiny organic randomness to the crowd
+                const r = 0.35 * ring + (Math.random() * 0.1);
                 const soldiersInRing = 6 * ring;
                 for (let j = 0; j < soldiersInRing && placed < count; j++) {
-                    const angle = (j / soldiersInRing) * Math.PI * 2;
+                    const angle = (j / soldiersInRing) * Math.PI * 2 + (Math.random() * 0.2);
+                    // Constraint width so they don't fall off too easily
+                    const xOffset = Math.cos(angle) * r;
+                    const zOffset = Math.sin(angle) * r;
                     arr.push({
                         id: placed,
-                        position: new THREE.Vector3(Math.cos(angle) * r, -0.5, Math.sin(angle) * r),
+                        position: new THREE.Vector3(xOffset * 0.8, -0.5, zOffset),
                     });
                     placed++;
                 }
@@ -124,14 +133,23 @@ function SoldierInstance({ position }: { position: THREE.Vector3 }) {
     const { actions } = useAnimations(animations, group);
 
     useEffect(() => {
-        // Find the 'Run' animation, or fallback to any animation if 'Run' isn't explicitly named.
+        // Pause animation if game is over or in menu
+        const unsub = useMathRunnerStore.subscribe((state) => {
+            if (state.gameState !== 'playing') {
+                Object.values(actions).forEach(a => { if (a) a.paused = true; });
+            } else {
+                Object.values(actions).forEach(a => { if (a) a.paused = false; });
+            }
+        });
+
         if (actions && actions['Run']) {
             actions['Run'].reset().fadeIn(0.2).play();
         } else if (actions && Object.keys(actions).length > 0) {
-            // "Soldier.glb" animation names are often "Run", "Walk", "Idle" 
             const firstAction = Object.keys(actions).find(a => a.toLowerCase().includes('run')) || Object.keys(actions)[0];
             actions[firstAction]?.reset().fadeIn(0.2).play();
         }
+
+        return () => unsub();
     }, [actions]);
 
     return (

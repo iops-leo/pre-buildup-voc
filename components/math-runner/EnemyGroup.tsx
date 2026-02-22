@@ -14,16 +14,35 @@ interface EnemyGroupProps {
 
 export default function EnemyGroup({ position, count, onDefeated }: EnemyGroupProps) {
     const [defeated, setDefeated] = useState(false);
+    const [hitTime, setHitTime] = useState<number | null>(null);
 
     const handleIntersection = () => {
         if (defeated) return;
         setDefeated(true);
+        setHitTime(Date.now());
         useMathRunnerStore.getState().subtractPlayers(count);
         useMathRunnerStore.getState().addEnemiesDefeated(count);
         onDefeated();
     };
 
-    if (defeated) return null;
+    if (defeated) {
+        if (hitTime && Date.now() - hitTime < 1000) {
+            const progress = (Date.now() - hitTime) / 1000;
+            return (
+                <Text
+                    position={[position[0], position[1] + 2 + progress * 3, position[2]]}
+                    fontSize={2}
+                    color="#ff0000"
+                    outlineWidth={0.1}
+                    outlineColor="#000000"
+                    material-depthTest={false}
+                >
+                    -{count}
+                </Text>
+            );
+        }
+        return null;
+    }
 
     return (
         <group position={position}>
@@ -98,12 +117,22 @@ function EnemySoldier({ position }: { position: THREE.Vector3 }) {
     const { actions } = useAnimations(animations, group);
 
     useEffect(() => {
+        const unsub = useMathRunnerStore.subscribe((state) => {
+            if (state.gameState !== 'playing') {
+                Object.values(actions).forEach(a => { if (a) a.paused = true; });
+            } else {
+                Object.values(actions).forEach(a => { if (a) a.paused = false; });
+            }
+        });
+
         if (!actions) return;
         const idleAction =
             actions["Idle"] ||
             actions[Object.keys(actions).find((k) => k.toLowerCase().includes("idle")) ?? ""] ||
             Object.values(actions)[0];
         idleAction?.reset().fadeIn(0.2).play();
+
+        return () => unsub();
     }, [actions]);
 
     // Red-tinted material clones
@@ -128,9 +157,9 @@ function EnemySoldier({ position }: { position: THREE.Vector3 }) {
     if (!nodes?.mixamorigHips || !nodes?.vanguard_Mesh || !nodes?.vanguard_visor) return null;
 
     return (
-        <group ref={group} position={position} rotation={[0, Math.PI, 0]} dispose={null}>
+        <group ref={group} position={position} rotation={[0, 0, 0]} dispose={null}>
             <group name="Scene">
-                <group name="Character" rotation={[-Math.PI / 2, 0, 0]} scale={0.01}>
+                <group name="Character" rotation={[-Math.PI / 2, 0, 0]} scale={0.8}>
                     <primitive object={nodes.mixamorigHips} />
                     <skinnedMesh
                         castShadow

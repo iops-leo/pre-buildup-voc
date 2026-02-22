@@ -13,6 +13,8 @@ export default function Gates({ position, mathExpression, answer, wrongAnswer }:
     wrongAnswer: number | string
 }) {
     const [passed, setPassed] = useState(false);
+    const [hitType, setHitType] = useState<"correct" | "wrong" | null>(null);
+    const [hitTime, setHitTime] = useState<number | null>(null);
     // Randomize whether the left gate is the correct answer. We use useMemo to only set once when spawned.
     const isLeftCorrect = useMemo(() => Math.random() > 0.5, []);
 
@@ -27,6 +29,8 @@ export default function Gates({ position, mathExpression, answer, wrongAnswer }:
     const handleCorrect = (e: IntersectionEnterPayload) => {
         if (passed) return;
         setPassed(true);
+        setHitType("correct");
+        setHitTime(Date.now());
         addPlayers(10);
         advanceQuestion();
     };
@@ -34,6 +38,17 @@ export default function Gates({ position, mathExpression, answer, wrongAnswer }:
     const handleWrong = (e: IntersectionEnterPayload) => {
         if (passed) return;
         setPassed(true);
+        setHitType("wrong");
+        setHitTime(Date.now());
+        subtractPlayers(10);
+        advanceQuestion();
+    };
+
+    const handleMiddle = (e: IntersectionEnterPayload) => {
+        if (passed) return;
+        setPassed(true);
+        setHitType("wrong");
+        setHitTime(Date.now());
         subtractPlayers(10);
         advanceQuestion();
     };
@@ -90,6 +105,25 @@ export default function Gates({ position, mathExpression, answer, wrongAnswer }:
                     {rightAnswer}
                 </Text>
             </RigidBody>
+
+            {/* Middle Bumper (Penalty for avoiding gates) */}
+            <RigidBody type="fixed" sensor onIntersectionEnter={handleMiddle}>
+                <CuboidCollider args={[0.5, 2, 0.5]} position={[0, 2, 0]} />
+            </RigidBody>
+
+            {/* Floating Feedback Text */}
+            {passed && hitTime && Date.now() - hitTime < 1000 && (
+                <Text
+                    position={[0, 3 + ((Date.now() - hitTime) / 1000) * 3, 0]}
+                    fontSize={2}
+                    color={hitType === "correct" ? "#00ff00" : "#ff0000"}
+                    outlineWidth={0.1}
+                    outlineColor="#000000"
+                    material-depthTest={false}
+                >
+                    {hitType === "correct" ? "+10" : "-10"}
+                </Text>
+            )}
         </group>
     );
 }
