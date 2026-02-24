@@ -1,7 +1,12 @@
 import { RigidBody, CuboidCollider, BallCollider } from "@react-three/rapier";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Text } from "@react-three/drei";
+import { useFrame } from "@react-three/fiber";
+import * as THREE from "three";
 import { useMathRunnerStore } from "@/store/useMathRunnerStore";
+import { useMathRunnerRuntimeConfig } from "./RuntimeConfig";
+import { addCameraShake } from "@/lib/mathRunnerCameraShake";
+import { playObstacleHitSound } from "@/lib/mathRunnerAudio";
 
 export default function Obstacle({
     position,
@@ -12,32 +17,49 @@ export default function Obstacle({
     type: "rock" | "barrier" | "cone";
     damage: number;
 }) {
+    const runtime = useMathRunnerRuntimeConfig();
     const [hit, setHit] = useState(false);
-    const [hitTime, setHitTime] = useState<number | null>(null);
+    const [showDamage, setShowDamage] = useState(false);
+    const damageElapsedRef = useRef(0);
+    const damageRef = useRef<THREE.Group>(null);
+
+    useFrame((_, delta) => {
+        if (!showDamage || !damageRef.current) return;
+        damageElapsedRef.current += delta;
+        damageRef.current.position.y = position[1] + 2 + damageElapsedRef.current * 3;
+        if (damageElapsedRef.current >= 1) {
+            setShowDamage(false);
+        }
+    });
 
     const handleHit = () => {
         if (hit) return;
         setHit(true);
-        setHitTime(Date.now());
+        setShowDamage(true);
+        damageElapsedRef.current = 0;
         useMathRunnerStore.getState().subtractPlayers(damage);
+        if (runtime.enableCameraShake) {
+            addCameraShake(0.12);
+        }
+        if (runtime.enableAudio) {
+            playObstacleHitSound();
+        }
     };
 
     if (hit) {
-        if (hitTime && Date.now() - hitTime < 1000) {
-            const progress = (Date.now() - hitTime) / 1000;
-            return (
+        if (!showDamage) return null;
+        return (
+            <group ref={damageRef} position={[position[0], position[1] + 2, position[2]]}>
                 <Text
-                    position={[position[0], position[1] + 2 + progress * 3, position[2]]}
-                    fontSize={1.5}
+                    fontSize={1.5 * runtime.textScale}
                     color="#ff0000"
                     outlineWidth={0.1}
                     outlineColor="#000000"
                 >
                     -{damage}
                 </Text>
-            );
-        }
-        return null;
+            </group>
+        );
     }
 
     if (type === "rock") {

@@ -2,15 +2,21 @@
 import { useEffect } from "react";
 
 import MathRunnerScene from "@/components/math-runner/Scene";
-import { useMathRunnerStore, MathLevel } from "@/store/useMathRunnerStore";
+import {
+    useMathRunnerStore,
+    MathLevel,
+    MathRunnerQualityPreset,
+} from "@/store/useMathRunnerStore";
 
 export default function MathRunnerPage() {
     const currentQuestion = useMathRunnerStore(state => state.currentQuestion);
     const playerCount = useMathRunnerStore(state => state.playerCount);
     const level = useMathRunnerStore(state => state.level);
     const gameMode = useMathRunnerStore(state => state.gameMode);
+    const qualityPreset = useMathRunnerStore(state => state.qualityPreset);
     const setLevel = useMathRunnerStore(state => state.setLevel);
     const setGameMode = useMathRunnerStore(state => state.setGameMode);
+    const setQualityPreset = useMathRunnerStore(state => state.setQualityPreset);
     const gameState = useMathRunnerStore(state => state.gameState);
     const setGameState = useMathRunnerStore(state => state.setGameState);
     const resetGame = useMathRunnerStore(state => state.resetGame);
@@ -20,6 +26,7 @@ export default function MathRunnerPage() {
     const setBestScore = useMathRunnerStore(state => state.setBestScore);
 
     const levels: MathLevel[] = ['easy', 'medium', 'hard'];
+    const qualityOptions: MathRunnerQualityPreset[] = ["auto", "high", "medium", "low"];
 
     // Handle high score updates when winning
     useEffect(() => {
@@ -81,6 +88,22 @@ export default function MathRunnerPage() {
                                             }`}
                                     >
                                         {l === 'easy' ? '쉬움' : l === 'medium' ? '보통' : '어려움'}
+                                    </button>
+                                ))}
+                            </div>
+
+                            <div className="text-white text-lg font-bold mb-4">그래픽 품질</div>
+                            <div className="grid grid-cols-2 gap-2 mb-10 w-full">
+                                {qualityOptions.map((preset) => (
+                                    <button
+                                        key={preset}
+                                        onClick={() => setQualityPreset(preset)}
+                                        className={`py-2 rounded-lg text-sm font-bold transition-colors ${qualityPreset === preset
+                                            ? "bg-cyan-400 text-slate-900 border border-cyan-200"
+                                            : "bg-white/15 text-slate-200 hover:bg-white/25 border border-transparent"
+                                            }`}
+                                    >
+                                        {preset === "auto" ? "자동(권장)" : preset === "high" ? "높음" : preset === "medium" ? "중간" : "낮음"}
                                     </button>
                                 ))}
                             </div>

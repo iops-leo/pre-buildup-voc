@@ -2,10 +2,13 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 export type MathLevel = "easy" | "medium" | "hard";
+export type MathRunnerQualityPreset = "auto" | "high" | "medium" | "low";
 
 interface MathRunnerState {
   gameState: "menu" | "playing" | "gameover" | "win";
   gameMode: "math" | "english";
+  qualityPreset: MathRunnerQualityPreset;
+  runId: number;
   playerCount: number;
   playerZ: number;
   currentSpeed: number;
@@ -17,6 +20,7 @@ interface MathRunnerState {
   bestScore: number;
   setGameState: (state: "menu" | "playing" | "gameover" | "win") => void;
   setGameMode: (mode: "math" | "english") => void;
+  setQualityPreset: (preset: MathRunnerQualityPreset) => void;
   setLevel: (level: MathLevel) => void;
   setPlayerCount: (count: number) => void;
   setCurrentQuestion: (question: string) => void;
@@ -38,6 +42,8 @@ export const useMathRunnerStore = create<MathRunnerState>()(
     (set) => ({
       gameState: "menu",
       gameMode: "math",
+      qualityPreset: "auto",
+      runId: 0,
       playerCount: 1,
       playerZ: 0,
       currentSpeed: 10,
@@ -49,6 +55,7 @@ export const useMathRunnerStore = create<MathRunnerState>()(
       bestScore: 0,
       setGameState: (state) => set({ gameState: state }),
       setGameMode: (mode) => set({ gameMode: mode }),
+      setQualityPreset: (preset) => set({ qualityPreset: preset }),
       setLevel: (level) => set({ level }),
       setPlayerCount: (count) => set({ playerCount: Math.max(0, count) }),
       setCurrentQuestion: (question) => set({ currentQuestion: question }),
@@ -86,8 +93,9 @@ export const useMathRunnerStore = create<MathRunnerState>()(
       setCurrentSpeed: (speed) => set({ currentSpeed: speed }),
       setBestScore: (score) => set({ bestScore: score }),
       resetGame: () =>
-        set({
+        set((state) => ({
           gameState: "playing",
+          runId: state.runId + 1,
           playerCount: 1,
           playerZ: 0,
           currentSpeed: 10,
@@ -95,11 +103,14 @@ export const useMathRunnerStore = create<MathRunnerState>()(
           pendingQuestion: "",
           nextEnemyCount: 0,
           totalEnemiesDefeated: 0,
-        }),
+        })),
     }),
     {
       name: "math-runner-storage",
-      partialize: (state) => ({ bestScore: state.bestScore }), // Only persist bestScore
+      partialize: (state) => ({
+        bestScore: state.bestScore,
+        qualityPreset: state.qualityPreset,
+      }),
     }
   )
 );

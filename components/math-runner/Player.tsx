@@ -1,22 +1,24 @@
 import { useFrame } from "@react-three/fiber";
-import { RigidBody, CapsuleCollider } from "@react-three/rapier";
+import { RigidBody, CapsuleCollider, RapierRigidBody } from "@react-three/rapier";
 import { useRef, useState, useEffect, useMemo } from "react";
 import * as THREE from "three";
 import { useMathRunnerStore } from "@/store/useMathRunnerStore";
 import { Text } from "@react-three/drei";
+import { useMathRunnerRuntimeConfig } from "./RuntimeConfig";
+import { consumeCameraShake } from "@/lib/mathRunnerCameraShake";
 
 export default function Player() {
-    const bodyRef = useRef<any>(null);
+    const bodyRef = useRef<RapierRigidBody>(null);
     const playerCount = useMathRunnerStore((state) => state.playerCount);
+    const runtime = useMathRunnerRuntimeConfig();
 
-    // Basic movement controls
-    const [targetX, setTargetX] = useState(0);
+    const [laneIndex, setLaneIndex] = useState(0);
 
     // Keyboard controls
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === "ArrowLeft") setTargetX((prev) => Math.max(prev - 2, -4));
-            if (e.key === "ArrowRight") setTargetX((prev) => Math.min(prev + 2, 4));
+            if (e.key === "ArrowLeft") setLaneIndex((prev) => Math.max(prev - 1, -2));
+            if (e.key === "ArrowRight") setLaneIndex((prev) => Math.min(prev + 1, 2));
         };
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
@@ -32,8 +34,8 @@ export default function Player() {
             if (touchStartX.current === null) return;
             const dx = e.touches[0].clientX - touchStartX.current;
             if (Math.abs(dx) > 30) {
-                if (dx > 0) setTargetX((prev) => Math.min(prev + 2, 4));
-                else setTargetX((prev) => Math.max(prev - 2, -4));
+                if (dx > 0) setLaneIndex((prev) => Math.min(prev + 1, 2));
+                else setLaneIndex((prev) => Math.max(prev - 1, -2));
                 touchStartX.current = e.touches[0].clientX;
             }
         };
@@ -48,21 +50,6 @@ export default function Player() {
             window.removeEventListener("touchmove", handleTouchMove);
             window.removeEventListener("touchend", handleTouchEnd);
         };
-    }, []);
-
-    // Reset RigidBody position when playerZ resets to 0 (new game)
-    const prevPlayerZ = useRef(0);
-    useEffect(() => {
-        const unsub = useMathRunnerStore.subscribe((s) => {
-            if (s.gameState === 'playing' && s.playerZ === 0 && prevPlayerZ.current !== 0) {
-                if (bodyRef.current) {
-                    bodyRef.current.setTranslation({ x: 0, y: 0.5, z: 0 }, true);
-                    setTargetX(0);
-                }
-            }
-            prevPlayerZ.current = s.playerZ;
-        });
-        return () => unsub();
     }, []);
 
     useFrame((state, delta) => {
@@ -83,29 +70,46 @@ export default function Player() {
         const baseSpeed = useMathRunnerStore.getState().currentSpeed;
         const activeSpeed = Math.min(28, baseSpeed + Math.abs(currentTranslation.z) * 0.005);
 
-        // Smoothly interpolate X position towards targetX
-        const newX = THREE.MathUtils.lerp(currentTranslation.x, targetX, 10 * delta);
+        // Lane-based steering with damped interpolation to remove side-move jitter.
+        const targetX = laneIndex * 2;
+        const newX = THREE.MathUtils.damp(currentTranslation.x, targetX, 14, delta);
         const newZ = currentTranslation.z - activeSpeed * delta;
 
-        bodyRef.current.setTranslation({ x: newX, y: currentTranslation.y, z: newZ }, true);
+        bodyRef.current.setNextKinematicTranslation({ x: newX, y: 0.5, z: newZ });
 
         // Update store with playerZ without triggering component re-render
         useMathRunnerStore.setState({ playerZ: newZ });
 
-        // Make camera follow the player loosely — high and far back for better visibility
-        state.camera.position.x = THREE.MathUtils.lerp(state.camera.position.x, newX, 2 * delta);
-        state.camera.position.y = 12;
-        state.camera.position.z = newZ + 16;
-        state.camera.lookAt(newX, 0, newZ - 5);
+        // Smooth camera follow avoids visual stutter while changing lanes.
+        const baseCamX = THREE.MathUtils.damp(state.camera.position.x, newX, 6, delta);
+        const baseCamY = THREE.MathUtils.damp(state.camera.position.y, 12, 6, delta);
+        const baseCamZ = THREE.MathUtils.damp(state.camera.position.z, newZ + 16, 6, delta);
+
+        const shakePower = runtime.enableCameraShake ? consumeCameraShake(delta) : 0;
+        const t = state.clock.elapsedTime;
+        const shakeX = Math.sin(t * 47) * shakePower * 0.28;
+        const shakeY = Math.sin(t * 61) * shakePower * 0.16;
+        const shakeZ = Math.cos(t * 53) * shakePower * 0.2;
+
+        state.camera.position.x = baseCamX + shakeX;
+        state.camera.position.y = baseCamY + shakeY;
+        state.camera.position.z = baseCamZ + shakeZ;
+        state.camera.lookAt(newX, shakeY * 0.3, newZ - 5);
     });
 
     return (
-        <RigidBody ref={bodyRef} position={[0, 0.5, 0]} colliders={false} lockRotations>
+        <RigidBody
+            ref={bodyRef}
+            type="kinematicPosition"
+            position={[0, 0.5, 0]}
+            colliders={false}
+            lockRotations
+        >
             <CapsuleCollider args={[0.3, 0.2]} />
-            <SoldierCrowd count={Math.min(playerCount, 30)} />
+            <SoldierCrowd count={Math.min(playerCount, runtime.maxPlayerCrowd)} />
             <Text
                 position={[0, 2.5, 0]}
-                fontSize={1.5}
+                fontSize={1.5 * runtime.textScale}
                 color="#2196F3"
                 fontWeight="bold"
                 outlineWidth={0.08}
@@ -129,9 +133,10 @@ function SoldierCrowd({ count }: { count: number }) {
                 const golden_ratio = (1 + Math.sqrt(5)) / 2;
                 const theta = 2 * Math.PI * i / golden_ratio;
 
-                // Radius expands strictly with sqrt(i) to ensure they pack tightly instead of forming rings
-                // Added a small ±0.1 random jitter for organic look
-                const r = 0.4 * Math.sqrt(i) + (Math.random() * 0.1 - 0.05);
+                // Deterministic jitter keeps layout stable between renders.
+                const hash = Math.sin(i * 12.9898) * 43758.5453;
+                const jitter = (hash - Math.floor(hash)) * 0.1 - 0.05;
+                const r = 0.4 * Math.sqrt(i) + jitter;
 
                 // Limit the width so the crowd doesn't overflow the track easily.
                 // Squeeze X coordinates slightly.

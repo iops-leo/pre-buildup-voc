@@ -5,11 +5,28 @@ import { Suspense } from "react";
 import { Physics } from "@react-three/rapier";
 import Player from "./Player";
 import TrackManager from "./TrackManager";
+import { useMathRunnerStore } from "@/store/useMathRunnerStore";
+import {
+    MathRunnerRuntimeConfigProvider,
+    useMathRunnerRuntimeConfig,
+} from "./RuntimeConfig";
 
 export default function MathRunnerScene() {
     return (
+        <MathRunnerRuntimeConfigProvider>
+            <MathRunnerCanvas />
+        </MathRunnerRuntimeConfigProvider>
+    );
+}
+
+function MathRunnerCanvas() {
+    const runId = useMathRunnerStore((state) => state.runId);
+    const runtime = useMathRunnerRuntimeConfig();
+
+    return (
         <Canvas
-            shadows
+            dpr={[1, runtime.maxDpr]}
+            shadows={runtime.enableShadows}
             camera={{ position: [0, 12, 18], fov: 60 }}
             className="w-full h-full"
         >
@@ -19,10 +36,10 @@ export default function MathRunnerScene() {
             {/* Lighting */}
             <ambientLight intensity={0.8} />
             <directionalLight
-                castShadow
+                castShadow={runtime.enableShadows}
                 position={[10, 20, 10]}
                 intensity={1.0}
-                shadow-mapSize={[1024, 1024]}
+                shadow-mapSize={[runtime.shadowMapSize, runtime.shadowMapSize]}
                 shadow-camera-left={-20}
                 shadow-camera-right={20}
                 shadow-camera-top={20}
@@ -36,8 +53,8 @@ export default function MathRunnerScene() {
             {/* Physics World */}
             <Suspense fallback={null}>
                 <Physics>
-                    <TrackManager />
-                    <Player />
+                    <TrackManager key={`track-${runId}`} />
+                    <Player key={`player-${runId}`} />
                 </Physics>
             </Suspense>
         </Canvas>

@@ -1,10 +1,11 @@
 import { useFrame } from "@react-three/fiber";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { useMathRunnerStore, MathLevel } from "@/store/useMathRunnerStore";
 import Track from "./Track";
 import Gates from "./Gates";
 import EnemyGroup from "./EnemyGroup";
 import Obstacle from "./Obstacle";
+import { VOCABULARY_DATA } from "@/data/vocabulary";
 
 const SEGMENT_LENGTH = 100;
 const VISIBLE_SEGMENTS = 3;
@@ -32,8 +33,6 @@ interface TrackSegment {
     obstacles: ObstacleData[];
     isFinishLine?: boolean;
 }
-
-import { VOCABULARY_DATA } from "@/data/vocabulary";
 
 function generateProblem(gameMode: 'math' | 'english', level: MathLevel) {
     if (gameMode === 'english') {
@@ -123,8 +122,13 @@ function generateEnglishProblem() {
 }
 
 function generateEnemies(segZ: number, level: MathLevel): EnemyData[] {
-    // Always spawn enemies, count scales with difficulty
-    const count = Math.floor(Math.random() * 6) + 8; // 8~13
+    const countRange =
+        level === "easy"
+            ? { min: 6, max: 9 }
+            : level === "medium"
+                ? { min: 8, max: 12 }
+                : { min: 10, max: 15 };
+    const count = Math.floor(Math.random() * (countRange.max - countRange.min + 1)) + countRange.min;
     const x = (Math.random() - 0.5) * 4;
     const z = segZ - 15 - Math.random() * 25;
     return [{ id: `e${segZ}-${Math.random()}`, position: [x, 0.5, z], count }];
@@ -132,10 +136,11 @@ function generateEnemies(segZ: number, level: MathLevel): EnemyData[] {
 
 function generateObstacles(segZ: number, level: MathLevel): ObstacleData[] {
     const results: ObstacleData[] = [];
-    const numObstacles = 2;
+    const numObstacles = level === "hard" ? 3 : 2;
+    const spawnChance = level === "easy" ? 0.25 : level === "medium" ? 0.4 : 0.55;
     const types: ('rock' | 'barrier' | 'cone')[] = ['rock', 'barrier', 'cone'];
     for (let i = 0; i < numObstacles; i++) {
-        if (Math.random() > 0.6) continue;
+        if (Math.random() > spawnChance) continue;
         const type = types[Math.floor(Math.random() * types.length)];
         const damage = type === 'barrier' ? 8 : type === 'rock' ? 5 : 3;
         const x = (Math.random() - 0.5) * 5;
@@ -172,30 +177,13 @@ export default function TrackManager() {
         buildInitialSegments(gameMode, level)
     );
     const lastZ = useRef(-SEGMENT_LENGTH * 2);
-
-    // Reset segments when game starts or restarts
-    useEffect(() => {
-        if (gameState === 'playing') {
-            const store = useMathRunnerStore.getState();
-            const newSegments = buildInitialSegments(store.gameMode, store.level);
-            setSegments(newSegments);
-            lastZ.current = -SEGMENT_LENGTH * 2;
-            // Set the first question immediately so it doesn't stay on "Get Ready!"
-            const firstProblem = newSegments[1];
-            if (firstProblem) {
-                useMathRunnerStore.setState({
-                    currentQuestion: firstProblem.expression,
-                    pendingQuestion: firstProblem.expression,
-                });
-            }
-        }
-    }, [gameState]);
-
-    // If level changes significantly, we might want to regenerate upcoming questions,
-    // but the simplest approach is just letting new spawned gates use the new level.
-
+    const hasInitializedHud = useRef(false);
+    const lastUpcomingQuestion = useRef("");
+    const lastUpcomingEnemyCount = useRef(-1);
 
     useFrame(() => {
+        if (gameState !== "playing") return;
+
         const playerZ = useMathRunnerStore.getState().playerZ;
 
         const currentSegmentIndex = Math.floor(playerZ / -SEGMENT_LENGTH);
@@ -204,9 +192,39 @@ export default function TrackManager() {
         const upcomingSegmentIndex = currentSegmentIndex + 1;
         const upcomingSegment = segments.find(s => s.z === -upcomingSegmentIndex * SEGMENT_LENGTH);
         if (upcomingSegment) {
-            useMathRunnerStore.setState({ pendingQuestion: upcomingSegment.expression || "Run!" });
             const enemyCount = upcomingSegment.enemies.reduce((sum, e) => sum + e.count, 0);
-            useMathRunnerStore.setState({ nextEnemyCount: enemyCount });
+            const storeUpdates: {
+                currentQuestion?: string;
+                pendingQuestion?: string;
+                nextEnemyCount?: number;
+            } = {};
+
+            if (!hasInitializedHud.current) {
+                storeUpdates.currentQuestion = upcomingSegment.expression || "Run!";
+                storeUpdates.pendingQuestion = upcomingSegment.expression || "Run!";
+                storeUpdates.nextEnemyCount = enemyCount;
+                hasInitializedHud.current = true;
+                lastUpcomingQuestion.current = upcomingSegment.expression || "Run!";
+                lastUpcomingEnemyCount.current = enemyCount;
+            } else {
+                const nextQuestion = upcomingSegment.expression || "Run!";
+                if (nextQuestion !== lastUpcomingQuestion.current) {
+                    storeUpdates.pendingQuestion = nextQuestion;
+                    lastUpcomingQuestion.current = nextQuestion;
+                }
+                if (enemyCount !== lastUpcomingEnemyCount.current) {
+                    storeUpdates.nextEnemyCount = enemyCount;
+                    lastUpcomingEnemyCount.current = enemyCount;
+                }
+            }
+
+            if (
+                storeUpdates.currentQuestion !== undefined ||
+                storeUpdates.pendingQuestion !== undefined ||
+                storeUpdates.nextEnemyCount !== undefined
+            ) {
+                useMathRunnerStore.setState(storeUpdates);
+            }
         }
 
         if (expectedLastSegmentZ < lastZ.current) {
@@ -247,11 +265,10 @@ export default function TrackManager() {
             {segments.map((seg) => (
                 <group key={seg.z}>
                     <Track position={[0, 0, seg.z]} length={SEGMENT_LENGTH} />
-                    {seg.z < 0 && (
+                    {seg.z < 0 && !seg.isFinishLine && (
                         <>
                             <Gates
                                 position={[0, 0, seg.z - Math.floor(SEGMENT_LENGTH / 2)]}
-                                mathExpression={seg.expression}
                                 answer={seg.answer}
                                 wrongAnswer={seg.wrongAnswer}
                             />
@@ -260,7 +277,6 @@ export default function TrackManager() {
                                     key={enemy.id}
                                     position={enemy.position}
                                     count={enemy.count}
-                                    onDefeated={() => { }}
                                 />
                             ))}
                             {seg.obstacles.map((obs) => (
@@ -271,27 +287,27 @@ export default function TrackManager() {
                                     damage={obs.damage}
                                 />
                             ))}
-                            {seg.isFinishLine && (
-                                <group position={[0, 0, seg.z]}>
-                                    <mesh position={[0, 0, 0]}>
-                                        <boxGeometry args={[10, 0.2, 2]} />
-                                        <meshStandardMaterial color="#FFD700" emissive="#FFD700" emissiveIntensity={0.5} />
-                                    </mesh>
-                                    <mesh position={[-5, 4, 0]}>
-                                        <cylinderGeometry args={[0.2, 0.2, 8]} />
-                                        <meshStandardMaterial color="#888888" />
-                                    </mesh>
-                                    <mesh position={[5, 4, 0]}>
-                                        <cylinderGeometry args={[0.2, 0.2, 8]} />
-                                        <meshStandardMaterial color="#888888" />
-                                    </mesh>
-                                    <mesh position={[0, 7, 0]}>
-                                        <boxGeometry args={[10, 2, 0.2]} />
-                                        <meshStandardMaterial color="#FF0000" />
-                                    </mesh>
-                                </group>
-                            )}
                         </>
+                    )}
+                    {seg.isFinishLine && (
+                        <group position={[0, 0, seg.z]}>
+                            <mesh position={[0, 0, 0]}>
+                                <boxGeometry args={[10, 0.2, 2]} />
+                                <meshStandardMaterial color="#FFD700" emissive="#FFD700" emissiveIntensity={0.5} />
+                            </mesh>
+                            <mesh position={[-5, 4, 0]}>
+                                <cylinderGeometry args={[0.2, 0.2, 8]} />
+                                <meshStandardMaterial color="#888888" />
+                            </mesh>
+                            <mesh position={[5, 4, 0]}>
+                                <cylinderGeometry args={[0.2, 0.2, 8]} />
+                                <meshStandardMaterial color="#888888" />
+                            </mesh>
+                            <mesh position={[0, 7, 0]}>
+                                <boxGeometry args={[10, 2, 0.2]} />
+                                <meshStandardMaterial color="#FF0000" />
+                            </mesh>
+                        </group>
                     )}
                 </group>
             ))}
