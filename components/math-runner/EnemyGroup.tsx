@@ -75,15 +75,19 @@ export default function EnemyGroup({ position, count }: EnemyGroupProps) {
 
     const clashOnce = () => {
         const store = useMathRunnerStore.getState();
-        if (enemyRemainingRef.current <= 0) {
+        const currentPlayerCount = store.playerCount;
+        const currentEnemyCount = enemyRemainingRef.current;
+
+        if (currentEnemyCount <= 0) {
             finishBattle(true);
             return;
         }
-        if (store.playerCount <= 0) {
+        if (currentPlayerCount <= 0) {
             finishBattle(false);
             return;
         }
 
+        // 한 번 충돌: 병사 1명 vs 적 1명 상쇄
         enemyRemainingRef.current -= 1;
         setEnemyRemaining(enemyRemainingRef.current);
         store.subtractPlayers(1);
@@ -97,11 +101,13 @@ export default function EnemyGroup({ position, count }: EnemyGroupProps) {
             playBattleClashSound();
         }
 
+        // subtractPlayers 직후 store는 비동기 반영이므로 직접 계산
+        const newPlayerCount = currentPlayerCount - 1;
         if (enemyRemainingRef.current <= 0) {
             finishBattle(true);
             return;
         }
-        if (store.playerCount <= 1) {
+        if (newPlayerCount <= 0) {
             finishBattle(false);
         }
     };
@@ -114,6 +120,17 @@ export default function EnemyGroup({ position, count }: EnemyGroupProps) {
     };
 
     useFrame((_, delta) => {
+        if (!battleActive && !cleared) {
+            const store = useMathRunnerStore.getState();
+            if (store.gameState === "playing") {
+                const dx = Math.abs(store.playerX - position[0]);
+                const dz = Math.abs(store.playerZ - position[2]);
+                if (dx <= 2.2 && dz <= 2.4) {
+                    handleIntersection();
+                }
+            }
+        }
+
         if (battleActive) {
             clashAccumulatorRef.current += delta;
             if (clashAccumulatorRef.current >= CLASH_INTERVAL) {
@@ -125,7 +142,7 @@ export default function EnemyGroup({ position, count }: EnemyGroupProps) {
         if (showBattleText && battleTextRef.current) {
             battleElapsedRef.current += delta;
             battleTextRef.current.position.y = 2.2 + battleElapsedRef.current * 2.2;
-            if (battleElapsedRef.current >= 0.8) {
+            if (battleElapsedRef.current >= 1.2) {
                 setShowBattleText(false);
             }
         }

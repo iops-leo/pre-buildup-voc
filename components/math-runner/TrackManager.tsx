@@ -121,14 +121,14 @@ function generateEnglishProblem() {
     };
 }
 
-function generateEnemies(segZ: number, level: MathLevel): EnemyData[] {
-    const countRange =
-        level === "easy"
-            ? { min: 6, max: 9 }
-            : level === "medium"
-                ? { min: 8, max: 12 }
-                : { min: 10, max: 15 };
-    const count = Math.floor(Math.random() * (countRange.max - countRange.min + 1)) + countRange.min;
+function generateEnemies(segZ: number, level: MathLevel, playerCount: number): EnemyData[] {
+    const segmentIndex = Math.max(1, Math.floor(Math.abs(segZ) / SEGMENT_LENGTH));
+    const baseMultiplier =
+        level === "easy" ? 0.75 : level === "medium" ? 0.95 : 1.1;
+    const distanceBoost = Math.min(0.9, segmentIndex * 0.03);
+    const variance = 0.85 + Math.random() * 0.3;
+    const scaledCount = playerCount * (baseMultiplier + distanceBoost) * variance;
+    const count = Math.max(3, Math.min(45, Math.round(scaledCount)));
     const x = (Math.random() - 0.5) * 4;
     const z = segZ - 15 - Math.random() * 25;
     return [{ id: `e${segZ}-${Math.random()}`, position: [x, 0.5, z], count }];
@@ -150,21 +150,30 @@ function generateObstacles(segZ: number, level: MathLevel): ObstacleData[] {
     return results;
 }
 
-function createSegment(z: number, gameMode: 'math' | 'english', level: MathLevel): TrackSegment {
+function createSegment(
+    z: number,
+    gameMode: 'math' | 'english',
+    level: MathLevel,
+    playerCount: number
+): TrackSegment {
     const problem = generateProblem(gameMode, level);
     return {
         z,
         ...problem,
-        enemies: generateEnemies(z, level),
+        enemies: generateEnemies(z, level, playerCount),
         obstacles: generateObstacles(z, level),
     };
 }
 
-function buildInitialSegments(gameMode: 'math' | 'english', level: MathLevel): TrackSegment[] {
+function buildInitialSegments(
+    gameMode: 'math' | 'english',
+    level: MathLevel,
+    playerCount: number
+): TrackSegment[] {
     return [
         { z: 0, expression: "Start", answer: 0, wrongAnswer: 0, enemies: [], obstacles: [] },
-        createSegment(-SEGMENT_LENGTH, gameMode, level),
-        createSegment(-SEGMENT_LENGTH * 2, gameMode, level),
+        createSegment(-SEGMENT_LENGTH, gameMode, level, playerCount),
+        createSegment(-SEGMENT_LENGTH * 2, gameMode, level, playerCount),
     ];
 }
 
@@ -172,9 +181,10 @@ export default function TrackManager() {
     const level = useMathRunnerStore(state => state.level);
     const gameMode = useMathRunnerStore(state => state.gameMode);
     const gameState = useMathRunnerStore(state => state.gameState);
+    const playerCount = useMathRunnerStore(state => state.playerCount);
 
     const [segments, setSegments] = useState<TrackSegment[]>(() =>
-        buildInitialSegments(gameMode, level)
+        buildInitialSegments(gameMode, level, playerCount)
     );
     const lastZ = useRef(-SEGMENT_LENGTH * 2);
     const hasInitializedHud = useRef(false);
@@ -251,11 +261,17 @@ export default function TrackManager() {
                         isFinishLine: true
                     };
                 } else {
-                    newSeg = createSegment(expectedLastSegmentZ, store.gameMode, store.level);
+                    newSeg = createSegment(
+                        expectedLastSegmentZ,
+                        store.gameMode,
+                        store.level,
+                        store.playerCount
+                    );
                 }
 
                 const newSegs = [...prev, newSeg];
-                return newSegs.filter(seg => seg.z <= -(currentSegmentIndex - 1) * SEGMENT_LENGTH);
+                // 플레이어 뒤로 충분히 멀어진 세그먼트만 제거 (앞/옆 세그먼트는 유지)
+                return newSegs.filter(seg => seg.z >= -(currentSegmentIndex + VISIBLE_SEGMENTS) * SEGMENT_LENGTH);
             });
         }
     });
@@ -271,6 +287,7 @@ export default function TrackManager() {
                                 position={[0, 0, seg.z - Math.floor(SEGMENT_LENGTH / 2)]}
                                 answer={seg.answer}
                                 wrongAnswer={seg.wrongAnswer}
+                                level={level}
                             />
                             {seg.enemies.map((enemy) => (
                                 <EnemyGroup

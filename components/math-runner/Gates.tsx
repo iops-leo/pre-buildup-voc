@@ -3,17 +3,24 @@ import { Text } from "@react-three/drei";
 import { RigidBody, CuboidCollider } from "@react-three/rapier";
 import { useState, useMemo, useRef } from "react";
 import * as THREE from "three";
-import { useMathRunnerStore } from "@/store/useMathRunnerStore";
+import { useMathRunnerStore, MathLevel } from "@/store/useMathRunnerStore";
 import { playGateResultSound } from "@/lib/mathRunnerAudio";
 import { useMathRunnerRuntimeConfig } from "./RuntimeConfig";
 
 const gateColliderArgs: [number, number, number] = [2.75, 1.75, 0.15];
 const gateBoxArgs: [number, number, number] = [5.5, 3.5, 0.15];
 
-export default function Gates({ position, answer, wrongAnswer }: {
+function getGateReward(level: MathLevel) {
+    if (level === "easy") return { correct: 8, wrong: 5 };
+    if (level === "hard") return { correct: 18, wrong: 15 };
+    return { correct: 12, wrong: 10 }; // medium
+}
+
+export default function Gates({ position, answer, wrongAnswer, level }: {
     position: [number, number, number],
     answer: number | string,
-    wrongAnswer: number | string
+    wrongAnswer: number | string,
+    level: MathLevel,
 }) {
     const runtime = useMathRunnerRuntimeConfig();
     const [passed, setPassed] = useState(false);
@@ -44,6 +51,8 @@ export default function Gates({ position, answer, wrongAnswer }: {
         }
     });
 
+    const reward = useMemo(() => getGateReward(level), [level]);
+
     const triggerPass = (type: "correct" | "wrong") => {
         if (passedRef.current) return;
         passedRef.current = true;
@@ -51,8 +60,8 @@ export default function Gates({ position, answer, wrongAnswer }: {
         setHitType(type);
         feedbackElapsedRef.current = 0;
         setShowFeedback(true);
-        if (type === "correct") addPlayers(10);
-        else subtractPlayers(10);
+        if (type === "correct") addPlayers(reward.correct);
+        else subtractPlayers(reward.wrong);
         if (runtime.enableAudio) {
             playGateResultSound(type === "correct");
         }
@@ -74,7 +83,7 @@ export default function Gates({ position, answer, wrongAnswer }: {
         setHitType("wrong");
         feedbackElapsedRef.current = 0;
         setShowFeedback(true);
-        subtractPlayers(10);
+        subtractPlayers(reward.wrong);
         if (runtime.enableAudio) {
             playGateResultSound(false);
         }
@@ -83,6 +92,22 @@ export default function Gates({ position, answer, wrongAnswer }: {
 
     const leftHandler = isLeftCorrect ? handleCorrect : handleWrong;
     const rightHandler = isLeftCorrect ? handleWrong : handleCorrect;
+
+    useFrame(() => {
+        if (passedRef.current) return;
+        const store = useMathRunnerStore.getState();
+        if (store.gameState !== "playing") return;
+
+        const dz = Math.abs(store.playerZ - position[2]);
+        if (dz > 0.9) return;
+
+        if (Math.abs(store.playerX) < 0.8) {
+            handleMiddle();
+            return;
+        }
+        if (store.playerX < 0) leftHandler();
+        else rightHandler();
+    });
 
     const leftColor = passed
         ? (isLeftCorrect ? "#4CAF50" : "#F44336")
@@ -165,7 +190,7 @@ export default function Gates({ position, answer, wrongAnswer }: {
                         material-depthTest={false}
                         fontWeight="black"
                     >
-                        {hitType === "correct" ? "+10 명" : "-10 명"}
+                        {hitType === "correct" ? `+${reward.correct} 명` : `-${reward.wrong} 명`}
                     </Text>
                 </group>
             )}

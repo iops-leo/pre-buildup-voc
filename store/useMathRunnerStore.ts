@@ -10,6 +10,7 @@ interface MathRunnerState {
   qualityPreset: MathRunnerQualityPreset;
   runId: number;
   playerCount: number;
+  playerX: number;
   playerZ: number;
   currentSpeed: number;
   currentQuestion: string;
@@ -45,6 +46,7 @@ export const useMathRunnerStore = create<MathRunnerState>()(
       qualityPreset: "auto",
       runId: 0,
       playerCount: 1,
+      playerX: 0,
       playerZ: 0,
       currentSpeed: 10,
       currentQuestion: "Get Ready!",
@@ -97,6 +99,7 @@ export const useMathRunnerStore = create<MathRunnerState>()(
           gameState: "playing",
           runId: state.runId + 1,
           playerCount: 1,
+          playerX: 0,
           playerZ: 0,
           currentSpeed: 10,
           currentQuestion: "Get Ready!",

@@ -8,6 +8,7 @@ function resetMathRunnerState() {
     qualityPreset: "auto",
     runId: 0,
     playerCount: 1,
+    playerX: 0,
     playerZ: 0,
     currentSpeed: 10,
     currentQuestion: "Get Ready!",
@@ -29,6 +30,7 @@ describe("useMathRunnerStore", () => {
     useMathRunnerStore.setState({
       runId: 3,
       playerCount: 19,
+      playerX: 3,
       playerZ: -420,
       currentQuestion: "old",
       pendingQuestion: "next",
@@ -43,6 +45,7 @@ describe("useMathRunnerStore", () => {
     expect(state.gameState).toBe("playing");
     expect(state.runId).toBe(4);
     expect(state.playerCount).toBe(1);
+    expect(state.playerX).toBe(0);
     expect(state.playerZ).toBe(0);
     expect(state.currentQuestion).toBe("Get Ready!");
     expect(state.pendingQuestion).toBe("");

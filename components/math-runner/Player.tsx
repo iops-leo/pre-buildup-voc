@@ -77,8 +77,8 @@ export default function Player() {
 
         bodyRef.current.setNextKinematicTranslation({ x: newX, y: 0.5, z: newZ });
 
-        // Update store with playerZ without triggering component re-render
-        useMathRunnerStore.setState({ playerZ: newZ });
+        // Update positional store for interaction fallback logic.
+        useMathRunnerStore.setState({ playerX: newX, playerZ: newZ });
 
         // Smooth camera follow avoids visual stutter while changing lanes.
         const baseCamX = THREE.MathUtils.damp(state.camera.position.x, newX, 6, delta);

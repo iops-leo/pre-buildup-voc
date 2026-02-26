@@ -27,6 +27,11 @@ export default function MathRunnerPage() {
 
     const levels: MathLevel[] = ['easy', 'medium', 'hard'];
     const qualityOptions: MathRunnerQualityPreset[] = ["auto", "high", "medium", "low"];
+    const playerZ = useMathRunnerStore(state => state.playerZ);
+
+    // 진행도 0~100%
+    const GOAL_Z = -1500;
+    const progressPct = Math.min(100, Math.max(0, (playerZ / GOAL_Z) * 100));
 
     // Handle high score updates when winning
     useEffect(() => {
@@ -108,6 +113,9 @@ export default function MathRunnerPage() {
                                 ))}
                             </div>
 
+                            {/* 모바일 조작 힌트 */}
+                            <p className="text-slate-400 text-sm mt-4">← 스와이프 → 로 이동 &nbsp;|&nbsp; PC: 방향키</p>
+
                             <button
                                 onClick={() => resetGame()}
                                 className="w-full py-5 rounded-2xl bg-gradient-to-r from-green-500 to-emerald-600 text-white font-black text-3xl shadow-[0_0_20px_rgba(34,197,94,0.4)] hover:scale-105 transition-transform"
@@ -119,9 +127,21 @@ export default function MathRunnerPage() {
                 )}
 
                 {gameState === 'playing' && (
-                    <div className="absolute top-6 w-full flex flex-col items-center">
-                        <div className="bg-black/40 backdrop-blur-md px-8 py-4 rounded-3xl border-2 border-white/20 text-white font-black text-3xl shadow-2xl">
+                    <div className="absolute top-0 w-full flex flex-col items-center">
+                        {/* 진행도 바 */}
+                        <div className="w-full h-2 bg-black/30">
+                            <div
+                                className="h-2 bg-gradient-to-r from-cyan-400 to-green-400 transition-all duration-300"
+                                style={{ width: `${progressPct}%` }}
+                            />
+                        </div>
+                        {/* 문제 표시 */}
+                        <div className="mt-4 bg-black/40 backdrop-blur-md px-8 py-4 rounded-3xl border-2 border-white/20 text-white font-black text-3xl shadow-2xl">
                             <span className="text-yellow-300 drop-shadow-md">{currentQuestion}</span>
+                        </div>
+                        {/* 진행 거리 */}
+                        <div className="mt-1 text-white/70 text-sm font-bold">
+                            {Math.round(Math.abs(playerZ))}m / 1500m
                         </div>
                     </div>
                 )}
@@ -129,16 +149,20 @@ export default function MathRunnerPage() {
                 {gameState === 'gameover' && (
                     <div className="bg-red-900/80 backdrop-blur-xl p-8 rounded-3xl border-2 border-red-500 shadow-2xl flex flex-col items-center mt-20 pointer-events-auto">
                         <h2 className="text-5xl font-black text-white drop-shadow-lg mb-4">GAME OVER</h2>
-                        <div className="text-red-200 text-xl font-bold mb-8">Your crowd was entirely defeated!</div>
+                        <div className="text-red-200 text-xl font-bold mb-8">모든 병사가 전멸했습니다!</div>
 
-                        <div className="flex gap-6 mb-8 text-white text-lg">
+                        <div className="flex gap-4 mb-8 text-white text-lg">
                             <div className="flex flex-col items-center bg-black/30 px-6 py-3 rounded-xl">
-                                <span className="text-gray-400 text-sm">Mode</span>
-                                <span className="font-bold capitalize">{gameMode} - {level}</span>
+                                <span className="text-gray-400 text-sm">모드</span>
+                                <span className="font-bold">{gameMode === 'math' ? '수학' : '영어'} - {level === 'easy' ? '쉬움' : level === 'medium' ? '보통' : '어려움'}</span>
                             </div>
                             <div className="flex flex-col items-center bg-black/30 px-6 py-3 rounded-xl">
-                                <span className="text-gray-400 text-sm">Defeated</span>
-                                <span className="font-bold text-yellow-400">{totalEnemiesDefeated} Enemies</span>
+                                <span className="text-gray-400 text-sm">처치한 적</span>
+                                <span className="font-bold text-yellow-400">{totalEnemiesDefeated}명</span>
+                            </div>
+                            <div className="flex flex-col items-center bg-black/30 px-6 py-3 rounded-xl">
+                                <span className="text-gray-400 text-sm">최고 기록</span>
+                                <span className="font-bold text-cyan-300">{bestScore}명</span>
                             </div>
                         </div>
 

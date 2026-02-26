@@ -46,6 +46,17 @@ export default function Obstacle({
         }
     };
 
+    useFrame(() => {
+        if (hit) return;
+        const store = useMathRunnerStore.getState();
+        if (store.gameState !== "playing") return;
+        const dx = Math.abs(store.playerX - position[0]);
+        const dz = Math.abs(store.playerZ - position[2]);
+        if (dx <= 1.5 && dz <= 1.3) {
+            handleHit();
+        }
+    });
+
     if (hit) {
         if (!showDamage) return null;
         return (
