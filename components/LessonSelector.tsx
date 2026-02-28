@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { VOCABULARY_DATA, Unit, Lesson } from '@/data/vocabulary';
 import { useQuizStore, QuizHistoryEntry, BADGES, getLevelTitle, Badge } from '@/store/useQuizStore';
-import { BookOpen, Star, RefreshCw, Trophy, ChevronRight, GraduationCap, Flame, Medal, Mic, PenTool, BarChart3, Settings, Timer, Swords, Calculator } from 'lucide-react';
+import { BookOpen, Star, RefreshCw, Trophy, ChevronRight, GraduationCap, Flame, Medal, Mic, PenTool, BarChart3, Settings, Timer, Swords } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import clsx from 'clsx';
@@ -167,7 +167,7 @@ export const LessonSelector = ({ onNavigate }: LessonSelectorProps) => {
             )}
 
             {/* Navigation Menu */}
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 <button
                     onClick={() => { playClick(); onNavigate?.('stats'); }}
                     className="flex flex-col items-center gap-2 p-4 bg-slate-900 border border-slate-800 rounded-2xl hover:bg-slate-800 transition-colors group touch-manipulation"
@@ -195,16 +195,6 @@ export const LessonSelector = ({ onNavigate }: LessonSelectorProps) => {
                         <Swords size={22} />
                     </div>
                     <span className="text-xs font-bold text-slate-300">몬스터 레이드</span>
-                </Link>
-                <Link
-                    href="/math-runner"
-                    onClick={() => playClick()}
-                    className="flex flex-col items-center gap-2 p-4 bg-slate-900 border border-slate-800 rounded-2xl hover:bg-slate-800 transition-colors group touch-manipulation"
-                >
-                    <div className="p-3 rounded-full bg-amber-500/10 text-amber-500 group-hover:bg-amber-500/20 transition-colors">
-                        <Calculator size={22} />
-                    </div>
-                    <span className="text-xs font-bold text-slate-300">수학 런너</span>
                 </Link>
                 <button
                     onClick={() => { playClick(); onNavigate?.('settings'); }}
