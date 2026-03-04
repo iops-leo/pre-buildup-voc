@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
-const MODEL = process.env.AI_MODEL || 'upstage/solar-pro-3:free';
+const MODEL = process.env.AI_MODEL || 'z-ai/glm-4.5-air:free';
 
 const SYSTEM_PROMPT = `너는 초등학생을 위한 영어 단어 학습 도우미야.
 항상 한국어로 답변하고, 초등학생이 이해할 수 있게 쉽고 친근하게 설명해줘.

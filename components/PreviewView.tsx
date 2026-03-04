@@ -9,7 +9,7 @@ import { useAI } from '@/hooks/useAI';
 
 export const PreviewView = () => {
     const store = useQuizStore();
-    const { currentUnit, currentLesson, questions, resetQuiz, startQuiz } = store;
+    const { currentBookTitle, currentUnit, currentLesson, questions, resetQuiz, startQuiz } = store;
     const { speak, isSpeaking } = useTTS();
     const { playClick } = useSound();
     const { ask } = useAI();
@@ -24,8 +24,8 @@ export const PreviewView = () => {
 
     const handleStartQuiz = (mode: QuizMode) => {
         playClick();
-        if (currentUnit && currentLesson) {
-            startQuiz(currentUnit, currentLesson, mode);
+        if (currentBookTitle && currentUnit && currentLesson) {
+            startQuiz(currentBookTitle, currentUnit, currentLesson, mode);
         }
     };
 

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { VOCABULARY_DATA, Unit, Lesson } from '@/data/vocabulary';
+import { VOCABULARY_DATA, Unit, Lesson, BookData } from '@/data/vocabulary';
+import { BUILD_UP_1_DATA } from '@/data/vocabulary-buildup';
 import { useQuizStore, QuizHistoryEntry, BADGES, getLevelTitle, Badge } from '@/store/useQuizStore';
 import { BookOpen, Star, RefreshCw, Trophy, ChevronRight, GraduationCap, Flame, Medal, Mic, PenTool, BarChart3, Settings, Timer, Swords } from 'lucide-react';
 import Link from 'next/link';
@@ -36,6 +37,11 @@ export const LessonSelector = ({ onNavigate }: LessonSelectorProps) => {
     const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
     const [badgeModalOpen, setBadgeModalOpen] = useState(false);
 
+    // Book Selection State (Tabs)
+    const books: BookData[] = [BUILD_UP_1_DATA, VOCABULARY_DATA];
+    const [activeBookIndex, setActiveBookIndex] = useState(0);
+    const currentBook = books[activeBookIndex];
+
     const handleBadgeClick = (badge: Badge) => {
         playClick();
         setSelectedBadge(badge);
@@ -46,8 +52,12 @@ export const LessonSelector = ({ onNavigate }: LessonSelectorProps) => {
     const currentTitle = getLevelTitle(level);
 
     // Get best score for a specific unit/lesson
-    const getBestScore = (unitNum: number, lessonNum: number): number | null => {
-        const key = `${unitNum}-${lessonNum}`;
+    const getBestScore = (bookTitle: string, unitNum: number, lessonNum: number): number | null => {
+        // For backward compatibility, "Pre-Build Up" uses old key format
+        const key = bookTitle === "Pre-Build Up"
+            ? `${unitNum}-${lessonNum}`
+            : `${bookTitle}-${unitNum}-${lessonNum}`;
+
         return lessonProgress[key]?.bestScore ?? null;
     };
 
@@ -56,14 +66,14 @@ export const LessonSelector = ({ onNavigate }: LessonSelectorProps) => {
     const currentLevelXp = xp - ((level - 1) * 1000);
     const xpProgress = Math.min((currentLevelXp / 1000) * 100, 100);
 
-    const handleModeSelect = (unit: Unit, lesson: Lesson, mode: 'korean_to_english' | 'english_to_korean' | 'spelling' | 'speaking' | 'writing') => {
+    const handleModeSelect = (bookTitle: string, unit: Unit, lesson: Lesson, mode: 'korean_to_english' | 'english_to_korean' | 'spelling' | 'speaking' | 'writing') => {
         playClick();
-        startQuiz(unit, lesson, mode);
+        startQuiz(bookTitle, unit, lesson, mode);
     };
 
-    const handlePreview = (unit: Unit, lesson: Lesson) => {
+    const handlePreview = (bookTitle: string, unit: Unit, lesson: Lesson) => {
         playClick();
-        startPreview(unit, lesson);
+        startPreview(bookTitle, unit, lesson);
     };
 
     const handleReviewClick = () => {
@@ -74,13 +84,37 @@ export const LessonSelector = ({ onNavigate }: LessonSelectorProps) => {
     return (
         <div className="w-full max-w-4xl mx-auto p-3 md:p-6 space-y-6 md:space-y-8 animate-in fade-in duration-500">
             {/* Main Header */}
-            <header className="text-center space-y-1 md:space-y-2 pt-2 md:pt-4">
+            <header className="text-center space-y-3 pt-2 md:pt-4">
                 <h1 className="text-3xl md:text-5xl font-black tracking-tight text-white font-display">
-                    {VOCABULARY_DATA.book_title}
+                    VOCA CHALLENGE
                 </h1>
-                <p className="text-slate-400 text-sm md:text-base">
-                    학습할 레슨을 선택하세요
-                </p>
+
+                {/* Book Selection Tabs */}
+                <div className="flex justify-center mt-4">
+                    <div className="bg-slate-900 border border-slate-700/50 p-1.5 rounded-2xl flex items-center gap-1 shadow-inner relative">
+                        {books.map((book, idx) => (
+                            <button
+                                key={idx}
+                                onClick={() => { playClick(); setActiveBookIndex(idx); }}
+                                className={clsx(
+                                    "relative px-4 py-2.5 rounded-xl text-sm md:text-base font-bold transition-all duration-300 z-10 touch-manipulation",
+                                    activeBookIndex === idx
+                                        ? "text-white shadow-sm"
+                                        : "text-slate-400 hover:text-slate-200"
+                                )}
+                            >
+                                {activeBookIndex === idx && (
+                                    <motion.div
+                                        layoutId="activeTab"
+                                        className="absolute inset-0 bg-slate-700 rounded-xl"
+                                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                                    />
+                                )}
+                                <span className="relative z-20">{book.book_title}</span>
+                            </button>
+                        ))}
+                    </div>
+                </div>
             </header>
 
             {/* Gamification Dashboard - Compact for Mobile/Tablet */}
@@ -227,28 +261,35 @@ export const LessonSelector = ({ onNavigate }: LessonSelectorProps) => {
 
             {/* Lesson Grid */}
             <div className="space-y-6 md:space-y-8 pb-10">
-                {VOCABULARY_DATA.units.map((unit) => (
-                    <div key={unit.unit} className="space-y-4">
-                        <div className="flex items-center gap-3 px-1">
-                            <div className="h-px flex-1 bg-slate-800" />
-                            <h2 className="text-base md:text-lg font-bold text-slate-300">Unit {unit.unit}</h2>
-                            <div className="h-px flex-1 bg-slate-800" />
-                        </div>
+                <motion.div
+                    key={activeBookIndex}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                >
+                    {currentBook.units.map((unit) => (
+                        <div key={unit.unit} className="space-y-4 mb-8">
+                            <div className="flex items-center gap-3 px-1">
+                                <div className="h-px flex-1 bg-slate-800" />
+                                <h2 className="text-base md:text-lg font-bold text-slate-300">Unit {unit.unit}</h2>
+                                <div className="h-px flex-1 bg-slate-800" />
+                            </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5">
-                            {unit.lessons.map((lesson) => (
-                                <LessonCard
-                                    key={lesson.lesson}
-                                    unit={unit}
-                                    lesson={lesson}
-                                    bestScore={getBestScore(unit.unit, lesson.lesson)}
-                                    onSelect={(mode) => handleModeSelect(unit, lesson, mode)}
-                                    onPreview={() => handlePreview(unit, lesson)}
-                                />
-                            ))}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5">
+                                {unit.lessons.map((lesson) => (
+                                    <LessonCard
+                                        key={lesson.lesson}
+                                        unit={unit}
+                                        lesson={lesson}
+                                        bestScore={getBestScore(currentBook.book_title, unit.unit, lesson.lesson)}
+                                        onSelect={(mode) => handleModeSelect(currentBook.book_title, unit, lesson, mode)}
+                                        onPreview={() => handlePreview(currentBook.book_title, unit, lesson)}
+                                    />
+                                ))}
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    ))}
+                </motion.div>
             </div>
 
             <div className="h-6" /> {/* Bottom spacer for scrolling */}

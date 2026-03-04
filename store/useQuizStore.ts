@@ -7,6 +7,7 @@ export type QuizMode = 'korean_to_english' | 'english_to_korean' | 'spelling' | 
 export interface QuizHistoryEntry {
     id: string;
     date: string;
+    bookTitle: string | null;
     unitNumber: number | null;
     lessonNumber: number | null;
     mode: QuizMode;
@@ -760,6 +761,7 @@ export const BADGES: Badge[] = [
 
 interface QuizState {
     // Current Quiz State
+    currentBookTitle: string | null;
     currentUnit: Unit | null;
     currentLesson: Lesson | null;
     quizActive: boolean;
@@ -794,9 +796,9 @@ interface QuizState {
     raidFastClears: number;
 
     // Actions
-    startQuiz: (unit: Unit, lesson: Lesson, mode: QuizMode) => void;
+    startQuiz: (bookTitle: string, unit: Unit, lesson: Lesson, mode: QuizMode) => void;
     startReviewQuiz: (mode: QuizMode) => void;
-    startPreview: (unit: Unit, lesson: Lesson) => void;
+    startPreview: (bookTitle: string, unit: Unit, lesson: Lesson) => void;
     retryQuiz: () => void;
     submitAnswer: (isCorrect: boolean, word: Vocabulary) => void;
     nextQuestion: () => void;
@@ -824,6 +826,7 @@ interface QuizState {
 export const useQuizStore = create<QuizState>()(
     persist(
         (set, get) => ({
+            currentBookTitle: null,
             currentUnit: null,
             currentLesson: null,
             quizActive: false,
@@ -857,9 +860,10 @@ export const useQuizStore = create<QuizState>()(
             raidPerfectCount: 0,
             raidFastClears: 0,
 
-            startQuiz: (unit, lesson, mode) => {
+            startQuiz: (bookTitle, unit, lesson, mode) => {
                 const shuffled = [...lesson.vocabulary].sort(() => Math.random() - 0.5);
                 set({
+                    currentBookTitle: bookTitle,
                     currentUnit: unit,
                     currentLesson: lesson,
                     quizActive: true,
@@ -880,6 +884,7 @@ export const useQuizStore = create<QuizState>()(
 
                 const shuffled = [...wrong].sort(() => Math.random() - 0.5);
                 set({
+                    currentBookTitle: null,
                     currentUnit: null,
                     currentLesson: null,
                     quizActive: true,
@@ -894,8 +899,9 @@ export const useQuizStore = create<QuizState>()(
                 });
             },
 
-            startPreview: (unit, lesson) => {
+            startPreview: (bookTitle, unit, lesson) => {
                 set({
+                    currentBookTitle: bookTitle,
                     currentUnit: unit,
                     currentLesson: lesson,
                     previewActive: true,
@@ -906,13 +912,13 @@ export const useQuizStore = create<QuizState>()(
 
             retryQuiz: () => {
                 const state = get();
-                if (!state.currentUnit || !state.currentLesson) {
+                if (!state.currentUnit || !state.currentLesson || !state.currentBookTitle) {
                     if (state.persistentWrongAnswers.length > 0) {
                         get().startReviewQuiz(state.mode);
                     }
                     return;
                 }
-                get().startQuiz(state.currentUnit, state.currentLesson, state.mode);
+                get().startQuiz(state.currentBookTitle, state.currentUnit, state.currentLesson, state.mode);
             },
 
             submitAnswer: (isCorrect, word) => {
@@ -961,6 +967,7 @@ export const useQuizStore = create<QuizState>()(
                 const historyEntry: QuizHistoryEntry = {
                     id: Date.now().toString(),
                     date: new Date().toISOString(),
+                    bookTitle: state.currentBookTitle ?? null,
                     unitNumber: state.currentUnit?.unit ?? null,
                     lessonNumber: state.currentLesson?.lesson ?? null,
                     mode: state.mode,
@@ -998,8 +1005,13 @@ export const useQuizStore = create<QuizState>()(
                     };
 
                     // Update Lesson Progress
-                    if (state.currentUnit && state.currentLesson) {
-                        const key = `${state.currentUnit.unit}-${state.currentLesson.lesson}`;
+                    if (state.currentUnit && state.currentLesson && state.currentBookTitle) {
+                        // For backward compatibility, original "Pre-Build Up" saves using unit-lesson
+                        // Otherwise format as "bookTitle-unit-lesson"
+                        const key = state.currentBookTitle === "Pre-Build Up"
+                            ? `${state.currentUnit.unit}-${state.currentLesson.lesson}`
+                            : `${state.currentBookTitle}-${state.currentUnit.unit}-${state.currentLesson.lesson}`;
+
                         const prev = s.lessonProgress[key];
                         const newBest = Math.max(prev?.bestScore ?? 0, percentage);
 
@@ -1023,6 +1035,7 @@ export const useQuizStore = create<QuizState>()(
                 set({
                     quizActive: false,
                     previewActive: false,
+                    currentBookTitle: null,
                     currentUnit: null,
                     currentLesson: null,
                     questions: [],

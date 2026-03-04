@@ -1,0 +1,261 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1772616585025,
+  "projectRoot": "/Users/leo/project/pre-buildup-voc",
+  "techStack": {
+    "languages": [
+      {
+        "name": "JavaScript/TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "tsconfig.json"
+        ]
+      }
+    ],
+    "frameworks": [
+      {
+        "name": "next",
+        "version": "16.1.0",
+        "category": "fullstack"
+      },
+      {
+        "name": "react",
+        "version": "19.2.3",
+        "category": "frontend"
+      },
+      {
+        "name": "react-dom",
+        "version": "19.2.3",
+        "category": "frontend"
+      },
+      {
+        "name": "vitest",
+        "version": "4.0.18",
+        "category": "testing"
+      }
+    ],
+    "packageManager": "npm",
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": "npm run build",
+    "testCommand": "npm test",
+    "lintCommand": "npm run lint",
+    "devCommand": "npm run dev",
+    "scripts": {
+      "dev": "next dev",
+      "build": "next build",
+      "start": "next start",
+      "lint": "eslint",
+      "test": "vitest",
+      "test:run": "vitest run"
+    }
+  },
+  "conventions": {
+    "namingStyle": "camelCase",
+    "importStyle": "ES modules",
+    "testPattern": "*.test.ts",
+    "fileOrganization": null
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "app",
+      "components",
+      "docs",
+      "lib",
+      "public",
+      "scripts",
+      "tests"
+    ],
+    "gitBranches": null
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "app": {
+      "path": "app",
+      "purpose": "Application code",
+      "fileCount": 5,
+      "lastAccessed": 1772616585012,
+      "keyFiles": [
+        "favicon.ico",
+        "globals.css",
+        "layout.tsx",
+        "page.tsx"
+      ]
+    },
+    "components": {
+      "path": "components",
+      "purpose": "UI components",
+      "fileCount": 10,
+      "lastAccessed": 1772616585014,
+      "keyFiles": [
+        "BadgeModal.tsx",
+        "LessonSelector.tsx",
+        "PreviewView.tsx",
+        "QuizView.tsx",
+        "ResultView.tsx"
+      ]
+    },
+    "data": {
+      "path": "data",
+      "purpose": "Data files",
+      "fileCount": 2,
+      "lastAccessed": 1772616585015,
+      "keyFiles": [
+        "monsters.ts",
+        "vocabulary.ts"
+      ]
+    },
+    "docs": {
+      "path": "docs",
+      "purpose": "Documentation",
+      "fileCount": 4,
+      "lastAccessed": 1772616585015,
+      "keyFiles": [
+        "AI_INTEGRATION_PLAN.md",
+        "PRD-몬스터레이드.md",
+        "SYSTEM_ANALYSIS.md",
+        "math-runner-guide.md"
+      ]
+    },
+    "hooks": {
+      "path": "hooks",
+      "purpose": null,
+      "fileCount": 5,
+      "lastAccessed": 1772616585015,
+      "keyFiles": [
+        "useAI.ts",
+        "useNotification.ts",
+        "useSound.ts",
+        "useSpeechRecognition.ts",
+        "useTTS.ts"
+      ]
+    },
+    "images": {
+      "path": "images",
+      "purpose": null,
+      "fileCount": 13,
+      "lastAccessed": 1772616585015,
+      "keyFiles": [
+        "KakaoTalk_Photo_2025-12-22-23-31-14 001.jpeg",
+        "KakaoTalk_Photo_2025-12-22-23-31-15 002.jpeg",
+        "KakaoTalk_Photo_2025-12-22-23-31-15 003.jpeg",
+        "KakaoTalk_Photo_2025-12-22-23-31-15 004.jpeg",
+        "KakaoTalk_Photo_2025-12-22-23-31-15 005.jpeg"
+      ]
+    },
+    "lib": {
+      "path": "lib",
+      "purpose": "Library code",
+      "fileCount": 3,
+      "lastAccessed": 1772616585015,
+      "keyFiles": [
+        "mathRunnerAudio.ts",
+        "mathRunnerCameraShake.ts",
+        "supabase.ts"
+      ]
+    },
+    "public": {
+      "path": "public",
+      "purpose": "Public files",
+      "fileCount": 10,
+      "lastAccessed": 1772616585016,
+      "keyFiles": [
+        "favicon.ico",
+        "file.svg",
+        "globe.svg",
+        "manifest.json",
+        "next.svg"
+      ]
+    },
+    "scripts": {
+      "path": "scripts",
+      "purpose": "Build/utility scripts",
+      "fileCount": 1,
+      "lastAccessed": 1772616585016,
+      "keyFiles": [
+        "generate-monsters.ts"
+      ]
+    },
+    "store": {
+      "path": "store",
+      "purpose": null,
+      "fileCount": 4,
+      "lastAccessed": 1772616585016,
+      "keyFiles": [
+        "useMathRunnerStore.ts",
+        "useQuizStore.ts",
+        "useRaidStore.ts",
+        "useSettingsStore.ts"
+      ]
+    },
+    "tests": {
+      "path": "tests",
+      "purpose": "Test files",
+      "fileCount": 3,
+      "lastAccessed": 1772616585016,
+      "keyFiles": [
+        "setup.ts",
+        "useMathRunnerStore.test.ts",
+        "useQuizStore.test.ts"
+      ]
+    },
+    "types": {
+      "path": "types",
+      "purpose": "Type definitions",
+      "fileCount": 1,
+      "lastAccessed": 1772616585016,
+      "keyFiles": [
+        "supabase.ts"
+      ]
+    },
+    "app/api": {
+      "path": "app/api",
+      "purpose": "API routes",
+      "fileCount": 0,
+      "lastAccessed": 1772616585016,
+      "keyFiles": []
+    },
+    "public/models": {
+      "path": "public/models",
+      "purpose": "Data models",
+      "fileCount": 1,
+      "lastAccessed": 1772616585016,
+      "keyFiles": [
+        "Soldier.glb"
+      ]
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "app/api/ai/route.ts",
+      "accessCount": 2,
+      "lastAccessed": 1772616693007,
+      "type": "file"
+    },
+    {
+      "path": "hooks/useAI.ts",
+      "accessCount": 1,
+      "lastAccessed": 1772616630475,
+      "type": "file"
+    },
+    {
+      "path": "store/useSettingsStore.ts",
+      "accessCount": 1,
+      "lastAccessed": 1772616630543,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}
