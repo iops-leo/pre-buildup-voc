@@ -113,7 +113,7 @@ export const TheGameView = ({ onBack }: TheGameViewProps) => {
         speak(`the ${currentWord.word}`);
 
         // Next question after delay
-        const delay = currentWord.note ? 3000 : correct ? 1200 : 2000;
+        const delay = currentWord.note ? 3500 : correct ? 2500 : 3000;
         setTimeout(() => {
             if (lives > 1 || correct) {
                 nextWord(shuffledWords, currentIndex);

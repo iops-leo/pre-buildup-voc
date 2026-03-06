@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { VOCABULARY_DATA, Unit, Lesson, BookData } from '@/data/vocabulary';
 import { BUILD_UP_1_DATA } from '@/data/vocabulary-buildup';
 import { useQuizStore, QuizHistoryEntry, BADGES, getLevelTitle, Badge } from '@/store/useQuizStore';
-import { BookOpen, Star, RefreshCw, Trophy, ChevronRight, GraduationCap, Flame, Medal, Mic, PenTool, BarChart3, Settings, Timer, Swords, Volume2 } from 'lucide-react';
+import { BookOpen, Star, RefreshCw, Trophy, ChevronRight, GraduationCap, Flame, Medal, Mic, PenTool, BarChart3, Settings, Timer, Swords, Volume2, Clock } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import clsx from 'clsx';
@@ -10,7 +10,7 @@ import { useSound } from '@/hooks/useSound';
 import { BadgeModal, BadgeGrid } from './BadgeModal';
 
 // View types for navigation
-type ViewType = 'home' | 'stats' | 'settings' | 'game' | 'thegame';
+type ViewType = 'home' | 'stats' | 'settings' | 'game' | 'thegame' | 'clockgame';
 
 interface LessonSelectorProps {
     onNavigate?: (view: ViewType) => void;
@@ -201,7 +201,7 @@ export const LessonSelector = ({ onNavigate }: LessonSelectorProps) => {
             )}
 
             {/* Navigation Menu */}
-            <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
+            <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
                 <button
                     onClick={() => { playClick(); onNavigate?.('stats'); }}
                     className="flex flex-col items-center gap-2 p-4 bg-slate-900 border border-slate-800 rounded-2xl hover:bg-slate-800 transition-colors group touch-manipulation"
@@ -238,6 +238,15 @@ export const LessonSelector = ({ onNavigate }: LessonSelectorProps) => {
                         <Volume2 size={22} />
                     </div>
                     <span className="text-xs font-bold text-slate-300">The 발음</span>
+                </button>
+                <button
+                    onClick={() => { playClick(); onNavigate?.('clockgame'); }}
+                    className="flex flex-col items-center gap-2 p-4 bg-slate-900 border border-slate-800 rounded-2xl hover:bg-slate-800 transition-colors group touch-manipulation"
+                >
+                    <div className="p-3 rounded-full bg-sky-500/10 text-sky-400 group-hover:bg-sky-500/20 transition-colors">
+                        <Clock size={22} />
+                    </div>
+                    <span className="text-xs font-bold text-slate-300">시계 읽기</span>
                 </button>
                 <button
                     onClick={() => { playClick(); onNavigate?.('settings'); }}
