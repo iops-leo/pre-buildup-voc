@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { VOCABULARY_DATA, Unit, Lesson, BookData } from '@/data/vocabulary';
 import { BUILD_UP_1_DATA } from '@/data/vocabulary-buildup';
 import { useQuizStore, QuizHistoryEntry, BADGES, getLevelTitle, Badge } from '@/store/useQuizStore';
-import { BookOpen, Star, RefreshCw, Trophy, ChevronRight, GraduationCap, Flame, Medal, Mic, PenTool, BarChart3, Settings, Timer, Swords } from 'lucide-react';
+import { BookOpen, Star, RefreshCw, Trophy, ChevronRight, GraduationCap, Flame, Medal, Mic, PenTool, BarChart3, Settings, Timer, Swords, Volume2 } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import clsx from 'clsx';
@@ -10,7 +10,7 @@ import { useSound } from '@/hooks/useSound';
 import { BadgeModal, BadgeGrid } from './BadgeModal';
 
 // View types for navigation
-type ViewType = 'home' | 'stats' | 'settings' | 'game';
+type ViewType = 'home' | 'stats' | 'settings' | 'game' | 'thegame';
 
 interface LessonSelectorProps {
     onNavigate?: (view: ViewType) => void;
@@ -201,7 +201,7 @@ export const LessonSelector = ({ onNavigate }: LessonSelectorProps) => {
             )}
 
             {/* Navigation Menu */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-3 md:grid-cols-5 gap-3">
                 <button
                     onClick={() => { playClick(); onNavigate?.('stats'); }}
                     className="flex flex-col items-center gap-2 p-4 bg-slate-900 border border-slate-800 rounded-2xl hover:bg-slate-800 transition-colors group touch-manipulation"
@@ -231,8 +231,17 @@ export const LessonSelector = ({ onNavigate }: LessonSelectorProps) => {
                     <span className="text-xs font-bold text-slate-300">몬스터 레이드</span>
                 </Link>
                 <button
+                    onClick={() => { playClick(); onNavigate?.('thegame'); }}
+                    className="flex flex-col items-center gap-2 p-4 bg-slate-900 border border-slate-800 rounded-2xl hover:bg-slate-800 transition-colors group touch-manipulation"
+                >
+                    <div className="p-3 rounded-full bg-teal-500/10 text-teal-400 group-hover:bg-teal-500/20 transition-colors">
+                        <Volume2 size={22} />
+                    </div>
+                    <span className="text-xs font-bold text-slate-300">The 발음</span>
+                </button>
+                <button
                     onClick={() => { playClick(); onNavigate?.('settings'); }}
-                    className="flex flex-col items-center gap-2 p-4 bg-slate-900 border border-slate-800 rounded-2xl hover:bg-slate-800 transition-colors group touch-manipulation md:col-span-1 col-span-2"
+                    className="flex flex-col items-center gap-2 p-4 bg-slate-900 border border-slate-800 rounded-2xl hover:bg-slate-800 transition-colors group touch-manipulation"
                 >
                     <div className="p-3 rounded-full bg-slate-500/10 text-slate-400 group-hover:bg-slate-500/20 transition-colors">
                         <Settings size={22} />

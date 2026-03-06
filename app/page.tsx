@@ -8,11 +8,12 @@ import { PreviewView } from '@/components/PreviewView';
 import { StatsView } from '@/components/StatsView';
 import { SettingsView } from '@/components/SettingsView';
 import { TimeChallengeView } from '@/components/TimeChallengeView';
+import { TheGameView } from '@/components/TheGameView';
 import { useEffect, useState } from 'react';
 import { useNotification } from '@/hooks/useNotification';
 
 // View types for navigation
-type ViewType = 'home' | 'stats' | 'settings' | 'game';
+type ViewType = 'home' | 'stats' | 'settings' | 'game' | 'thegame';
 
 export default function Home() {
   const store = useQuizStore();
@@ -48,6 +49,9 @@ export default function Home() {
     }
     if (currentView === 'game') {
       return <TimeChallengeView onBack={() => setCurrentView('home')} />;
+    }
+    if (currentView === 'thegame') {
+      return <TheGameView onBack={() => setCurrentView('home')} />;
     }
 
     // Handle quiz flow

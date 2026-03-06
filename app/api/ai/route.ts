@@ -3,6 +3,32 @@ import { NextRequest, NextResponse } from 'next/server';
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 const MODEL = process.env.AI_MODEL || 'z-ai/glm-4.5-air:free';
 
+// Extract JSON from AI response (handles markdown code blocks, extra text around JSON)
+function extractJSON(text: string): string {
+  // 1. Try markdown code block: ```json ... ``` or ``` ... ```
+  const codeBlockMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
+  if (codeBlockMatch) {
+    try {
+      JSON.parse(codeBlockMatch[1].trim());
+      return codeBlockMatch[1].trim();
+    } catch { /* continue */ }
+  }
+
+  // 2. Try finding first { ... } block
+  const braceStart = text.indexOf('{');
+  const braceEnd = text.lastIndexOf('}');
+  if (braceStart !== -1 && braceEnd > braceStart) {
+    const candidate = text.slice(braceStart, braceEnd + 1);
+    try {
+      JSON.parse(candidate);
+      return candidate;
+    } catch { /* continue */ }
+  }
+
+  // 3. Return original text as fallback
+  return text;
+}
+
 const SYSTEM_PROMPT = `너는 초등학생을 위한 영어 단어 학습 도우미야.
 항상 한국어로 답변하고, 초등학생이 이해할 수 있게 쉽고 친근하게 설명해줘.
 답변은 짧고 간결하게 해줘 (3줄 이내).
@@ -74,11 +100,16 @@ JSON 형식으로 답해줘: {"examples": [{"en": "...", "ko": "..."}], "hint": 
     }
 
     const data = await response.json();
-    const content = data.choices?.[0]?.message?.content || '';
+    let content = data.choices?.[0]?.message?.content || '';
 
     if (!content.trim()) {
       console.error('AI returned empty content. Response:', JSON.stringify(data).slice(0, 500));
       return NextResponse.json({ error: 'AI returned empty response' }, { status: 502 });
+    }
+
+    // For example_sentence type, extract JSON from response
+    if (type === 'example_sentence') {
+      content = extractJSON(content);
     }
 
     return NextResponse.json({ content });
