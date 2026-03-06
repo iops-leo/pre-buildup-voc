@@ -20,7 +20,7 @@ export interface PlayerConfig {
   difficulty: Difficulty;
   ready: boolean;
   vocabUnit?: number;
-  vocabLesson?: number;
+  vocabLesson?: number | string;
 }
 
 export interface Player {
@@ -497,8 +497,8 @@ export const useRaidStore = create<RaidState>((set, get) => ({
     const me = room.players.find((p) => p.id === myPlayerId);
     const baseDamage = me?.config
       ? ({ easy: 10, normal: 20, hard: 40 } as Record<Difficulty, number>)[
-          me.config.difficulty
-        ]
+      me.config.difficulty
+      ]
       : 10;
 
     const newCombo = isCorrect ? comboCount + 1 : 0;
@@ -519,10 +519,10 @@ export const useRaidStore = create<RaidState>((set, get) => ({
       const updatedPlayers = room.players.map((p) =>
         p.id === myPlayerId
           ? {
-              ...p,
-              damageDealt: p.damageDealt + damage,
-              answersCorrect: p.answersCorrect + 1,
-            }
+            ...p,
+            damageDealt: p.damageDealt + damage,
+            answersCorrect: p.answersCorrect + 1,
+          }
           : p
       );
 
@@ -547,14 +547,14 @@ export const useRaidStore = create<RaidState>((set, get) => ({
       set((state) => ({
         room: state.room
           ? {
-              ...state.room,
-              monsterCurrentHp: newHp,
-              phase: isVictory ? 'result' : state.room.phase,
-              isVictory,
-              endedAt: isVictory ? Date.now() : state.room.endedAt,
-              damageLog: [...state.room.damageLog, damageEvent],
-              players: updatedPlayers,
-            }
+            ...state.room,
+            monsterCurrentHp: newHp,
+            phase: isVictory ? 'result' : state.room.phase,
+            isVictory,
+            endedAt: isVictory ? Date.now() : state.room.endedAt,
+            damageLog: [...state.room.damageLog, damageEvent],
+            players: updatedPlayers,
+          }
           : null,
         answerResult: 'correct',
         lastDamage: damage,
@@ -587,9 +587,9 @@ export const useRaidStore = create<RaidState>((set, get) => ({
       set((state) => ({
         room: state.room
           ? {
-              ...state.room,
-              players: updatedPlayers,
-            }
+            ...state.room,
+            players: updatedPlayers,
+          }
           : null,
         answerResult: 'wrong',
         lastDamage: 0,

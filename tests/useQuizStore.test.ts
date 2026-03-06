@@ -50,7 +50,7 @@ describe('useQuizStore', () => {
     it('should start a quiz with correct initial state', () => {
       const { startQuiz } = useQuizStore.getState();
 
-      startQuiz(mockUnit, mockLesson, 'korean_to_english');
+      startQuiz('Pre-Build Up', mockUnit, mockLesson, 'korean_to_english');
 
       const state = useQuizStore.getState();
       expect(state.quizActive).toBe(true);
@@ -69,7 +69,7 @@ describe('useQuizStore', () => {
       // Run multiple times to ensure shuffling occurs
       const orderSeen: string[] = [];
       for (let i = 0; i < 10; i++) {
-        startQuiz(mockUnit, mockLesson, 'korean_to_english');
+        startQuiz('Pre-Build Up', mockUnit, mockLesson, 'korean_to_english');
         const state = useQuizStore.getState();
         orderSeen.push(state.questions.map(q => q.word).join(','));
       }
@@ -84,7 +84,7 @@ describe('useQuizStore', () => {
 
       modes.forEach(mode => {
         const { startQuiz } = useQuizStore.getState();
-        startQuiz(mockUnit, mockLesson, mode);
+        startQuiz('Pre-Build Up', mockUnit, mockLesson, mode);
 
         const state = useQuizStore.getState();
         expect(state.mode).toBe(mode);
@@ -96,7 +96,7 @@ describe('useQuizStore', () => {
   describe('submitAnswer', () => {
     beforeEach(() => {
       const { startQuiz } = useQuizStore.getState();
-      startQuiz(mockUnit, mockLesson, 'korean_to_english');
+      startQuiz('Pre-Build Up', mockUnit, mockLesson, 'korean_to_english');
     });
 
     it('should increment correctAnswers on correct answer', () => {
@@ -150,7 +150,7 @@ describe('useQuizStore', () => {
   describe('nextQuestion', () => {
     beforeEach(() => {
       const { startQuiz } = useQuizStore.getState();
-      startQuiz(mockUnit, mockLesson, 'korean_to_english');
+      startQuiz('Pre-Build Up', mockUnit, mockLesson, 'korean_to_english');
     });
 
     it('should increment currentQuestionIndex', () => {
@@ -203,7 +203,7 @@ describe('useQuizStore', () => {
   describe('endQuiz', () => {
     beforeEach(() => {
       const { startQuiz } = useQuizStore.getState();
-      startQuiz(mockUnit, mockLesson, 'korean_to_english');
+      startQuiz('Pre-Build Up', mockUnit, mockLesson, 'korean_to_english');
     });
 
     it('should add history entry on end', () => {
@@ -255,7 +255,7 @@ describe('useQuizStore', () => {
     it('should reset quiz state', () => {
       const { startQuiz, resetQuiz } = useQuizStore.getState();
 
-      startQuiz(mockUnit, mockLesson, 'korean_to_english');
+      startQuiz('Pre-Build Up', mockUnit, mockLesson, 'korean_to_english');
       resetQuiz();
 
       const state = useQuizStore.getState();
@@ -271,7 +271,7 @@ describe('useQuizStore', () => {
     it('should start preview mode', () => {
       const { startPreview } = useQuizStore.getState();
 
-      startPreview(mockUnit, mockLesson);
+      startPreview('Pre-Build Up', mockUnit, mockLesson);
 
       const state = useQuizStore.getState();
       expect(state.previewActive).toBe(true);

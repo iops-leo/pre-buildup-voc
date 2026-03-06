@@ -35,19 +35,19 @@ function getDistractors(
  * - normal/hard: 타이핑 (한글 뜻 보고 영단어 입력)
  */
 export function getRandomVocabQuestion(
-  unitNum: number,
-  lessonNum: number,
-  difficulty: 'easy' | 'normal' | 'hard'
+  unit: number,
+  lesson: number | string,
+  difficulty: 'easy' | 'normal' | 'hard' = 'normal'
 ): Question | null {
-  const unitIndex = unitNum - 1;
-  const unit = VOCABULARY_DATA.units[unitIndex];
-  if (!unit) return null;
+  const unitIndex = unit - 1;
+  const unitData = VOCABULARY_DATA.units[unitIndex];
+  if (!unitData) return null;
 
-  const lesson = unit.lessons.find((l) => l.lesson === lessonNum);
-  if (!lesson || lesson.vocabulary.length === 0) return null;
+  const lessonData = unitData.lessons.find((l) => l.lesson === lesson);
+  if (!lessonData || lessonData.vocabulary.length === 0) return null;
 
   // 랜덤 단어 선택
-  const vocab = lesson.vocabulary[Math.floor(Math.random() * lesson.vocabulary.length)];
+  const vocab = lessonData.vocabulary[Math.floor(Math.random() * lessonData.vocabulary.length)];
   const correctAnswer = cleanWord(vocab.word);
 
   if (difficulty === 'easy') {

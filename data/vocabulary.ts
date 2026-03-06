@@ -5,7 +5,7 @@ export interface Vocabulary {
 }
 
 export interface Lesson {
-  lesson: number;
+  lesson: number | string;
   vocabulary: Vocabulary[];
 }
 

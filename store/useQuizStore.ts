@@ -9,7 +9,7 @@ export interface QuizHistoryEntry {
     date: string;
     bookTitle: string | null;
     unitNumber: number | null;
-    lessonNumber: number | null;
+    lessonNumber: number | string | null;
     mode: QuizMode;
     totalQuestions: number;
     correctAnswers: number;

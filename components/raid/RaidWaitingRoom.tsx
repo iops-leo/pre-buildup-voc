@@ -24,7 +24,7 @@ export function RaidWaitingRoom() {
   const [selectedCategory, setSelectedCategory] = useState<string>(soloMode ? '' : 'addition');
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty>('easy');
   const [selectedVocabUnit, setSelectedVocabUnit] = useState<number>(1);
-  const [selectedVocabLesson, setSelectedVocabLesson] = useState<number>(1);
+  const [selectedVocabLesson, setSelectedVocabLesson] = useState<number | string>(1);
   const [configured, setConfigured] = useState(false);
 
   // 강퇴 감지: 내가 players에 없고, 2명 이상이었다가 줄어든 경우에만 (레이스 컨디션 방지)
@@ -246,19 +246,18 @@ export function RaidWaitingRoom() {
                 {(Object.keys(subjectInfo) as Subject[])
                   .filter((subj) => !soloMode || subj === 'english')
                   .map((subj) => (
-                  <button
-                    key={subj}
-                    onClick={() => handleCategoryChange(subj)}
-                    className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm font-bold transition-all ${
-                      selectedSubject === subj
-                        ? 'border-blue-500 bg-blue-900/40 text-white'
-                        : 'border-slate-700 bg-slate-800 text-slate-400 hover:border-slate-600'
-                    }`}
-                  >
-                    <span className="text-lg">{subjectInfo[subj].emoji}</span>
-                    {subjectInfo[subj].name}
-                  </button>
-                ))}
+                    <button
+                      key={subj}
+                      onClick={() => handleCategoryChange(subj)}
+                      className={`flex items-center gap-2 px-3 py-2.5 rounded-xl border text-sm font-bold transition-all ${selectedSubject === subj
+                          ? 'border-blue-500 bg-blue-900/40 text-white'
+                          : 'border-slate-700 bg-slate-800 text-slate-400 hover:border-slate-600'
+                        }`}
+                    >
+                      <span className="text-lg">{subjectInfo[subj].emoji}</span>
+                      {subjectInfo[subj].name}
+                    </button>
+                  ))}
               </div>
             </div>
 
@@ -275,11 +274,10 @@ export function RaidWaitingRoom() {
                           setSelectedVocabUnit(unit.unit);
                           setSelectedVocabLesson(unit.lessons[0]?.lesson ?? 1);
                         }}
-                        className={`px-3 py-2.5 rounded-xl border text-sm font-bold transition-all ${
-                          selectedVocabUnit === unit.unit
+                        className={`px-3 py-2.5 rounded-xl border text-sm font-bold transition-all ${selectedVocabUnit === unit.unit
                             ? 'border-emerald-500 bg-emerald-900/40 text-white'
                             : 'border-slate-700 bg-slate-800 text-slate-400 hover:border-slate-600'
-                        }`}
+                          }`}
                       >
                         Unit {unit.unit}
                       </button>
@@ -295,11 +293,10 @@ export function RaidWaitingRoom() {
                         <button
                           key={lesson.lesson}
                           onClick={() => setSelectedVocabLesson(lesson.lesson)}
-                          className={`px-3 py-2 rounded-xl border text-sm font-medium transition-all ${
-                            selectedVocabLesson === lesson.lesson
+                          className={`px-3 py-2 rounded-xl border text-sm font-medium transition-all ${selectedVocabLesson === lesson.lesson
                               ? 'border-emerald-500 bg-emerald-900/40 text-white'
                               : 'border-slate-700 bg-slate-800 text-slate-400 hover:border-slate-600'
-                          }`}
+                            }`}
                         >
                           L{lesson.lesson}
                         </button>
@@ -315,11 +312,10 @@ export function RaidWaitingRoom() {
                     <button
                       key={cat}
                       onClick={() => setSelectedCategory(cat)}
-                      className={`px-3 py-2 rounded-xl border text-sm font-medium transition-all ${
-                        selectedCategory === cat
+                      className={`px-3 py-2 rounded-xl border text-sm font-medium transition-all ${selectedCategory === cat
                           ? 'border-purple-500 bg-purple-900/40 text-white'
                           : 'border-slate-700 bg-slate-800 text-slate-400 hover:border-slate-600'
-                      }`}
+                        }`}
                     >
                       {categoryLabels[selectedSubject]?.[cat] ?? cat}
                     </button>
@@ -336,15 +332,14 @@ export function RaidWaitingRoom() {
                   <button
                     key={diff}
                     onClick={() => setSelectedDifficulty(diff)}
-                    className={`px-3 py-2.5 rounded-xl border text-sm font-bold transition-all ${
-                      selectedDifficulty === diff
+                    className={`px-3 py-2.5 rounded-xl border text-sm font-bold transition-all ${selectedDifficulty === diff
                         ? diff === 'easy'
                           ? 'border-green-500 bg-green-900/40 text-green-300'
                           : diff === 'normal'
-                          ? 'border-yellow-500 bg-yellow-900/40 text-yellow-300'
-                          : 'border-red-500 bg-red-900/40 text-red-300'
+                            ? 'border-yellow-500 bg-yellow-900/40 text-yellow-300'
+                            : 'border-red-500 bg-red-900/40 text-red-300'
                         : 'border-slate-700 bg-slate-800 text-slate-400 hover:border-slate-600'
-                    }`}
+                      }`}
                   >
                     {difficultyInfo[diff].emoji} {difficultyInfo[diff].name}
                   </button>
@@ -390,11 +385,10 @@ export function RaidWaitingRoom() {
             animate={{ opacity: 1 }}
             onClick={handleStartBattle}
             disabled={!allReady}
-            className={`w-full py-4 rounded-2xl font-black text-xl flex items-center justify-center gap-3 transition-all ${
-              allReady
+            className={`w-full py-4 rounded-2xl font-black text-xl flex items-center justify-center gap-3 transition-all ${allReady
                 ? 'bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white hover:scale-[1.02] active:scale-[0.98] shadow-lg shadow-red-900/30'
                 : 'bg-slate-800 text-slate-600 cursor-not-allowed'
-            }`}
+              }`}
           >
             <Swords size={24} />
             {allReady ? '전투 시작!' : '준비 완료를 눌러주세요'}

@@ -52,7 +52,7 @@ export const LessonSelector = ({ onNavigate }: LessonSelectorProps) => {
     const currentTitle = getLevelTitle(level);
 
     // Get best score for a specific unit/lesson
-    const getBestScore = (bookTitle: string, unitNum: number, lessonNum: number): number | null => {
+    const getBestScore = (bookTitle: string, unitNum: number, lessonNum: number | string): number | null => {
         // For backward compatibility, "Pre-Build Up" uses old key format
         const key = bookTitle === "Pre-Build Up"
             ? `${unitNum}-${lessonNum}`
