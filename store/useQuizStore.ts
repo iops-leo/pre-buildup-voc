@@ -960,8 +960,10 @@ export const useQuizStore = create<QuizState>()(
                 const percentage = Math.round((state.correctAnswers / state.questions.length) * 100) || 0;
 
                 // XP Calculation: base 10 per word, bonus for %
-                const baseXp = state.correctAnswers * 10;
-                const bonusXp = percentage === 100 ? 50 : percentage >= 80 ? 20 : 0;
+                // 셀프시험(writing) 모드는 자기 채점이므로 XP 미지급
+                const isWritingMode = state.mode === 'writing';
+                const baseXp = isWritingMode ? 0 : state.correctAnswers * 10;
+                const bonusXp = isWritingMode ? 0 : (percentage === 100 ? 50 : percentage >= 80 ? 20 : 0);
                 const totalXp = baseXp + bonusXp;
 
                 const historyEntry: QuizHistoryEntry = {
