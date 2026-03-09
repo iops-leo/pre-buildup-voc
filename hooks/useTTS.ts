@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-const CLOUD_TTS_URL = 'https://ltoinpfcurtbjaavhrio.supabase.co/functions/v1/cloud-tts';
-const CLOUD_TTS_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx0b2lucGZjdXJ0YmphYXZocmlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjUyMzg0NzQsImV4cCI6MjA4MDgxNDQ3NH0.B61WjmYN4EcyVg5_VIadtimAkDl7cyKTSKPzTbyEtOo';
+const CLOUD_TTS_URL = 'https://opswfuiifkzpuqziqbkv.supabase.co/functions/v1/cloud-tts';
+const CLOUD_TTS_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9wc3dmdWlpZmt6cHVxemlxYmt2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5ODIwNjAsImV4cCI6MjA4MTU1ODA2MH0.etsEPBpdGMSFWlo3ADyp3wJVephRJe0Y4Ue_giDAmJI';
 
 // 메모리 캐시 (base64 audio)
 const audioCache = new Map<string, string>();
