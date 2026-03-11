@@ -80,69 +80,69 @@ export const BUILD_UP_1_DATA: BookData = {
                     "lesson": 2,
                     "vocabulary": [
                         {
-                            "word": "go straight",
-                            "definition": "to happen in the expected way",
-                            "meaning": "직진하다"
+                            "word": "calm (adj.)",
+                            "definition": "not noisy or excited",
+                            "meaning": "차분한"
                         },
                         {
-                            "word": "turn left",
-                            "definition": "to move around to the left side",
-                            "meaning": "좌회전하다"
+                            "word": "quiet (adj.)",
+                            "definition": "not very loud",
+                            "meaning": "조용한, 고요한"
                         },
                         {
-                            "word": "turn right",
-                            "definition": "to move around to the right side",
-                            "meaning": "우회전하다"
+                            "word": "peaceful (adj.)",
+                            "definition": "quiet and calm",
+                            "meaning": "평화로운"
                         },
                         {
-                            "word": "block (n.)",
-                            "definition": "the distance along a city street from where one street crosses it to the next",
-                            "meaning": "블록"
+                            "word": "funny (adj.)",
+                            "definition": "making you laugh or smile",
+                            "meaning": "재미있는"
                         },
                         {
-                            "word": "across from",
-                            "definition": "on the other side of",
-                            "meaning": "맞은편에"
+                            "word": "exciting (adj.)",
+                            "definition": "feeling happy or interested",
+                            "meaning": "신나는, 흥미진진한"
                         },
                         {
-                            "word": "next to",
-                            "definition": "beside",
-                            "meaning": "옆에"
+                            "word": "fantastic (adj.)",
+                            "definition": "very good; wonderful",
+                            "meaning": "환상적인"
                         },
                         {
-                            "word": "between (prep.)",
-                            "definition": "in the space that separates two objects or places",
-                            "meaning": "사이에"
+                            "word": "dance (n.)",
+                            "definition": "movements that you do to music",
+                            "meaning": "춤"
                         },
                         {
-                            "word": "corner (n.)",
-                            "definition": "a place where two streets join",
-                            "meaning": "모퉁이, 코너"
+                            "word": "dance/danced (v.)",
+                            "definition": "to move your body to music",
+                            "meaning": "춤을 추다"
                         },
                         {
-                            "word": "cross/crossed (v.)",
-                            "definition": "to go from one side to the other side",
-                            "meaning": "건너다"
+                            "word": "laugh/laughed (v.)",
+                            "definition": "sounds that you make when you are happy or when you think something is funny",
+                            "meaning": "웃다"
                         },
                         {
-                            "word": "map (n.)",
-                            "definition": "a drawing of a town, a country or the world that shows things like mountains, rivers and roads",
-                            "meaning": "지도"
+                            "word": "important (adj.)",
+                            "definition": "something you must do, have, or think about",
+                            "meaning": "중요한"
                         },
                         {
-                            "word": "place (n.)",
-                            "definition": "a particular city, country, building, etc.",
-                            "meaning": "장소, 곳"
+                            "word": "interesting (adj.)",
+                            "definition": "feeling excited and you want to see it or learn about it",
+                            "meaning": "흥미로운"
                         },
                         {
-                            "word": "excuse me",
-                            "definition": "used to ask somebody politely to move so that you can go past them",
-                            "meaning": "실례합니다 (남에게 말을 걸 때)"
+                            "word": "scene (n.)",
+                            "definition": "a part of movie in which the action happens in one place",
+                            "meaning": "장면"
                         },
                         {
-                            "word": "get to",
-                            "definition": "to arrive at a place",
-                            "meaning": "도착하다"
+                            "word": "imagine/imagined (v.)",
+                            "definition": "to make a picture of something in your mind",
+                            "meaning": "상상하다"
                         }
                     ]
                 },
@@ -150,69 +150,69 @@ export const BUILD_UP_1_DATA: BookData = {
                     "lesson": 3,
                     "vocabulary": [
                         {
-                            "word": "subway (n.)",
-                            "definition": "a railway system under the ground",
-                            "meaning": "지하철"
+                            "word": "try/tried (v.)",
+                            "definition": "to make an effort to do something",
+                            "meaning": "시도하다"
                         },
                         {
-                            "word": "station (n.)",
-                            "definition": "a place where trains stop",
-                            "meaning": "역"
+                            "word": "fantastic (adj.)",
+                            "definition": "very good; wonderful",
+                            "meaning": "환상적인"
                         },
                         {
-                            "word": "take/took (v.)",
-                            "definition": "to use a form of transport",
-                            "meaning": "(교통수단을) 타다"
+                            "word": "pop music (n.)",
+                            "definition": "popular music",
+                            "meaning": "대중 음악"
                         },
                         {
-                            "word": "transfer/transferred (v.)",
-                            "definition": "to change to a different vehicle or route",
-                            "meaning": "환승하다"
+                            "word": "classical music (n.)",
+                            "definition": "a form of music developed from Europe mainly in the 18th and 19th centuries",
+                            "meaning": "클래식 음악"
                         },
                         {
-                            "word": "line (n.)",
-                            "definition": "a railway track",
-                            "meaning": "호선"
+                            "word": "comedy movie (n.)",
+                            "definition": "a movie that is funny",
+                            "meaning": "코미디 영화"
                         },
                         {
-                            "word": "block (n.)",
-                            "definition": "the distance along a city street from where one street crosses it to the next",
-                            "meaning": "블록"
+                            "word": "animated movie (n.)",
+                            "definition": "pictures or drawings that are shown in a way that makes them move in a movie",
+                            "meaning": "만화 영화"
                         },
                         {
-                            "word": "next to",
-                            "definition": "beside",
-                            "meaning": "옆에"
+                            "word": "action movie (n.)",
+                            "definition": "a movie that has a lot of exciting action",
+                            "meaning": "액션 영화"
                         },
                         {
-                            "word": "turn left",
-                            "definition": "to move around to the left side",
-                            "meaning": "좌회전하다"
+                            "word": "fantasy movie (n.)",
+                            "definition": "a movie of imaginative fiction with magic and adventure",
+                            "meaning": "판타지 영화"
                         },
                         {
-                            "word": "amusement park (n.)",
-                            "definition": "a large park which has a lot of things that you can ride and play on and many different activities to enjoy",
-                            "meaning": "놀이공원"
+                            "word": "poem (n.)",
+                            "definition": "a piece of writing, often with words that rhyme",
+                            "meaning": "시"
                         },
                         {
-                            "word": "bank (n.)",
-                            "definition": "a place where people keep their money",
-                            "meaning": "은행"
+                            "word": "novel (n.)",
+                            "definition": "a book that tells a long story",
+                            "meaning": "소설"
                         },
                         {
-                            "word": "post office (n.)",
-                            "definition": "a place where you can buy stamps, send letters, etc.",
-                            "meaning": "우체국"
+                            "word": "favorite (adj.)",
+                            "definition": "the one that you like the most",
+                            "meaning": "매우 좋아하는"
                         },
                         {
-                            "word": "library (n.)",
-                            "definition": "a place where you go to read or borrow books",
-                            "meaning": "도서관"
+                            "word": "series (n.)",
+                            "definition": "a set of television or book, often on the same subject, that come one after another",
+                            "meaning": "시리즈"
                         },
                         {
-                            "word": "hospital (n.)",
-                            "definition": "a place where sick people go to get better",
-                            "meaning": "병원"
+                            "word": "hero (n.)",
+                            "definition": "a person, who has done something brave or good",
+                            "meaning": "영웅"
                         }
                     ]
                 },
@@ -220,69 +220,69 @@ export const BUILD_UP_1_DATA: BookData = {
                     "lesson": 4,
                     "vocabulary": [
                         {
-                            "word": "hospital (n.)",
-                            "definition": "a place where sick people go to get better",
-                            "meaning": "병원"
+                            "word": "film director (n.)",
+                            "definition": "the person who is responsible for making a movie",
+                            "meaning": "영화 감독"
                         },
                         {
-                            "word": "post office (n.)",
-                            "definition": "a place where you can buy stamps, send letters, etc.",
-                            "meaning": "우체국"
+                            "word": "entertainer (n.)",
+                            "definition": "a person whose job is to help people have a good time, for example by singing or dancing",
+                            "meaning": "연예인, 엔터테이너"
                         },
                         {
-                            "word": "library (n.)",
-                            "definition": "a place where you go to read or borrow books",
-                            "meaning": "도서관"
+                            "word": "announcer (n.)",
+                            "definition": "a person whose job is to tell people about programs on radio or television",
+                            "meaning": "아나운서"
                         },
                         {
-                            "word": "bank (n.)",
-                            "definition": "a place where people keep their money",
-                            "meaning": "은행"
+                            "word": "diplomat (n.)",
+                            "definition": "a person whose job is to speak and do things for their country in another country",
+                            "meaning": "외교관"
                         },
                         {
-                            "word": "museum (n.)",
-                            "definition": "a place where you can look at old or interesting things",
-                            "meaning": "박물관"
+                            "word": "flight attendant (n.)",
+                            "definition": "a person whose job is to serve and take care of passengers on a plane",
+                            "meaning": "승무원"
                         },
                         {
-                            "word": "department store (n.)",
-                            "definition": "a large shop with many different parts, which sell different things",
-                            "meaning": "백화점"
+                            "word": "make movies",
+                            "definition": "to make films",
+                            "meaning": "영화를 만들다"
                         },
                         {
-                            "word": "station (n.)",
-                            "definition": "a place where trains stop",
-                            "meaning": "역"
+                            "word": "sing and dance on stage",
+                            "definition": "to sing and dance on stage",
+                            "meaning": "무대에서 노래하고 춤추다"
                         },
                         {
-                            "word": "restaurant (n.)",
-                            "definition": "a place where you can buy and eat a meal",
-                            "meaning": "식당, 레스토랑"
+                            "word": "give information on TV or the radio",
+                            "definition": "to provide facts or details about somebody or something on TV or the radio",
+                            "meaning": "TV와 라디오에서 정보를 주다"
                         },
                         {
-                            "word": "between (prep.)",
-                            "definition": "in the space that separates two objects or places",
-                            "meaning": "사이에"
+                            "word": "work for his country",
+                            "definition": "to do his job for his country",
+                            "meaning": "나라를 위해 일하다"
                         },
                         {
-                            "word": "across from",
-                            "definition": "on the other side of",
-                            "meaning": "맞은편에"
+                            "word": "take care of people on a plane",
+                            "definition": "to provide needs for people on a plane",
+                            "meaning": "승객들을 돌보다"
                         },
                         {
-                            "word": "straight (adj.)",
-                            "definition": "not with a curve or a bend",
-                            "meaning": "똑바른"
+                            "word": "deliver/delivered (v.)",
+                            "definition": "to speak or read aloud",
+                            "meaning": "전달하다"
                         },
                         {
-                            "word": "town (n.)",
-                            "definition": "a place with many houses, shops, etc.",
-                            "meaning": "소도시, 동네"
+                            "word": "interview/interviewed (v.)",
+                            "definition": "to ask someone questions to find out what they are like, or what they think, or what they know",
+                            "meaning": "인터뷰하다"
                         },
                         {
-                            "word": "arrive/arrived (v.)",
-                            "definition": "to get to a place",
-                            "meaning": "도착하다"
+                            "word": "prepare/prepared (v.)",
+                            "definition": "to make somebody or something ready",
+                            "meaning": "준비하다"
                         }
                     ]
                 },
@@ -290,69 +290,69 @@ export const BUILD_UP_1_DATA: BookData = {
                     "lesson": 5,
                     "vocabulary": [
                         {
-                            "word": "start/started (v.)",
-                            "definition": "to begin doing something",
-                            "meaning": "시작하다"
+                            "word": "comedian (n.)",
+                            "definition": "a person whose job is to make people laugh",
+                            "meaning": "코미디언"
                         },
                         {
-                            "word": "sign (n.)",
-                            "definition": "a piece of paper, wood, etc. with words or pictures on it that gives information",
-                            "meaning": "표지판"
+                            "word": "dentist (n.)",
+                            "definition": "a person whose job is to look after your teeth",
+                            "meaning": "치과 의사"
                         },
                         {
-                            "word": "catch/caught (v.)",
-                            "definition": "to hold something that is moving through the air",
-                            "meaning": "잡다"
+                            "word": "chef (n.)",
+                            "definition": "a person who cooks the food in a hotel or restaurant",
+                            "meaning": "요리사"
                         },
                         {
-                            "word": "pass/passed (v.)",
-                            "definition": "to give something to somebody with your hand",
-                            "meaning": "건네주다"
+                            "word": "tell funny stories",
+                            "definition": "tell stories that make people laugh or smile",
+                            "meaning": "재미있는 얘기를 하다"
                         },
                         {
-                            "word": "kick/kicked (v.)",
-                            "definition": "to hit something with your foot",
-                            "meaning": "발로 차다"
+                            "word": "make people laugh",
+                            "definition": "to make people happy or think something is funny",
+                            "meaning": "사람들을 웃게 만들다"
                         },
                         {
-                            "word": "miss/missed (v.)",
-                            "definition": "to arrive too late for a bus, train or other transport",
-                            "meaning": "놓치다"
+                            "word": "take care of people's teeth",
+                            "definition": "to look after people's teeth",
+                            "meaning": "사람들의 이를 치료하다"
                         },
                         {
-                            "word": "point/pointed (v.)",
-                            "definition": "to show somebody which person or thing you are looking at by holding out your finger towards them",
-                            "meaning": "(손가락 등으로) 가리키다"
+                            "word": "cook food",
+                            "definition": "to prepare food by boiling, heating, or frying",
+                            "meaning": "음식을 요리하다"
                         },
                         {
-                            "word": "win/won (v.)",
-                            "definition": "to be the best or the first in a competition or game",
-                            "meaning": "이기다"
+                            "word": "act in movies",
+                            "definition": "to perform a part in a movie",
+                            "meaning": "영화에 출연하다"
                         },
                         {
-                            "word": "lose/lost (v.)",
-                            "definition": "to not win a game or competition",
-                            "meaning": "지다"
+                            "word": "give information on TV",
+                            "definition": "to let somebody have information on TV",
+                            "meaning": "TV에서 정보를 주다"
                         },
                         {
-                            "word": "hit/hit (v.)",
-                            "definition": "to touch somebody or something hard",
-                            "meaning": "치다, 때리다"
+                            "word": "fashion designer (n.)",
+                            "definition": "a person who designs fashionable clothes",
+                            "meaning": "패션 디자이너"
                         },
                         {
-                            "word": "stop/stopped (v.)",
-                            "definition": "to not move",
-                            "meaning": "멈추다"
+                            "word": "design/designed (v.)",
+                            "definition": "to draw a plan that shows how to make something",
+                            "meaning": "디자인하다"
                         },
                         {
-                            "word": "game (n.)",
-                            "definition": "an activity that you play with rules",
-                            "meaning": "게임, 경기"
+                            "word": "beautiful (adj.)",
+                            "definition": "very pretty",
+                            "meaning": "아름다운"
                         },
                         {
-                            "word": "sport (n.)",
-                            "definition": "games in which people are active and exercise their bodies",
-                            "meaning": "스포츠"
+                            "word": "interesting (adj.)",
+                            "definition": "feeling excited and you want to see it or learn about it",
+                            "meaning": "흥미로운"
                         }
                     ]
                 },
@@ -360,69 +360,69 @@ export const BUILD_UP_1_DATA: BookData = {
                     "lesson": 6,
                     "vocabulary": [
                         {
-                            "word": "lose/lost (v.)",
-                            "definition": "to not win a game or competition",
-                            "meaning": "지다"
+                            "word": "film director (n.)",
+                            "definition": "the person who is responsible for making a movie",
+                            "meaning": "영화 감독"
                         },
                         {
-                            "word": "catch/caught (v.)",
-                            "definition": "to hold something that is moving through the air",
-                            "meaning": "잡다"
+                            "word": "diplomat (n.)",
+                            "definition": "a person whose job is to speak and do things for their country in another country",
+                            "meaning": "외교관"
+                        },
+                        {
+                            "word": "announcer (n.)",
+                            "definition": "a person whose job is to tell people about programs on radio or television",
+                            "meaning": "아나운서"
+                        },
+                        {
+                            "word": "entertainer (n.)",
+                            "definition": "a person whose job is to help people have a good time, for example by singing or dancing",
+                            "meaning": "연예인, 엔터테이너"
+                        },
+                        {
+                            "word": "pilot (n.)",
+                            "definition": "a person whose job is to fly a plane",
+                            "meaning": "비행기 조종사"
+                        },
+                        {
+                            "word": "chef (n.)",
+                            "definition": "a person who cooks the food in a hotel or restaurant",
+                            "meaning": "요리사"
+                        },
+                        {
+                            "word": "pianist (n.)",
+                            "definition": "a person who plays the piano",
+                            "meaning": "피아노 연주자"
+                        },
+                        {
+                            "word": "be able to",
+                            "definition": "can",
+                            "meaning": "-(을)를 할 수 있다"
+                        },
+                        {
+                            "word": "practice/practiced (v.)",
+                            "definition": "to do something many times so that you will do it well",
+                            "meaning": "연습하다"
                         },
                         {
                             "word": "pass/passed (v.)",
-                            "definition": "to give something to somebody with your hand",
-                            "meaning": "건네주다"
+                            "definition": "to do well enough in a test",
+                            "meaning": "통과하다"
                         },
                         {
-                            "word": "hit/hit (v.)",
-                            "definition": "to touch somebody or something hard",
-                            "meaning": "치다, 때리다"
+                            "word": "join/joined (v.)",
+                            "definition": "to become a member of a group",
+                            "meaning": "가입하다, 함께 하다"
                         },
                         {
-                            "word": "kick/kicked (v.)",
-                            "definition": "to hit something with your foot",
-                            "meaning": "발로 차다"
+                            "word": "professional (adj.)",
+                            "definition": "connected with a job that needs special training or skill",
+                            "meaning": "전문적인"
                         },
                         {
-                            "word": "start/started (v.)",
-                            "definition": "to begin doing something",
-                            "meaning": "시작하다"
-                        },
-                        {
-                            "word": "score (n.)",
-                            "definition": "the number of points that you have in a game or competition",
-                            "meaning": "점수"
-                        },
-                        {
-                            "word": "point (n.)",
-                            "definition": "a mark or unit for counting, especially how much a person or team has scored in a sport",
-                            "meaning": "점수"
-                        },
-                        {
-                            "word": "point/pointed (v.)",
-                            "definition": "to show somebody which person or thing you are looking at by holding out your finger towards them",
-                            "meaning": "(손가락 등으로) 가리키다"
-                        },
-                        {
-                            "word": "exciting (adj.)",
-                            "definition": "making you feel very happy and enthusiastic",
-                            "meaning": "신나는, 흥미진진한"
-                        },
-                        {
-                            "word": "half (n.)",
-                            "definition": "one of the two equal parts of something",
-                            "meaning": "반, 절반"
-                        },
-                        {
-                            "word": "half past",
-                            "definition": "30 minutes past",
-                            "meaning": "~시 30분"
-                        },
-                        {
-                            "word": "sport (n.)",
-                            "definition": "games in which people are active and exercise their bodies",
-                            "meaning": "스포츠"
+                            "word": "training (n.)",
+                            "definition": "1) the process of learning the skills that you need to do a job 2) the process of preparing for a sport",
+                            "meaning": "훈련"
                         }
                     ]
                 },
@@ -430,69 +430,69 @@ export const BUILD_UP_1_DATA: BookData = {
                     "lesson": "7 & 8",
                     "vocabulary": [
                         {
-                            "word": "race (n.)",
-                            "definition": "a game to see who is the fastest",
-                            "meaning": "경주"
+                            "word": "role model (n.)",
+                            "definition": "a person that you like and try to copy",
+                            "meaning": "닮고 싶은 사람"
                         },
                         {
-                            "word": "fast (adj.)",
-                            "definition": "moving with a lot of speed",
-                            "meaning": "빠른"
+                            "word": "diligent (adj.)",
+                            "definition": "trying hard and showing effort in your work",
+                            "meaning": "부지런한"
                         },
                         {
-                            "word": "quick (adj.)",
-                            "definition": "moving or doing something in a short time",
-                            "meaning": "빠른, 신속한"
+                            "word": "warm-hearted (adj.)",
+                            "definition": "kind and friendly",
+                            "meaning": "마음이 따뜻한"
                         },
                         {
-                            "word": "ready (adj.)",
-                            "definition": "waiting and able to do something",
-                            "meaning": "준비된"
+                            "word": "for free",
+                            "definition": "If something is free, you do not need to pay for it.",
+                            "meaning": "공짜로, 무료로"
                         },
                         {
-                            "word": "end (n.)",
-                            "definition": "the last part of something",
-                            "meaning": "끝"
+                            "word": "smart (adj.)",
+                            "definition": "clever",
+                            "meaning": "똑똑한, 영리한"
                         },
                         {
-                            "word": "whistle (n.)",
-                            "definition": "a small thing that makes a high sound when you blow into it",
-                            "meaning": "호각, 피리"
+                            "word": "helpful (adj.)",
+                            "definition": "giving help",
+                            "meaning": "도움이 되는"
                         },
                         {
-                            "word": "match (n.)",
-                            "definition": "a game of football, tennis, etc.",
-                            "meaning": "경기, 시합"
+                            "word": "perfect (adj.)",
+                            "definition": "so good that it cannot be any better",
+                            "meaning": "완벽한"
                         },
                         {
-                            "word": "slow (adj.)",
-                            "definition": "moving or doing something without much speed",
-                            "meaning": "느린"
+                            "word": "late (adj.)",
+                            "definition": "after the usual or right time",
+                            "meaning": "늦은"
                         },
                         {
-                            "word": "carefully (adv.)",
-                            "definition": "with care",
-                            "meaning": "조심스럽게"
+                            "word": "novel (n.)",
+                            "definition": "a book that tells a long story",
+                            "meaning": "소설"
                         },
                         {
-                            "word": "jump/jumped (v.)",
-                            "definition": "to move fast into the air; to move quickly over something",
-                            "meaning": "뛰다, 점프하다"
+                            "word": "kind (adj.)",
+                            "definition": "good to other people",
+                            "meaning": "친절한"
                         },
                         {
-                            "word": "fall/fell (v.)",
-                            "definition": "to go down to the ground suddenly",
-                            "meaning": "떨어지다"
+                            "word": "take care of",
+                            "definition": "to provide needs",
+                            "meaning": "-(을)를 돌보다"
                         },
                         {
-                            "word": "team (n.)",
-                            "definition": "a group of people who play a sport or game together against another group",
-                            "meaning": "팀, 조"
+                            "word": "concert (n.)",
+                            "definition": "a show in which people play music for other people to listen to",
+                            "meaning": "콘서트"
                         },
                         {
-                            "word": "rest/rested (v.)",
-                            "definition": "to relax or sleep for a short time",
-                            "meaning": "쉬다, 휴식하다"
+                            "word": "work hard",
+                            "definition": "putting a lot of effort into a job and doing it well",
+                            "meaning": "열심히 일하다"
                         }
                     ]
                 },
@@ -500,69 +500,69 @@ export const BUILD_UP_1_DATA: BookData = {
                     "lesson": 9,
                     "vocabulary": [
                         {
-                            "word": "catch/caught (v.)",
-                            "definition": "to hold something that is moving through the air",
-                            "meaning": "잡다"
+                            "word": "energetic (adj.)",
+                            "definition": "full of energy",
+                            "meaning": "에너지가 넘치는"
                         },
                         {
-                            "word": "hit/hit (v.)",
-                            "definition": "to touch somebody or something hard",
-                            "meaning": "치다, 때리다"
+                            "word": "friendly (adj.)",
+                            "definition": "kind and helpful",
+                            "meaning": "친절한, 상냥한"
                         },
                         {
-                            "word": "pass/passed (v.)",
-                            "definition": "to give something to somebody with your hand",
-                            "meaning": "건네주다"
+                            "word": "brave (adj.)",
+                            "definition": "ready to do dangerous or difficult things",
+                            "meaning": "용감한"
                         },
                         {
-                            "word": "half past",
-                            "definition": "30 minutes past",
-                            "meaning": "~시 30분"
+                            "word": "smart (adj.)",
+                            "definition": "clever",
+                            "meaning": "똑똑한, 영리한"
                         },
                         {
-                            "word": "end (n.)",
-                            "definition": "the last part of something",
-                            "meaning": "끝"
+                            "word": "funny (adj.)",
+                            "definition": "making you laugh",
+                            "meaning": "재미있는"
                         },
                         {
-                            "word": "cross/crossed (v.)",
-                            "definition": "to go from one side to the other side",
-                            "meaning": "건너다"
+                            "word": "laugh/laughed (v.)",
+                            "definition": "sounds that you make when you are happy or when you think something is funny",
+                            "meaning": "웃다"
                         },
                         {
-                            "word": "turn left",
-                            "definition": "to move around to the left side",
-                            "meaning": "좌회전하다"
+                            "word": "show/showed (v.)",
+                            "definition": "to let somebody see something",
+                            "meaning": "보여주다"
                         },
                         {
-                            "word": "go straight",
-                            "definition": "to happen in the expected way",
-                            "meaning": "직진하다"
+                            "word": "busy (adj.)",
+                            "definition": "having a lot of things to do",
+                            "meaning": "바쁜"
                         },
                         {
-                            "word": "hospital (n.)",
-                            "definition": "a place where sick people go to get better",
-                            "meaning": "병원"
+                            "word": "tired (adj.)",
+                            "definition": "needing to rest or sleep",
+                            "meaning": "피곤한"
                         },
                         {
-                            "word": "point (n.)",
-                            "definition": "a mark or unit for counting, especially how much a person or team has scored in a sport",
-                            "meaning": "점수"
+                            "word": "speak/spoke (v.)",
+                            "definition": "to know and use a language",
+                            "meaning": "(언어를) 말하다"
                         },
                         {
-                            "word": "score (n.)",
-                            "definition": "the number of points that you have in a game or competition",
-                            "meaning": "점수"
+                            "word": "reason (n.)",
+                            "definition": "an explanation for why you do something or why something happens",
+                            "meaning": "이유"
                         },
                         {
-                            "word": "department store (n.)",
-                            "definition": "a large shop with many different parts, which sell different things",
-                            "meaning": "백화점"
+                            "word": "save/saved (v.)",
+                            "definition": "to take somebody or something away from danger",
+                            "meaning": "구하다"
                         },
                         {
-                            "word": "museum (n.)",
-                            "definition": "a place where you can look at old or interesting things",
-                            "meaning": "박물관"
+                            "word": "award (n.)",
+                            "definition": "a prize that you give to somebody who has done something very well",
+                            "meaning": "상"
                         }
                     ]
                 }
@@ -575,69 +575,69 @@ export const BUILD_UP_1_DATA: BookData = {
                     "lesson": 1,
                     "vocabulary": [
                         {
-                            "word": "sweep/swept (v.)",
-                            "definition": "to clean the floor with a brush",
-                            "meaning": "쓸다"
+                            "word": "hallway (n.)",
+                            "definition": "a narrow space in a house or building",
+                            "meaning": "복도"
                         },
                         {
-                            "word": "fix/fixed (v.)",
-                            "definition": "to mend something that is broken",
-                            "meaning": "고치다, 수리하다"
+                            "word": "cafeteria (n.)",
+                            "definition": "a restaurant where you choose and pay for your meal and carry it to a table",
+                            "meaning": "구내식당"
                         },
                         {
-                            "word": "help/helped (v.)",
-                            "definition": "to make it easier for somebody to do something",
-                            "meaning": "돕다"
+                            "word": "nurse's office (n.)",
+                            "definition": "a place where students go for help if they are hurt or do not feel well",
+                            "meaning": "양호실"
                         },
                         {
-                            "word": "fold/folded (v.)",
-                            "definition": "to bend a piece of paper or cloth so that one part is on top of another part",
-                            "meaning": "덮다, 포개다"
+                            "word": "teacher's office (n.)",
+                            "definition": "a place where teachers have their desk and prepare their lessons",
+                            "meaning": "교무실"
                         },
                         {
-                            "word": "dust/dusted (v.)",
-                            "definition": "to clean the dirt from furniture",
-                            "meaning": "먼지를 털다"
+                            "word": "gym (n.)",
+                            "definition": "a room with special equipment in it for doing exercises",
+                            "meaning": "체육관"
                         },
                         {
-                            "word": "mop/mopped (v.)",
-                            "definition": "to wash a floor with a mop",
-                            "meaning": "대걸레로 닦다"
+                            "word": "science lab (n.)",
+                            "definition": "a place to do scientific research",
+                            "meaning": "과학실험실"
                         },
                         {
-                            "word": "take off",
-                            "definition": "to remove something, especially clothes",
-                            "meaning": "(옷 등을) 벗다"
+                            "word": "boy's bathroom (n.)",
+                            "definition": "a room with a toilet and a sink for boys",
+                            "meaning": "남자 화장실"
                         },
                         {
-                            "word": "window (n.)",
-                            "definition": "an opening in a wall or vehicle that usually has glass in it",
-                            "meaning": "창문"
+                            "word": "girl's bathroom (n.)",
+                            "definition": "a room with a toilet and a sink for girls",
+                            "meaning": "여자 화장실"
                         },
                         {
-                            "word": "tidy/tidied (v.)",
-                            "definition": "to put things in the right places",
-                            "meaning": "정돈하다"
+                            "word": "computer room (n.)",
+                            "definition": "a room with computers",
+                            "meaning": "컴퓨터 실"
                         },
                         {
-                            "word": "empty (adj.)",
-                            "definition": "with nothing inside",
-                            "meaning": "빈"
+                            "word": "music room (n.)",
+                            "definition": "a room for practicing or performing music",
+                            "meaning": "음악실"
                         },
                         {
-                            "word": "clean/cleaned (v.)",
-                            "definition": "to remove the dirt from something",
-                            "meaning": "청소하다"
+                            "word": "at the end",
+                            "definition": "1) the final part of a period of time, 2) a place that is furthest away from the center",
+                            "meaning": "-끝에"
                         },
                         {
-                            "word": "floor (n.)",
-                            "definition": "the part of a room that you walk on",
-                            "meaning": "바닥"
+                            "word": "huge (adj.)",
+                            "definition": "very big",
+                            "meaning": "거대한"
                         },
                         {
-                            "word": "wash/washed (v.)",
-                            "definition": "to clean something using water and usually soap",
-                            "meaning": "씻다"
+                            "word": "beside (prep.)",
+                            "definition": "next to",
+                            "meaning": "-옆에"
                         }
                     ]
                 },
@@ -645,69 +645,69 @@ export const BUILD_UP_1_DATA: BookData = {
                     "lesson": 2,
                     "vocabulary": [
                         {
-                            "word": "fold/folded (v.)",
-                            "definition": "to bend a piece of paper or cloth so that one part is on top of another part",
-                            "meaning": "덮다, 포개다"
+                            "word": "PE (n.)",
+                            "definition": "sport and exercise that are done as a subject at school",
+                            "meaning": "체육"
                         },
                         {
-                            "word": "wash/washed (v.)",
-                            "definition": "to clean something using water and usually soap",
-                            "meaning": "씻다"
+                            "word": "ethics (n.)",
+                            "definition": "a study of good and bad or right and wrong actions and thoughts",
+                            "meaning": "도덕"
                         },
                         {
-                            "word": "dust/dusted (v.)",
-                            "definition": "to clean the dirt from furniture",
-                            "meaning": "먼지를 털다"
+                            "word": "Korean (n.)",
+                            "definition": "language of Korea",
+                            "meaning": "국어 (한국어)"
                         },
                         {
-                            "word": "tidy/tidied (v.)",
-                            "definition": "to put things in the right places",
-                            "meaning": "정돈하다"
+                            "word": "English (n.)",
+                            "definition": "the language that is spoken in Britain, the US, Canada, Australia, etc.",
+                            "meaning": "영어"
                         },
                         {
-                            "word": "sweep/swept (v.)",
-                            "definition": "to clean the floor with a brush",
-                            "meaning": "쓸다"
+                            "word": "science (n.)",
+                            "definition": "the subject in which you study the things in the world around you, for example plants and animals, wood and metal, light, and electricity",
+                            "meaning": "과학"
                         },
                         {
-                            "word": "mop/mopped (v.)",
-                            "definition": "to wash a floor with a mop",
-                            "meaning": "대걸레로 닦다"
+                            "word": "art (n.)",
+                            "definition": "the study of paintings and drawings",
+                            "meaning": "미술"
                         },
                         {
-                            "word": "ready (adj.)",
-                            "definition": "waiting and able to do something",
-                            "meaning": "준비된"
+                            "word": "music (n.)",
+                            "definition": "the study of writing or playing music",
+                            "meaning": "음악"
                         },
                         {
-                            "word": "floor (n.)",
-                            "definition": "the part of a room that you walk on",
-                            "meaning": "바닥"
+                            "word": "behave/behaved (v.)",
+                            "definition": "to do and say the right things",
+                            "meaning": "행동하다, 처신하다"
                         },
                         {
-                            "word": "clean (adj.)",
-                            "definition": "free from dirt or pollution",
-                            "meaning": "깨끗한"
+                            "word": "nature (n.)",
+                            "definition": "all the plants, animals, etc. in the world that are not made by people",
+                            "meaning": "자연"
                         },
                         {
-                            "word": "laundry (n.)",
-                            "definition": "clothes, sheets, etc. that need to be washed",
-                            "meaning": "세탁물"
+                            "word": "learn/learned (v.)",
+                            "definition": "to find out something, or how to do something by studying or by doing it",
+                            "meaning": "배우다"
                         },
                         {
-                            "word": "bed (n.)",
-                            "definition": "a piece of furniture that you sleep on",
-                            "meaning": "침대"
+                            "word": "calculate/calculated (v.)",
+                            "definition": "to use numbers to find out a total number, amount, distance, etc.",
+                            "meaning": "계산하다"
                         },
                         {
-                            "word": "trash (n.)",
-                            "definition": "things that you throw away",
-                            "meaning": "쓰레기"
+                            "word": "solve/solved (v.)",
+                            "definition": "to find the answer to a question or problem",
+                            "meaning": "해결하다, 풀다"
                         },
                         {
-                            "word": "take out",
-                            "definition": "to go somewhere and take somebody with you",
-                            "meaning": "(쓰레기를) 내다버리다"
+                            "word": "friendship (n.)",
+                            "definition": "a relationship between friends",
+                            "meaning": "우정"
                         }
                     ]
                 },
@@ -715,69 +715,69 @@ export const BUILD_UP_1_DATA: BookData = {
                     "lesson": 3,
                     "vocabulary": [
                         {
-                            "word": "elementary school (n.)",
-                            "definition": "a school for children between the ages of 5 or 6 and 11 or 12",
-                            "meaning": "초등학교"
+                            "word": "math (n.)",
+                            "definition": "the subject in which you learn about numbers, measurement, and shapes",
+                            "meaning": "수학"
                         },
                         {
-                            "word": "middle school (n.)",
-                            "definition": "a school for children between the ages of 11 or 12 and 14 or 15",
-                            "meaning": "중학교"
+                            "word": "social studies (n.)",
+                            "definition": "the study of people in society",
+                            "meaning": "사회"
                         },
                         {
-                            "word": "high school (n.)",
-                            "definition": "a school for children between the ages of 14 or 15 and 18",
-                            "meaning": "고등학교"
+                            "word": "history (n.)",
+                            "definition": "the study of things that happened in the past",
+                            "meaning": "역사"
                         },
                         {
-                            "word": "university (n.)",
-                            "definition": "a place where some people study after they finish school",
-                            "meaning": "대학교"
+                            "word": "solve math problems",
+                            "definition": "to find the answers to math problems",
+                            "meaning": "수학 문제를 풀다"
                         },
                         {
-                            "word": "science (n.)",
-                            "definition": "the study of the structure and behavior of the physical and natural world",
-                            "meaning": "과학"
+                            "word": "society (n.)",
+                            "definition": "a group of people who live in the same country or area",
+                            "meaning": "사회"
                         },
                         {
-                            "word": "physical education (P.E.) (n.)",
-                            "definition": "sports and exercise that are taught in schools",
-                            "meaning": "체육"
+                            "word": "do arts and crafts",
+                            "definition": "to make things for decoration by hand",
+                            "meaning": "공예를 하다"
                         },
                         {
-                            "word": "arts (n.)",
-                            "definition": "making beautiful things, for example pictures",
-                            "meaning": "미술"
+                            "word": "subject (n.)",
+                            "definition": "something that you study at school",
+                            "meaning": "과목"
                         },
                         {
-                            "word": "cafeteria (n.)",
-                            "definition": "a place in a school or an office where you can buy and eat food",
-                            "meaning": "카페테리아, 구내식당"
+                            "word": "prefer/preferred (v.)",
+                            "definition": "to like one thing or person better than another",
+                            "meaning": "-(을)를 선호하다"
                         },
                         {
-                            "word": "library (n.)",
-                            "definition": "a place where you go to read or borrow books",
-                            "meaning": "도서관"
+                            "word": "city (n.)",
+                            "definition": "a big town",
+                            "meaning": "도시"
                         },
                         {
-                            "word": "auditorium (n.)",
-                            "definition": "a large room where people gather for a performance or speech",
-                            "meaning": "강당"
+                            "word": "countryside (n.)",
+                            "definition": "land with fields, words, or farms that is away from cities",
+                            "meaning": "시골지역"
                         },
                         {
-                            "word": "classroom (n.)",
-                            "definition": "a room in a school where students have lessons",
-                            "meaning": "교실"
+                            "word": "difference (n.)",
+                            "definition": "the way that one thing is not the same as another thing",
+                            "meaning": "차이"
                         },
                         {
-                            "word": "grade (n.)",
-                            "definition": "a level of study",
-                            "meaning": "학년"
+                            "word": "field (n.)",
+                            "definition": "an area of land used for animals or for growing crops",
+                            "meaning": "들판, 밭"
                         },
                         {
-                            "word": "student (n.)",
-                            "definition": "a person who studies at school, college, or university",
-                            "meaning": "학생"
+                            "word": "lifestyle (n.)",
+                            "definition": "the way people live",
+                            "meaning": "생활 방식"
                         }
                     ]
                 },
@@ -785,109 +785,179 @@ export const BUILD_UP_1_DATA: BookData = {
                     "lesson": 4,
                     "vocabulary": [
                         {
-                            "word": "student (n.)",
-                            "definition": "a person who studies at school, college, or university",
-                            "meaning": "학생"
+                            "word": "recess (n.)",
+                            "definition": "a break time",
+                            "meaning": "쉬는 시간"
                         },
                         {
-                            "word": "teacher (n.)",
-                            "definition": "a person whose job is to teach, especially in a school",
-                            "meaning": "교사, 선생님"
-                        },
-                        {
-                            "word": "classmate (n.)",
-                            "definition": "a person who is in the same class as you at school",
-                            "meaning": "반친구"
-                        },
-                        {
-                            "word": "partner (n.)",
-                            "definition": "a person who you do an activity with",
-                            "meaning": "파트너, 짝"
-                        },
-                        {
-                            "word": "principal (n.)",
-                            "definition": "the person in charge of a school",
-                            "meaning": "교장선생님"
-                        },
-                        {
-                            "word": "study/studied (v.)",
-                            "definition": "to learn about a subject by reading and thinking",
-                            "meaning": "공부하다"
-                        },
-                        {
-                            "word": "homework (n.)",
-                            "definition": "work that a teacher gives to students to do at home",
-                            "meaning": "숙제"
-                        },
-                        {
-                            "word": "favorite (adj.)",
-                            "definition": "the person or thing you like more than any other",
-                            "meaning": "가장 좋아하는"
-                        },
-                        {
-                            "word": "group (n.)",
-                            "definition": "a number of people or things that are together in the same place",
-                            "meaning": "무리, 그룹"
+                            "word": "art (n.)",
+                            "definition": "the study of paintings and drawings",
+                            "meaning": "미술"
                         },
                         {
                             "word": "math (n.)",
-                            "definition": "the study of numbers, sizes, and shapes",
+                            "definition": "the subject in which you learn about numbers, measurement, and shapes",
                             "meaning": "수학"
                         },
                         {
-                            "word": "geography (n.)",
-                            "definition": "the study of the earth and everything on it, such as mountains, rivers, land, and people",
-                            "meaning": "지리학, 지리"
+                            "word": "science (n.)",
+                            "definition": "the subject in which you study the things in the world around you, for example plants and animals, wood and metal, light, and electricity",
+                            "meaning": "과학"
                         },
                         {
-                            "word": "uniform (n.)",
-                            "definition": "special clothes that people wear for school or work",
-                            "meaning": "교복, 유니폼"
+                            "word": "history (n.)",
+                            "definition": "the study of things that happened in the past",
+                            "meaning": "역사"
                         },
                         {
-                            "word": "test (n.)",
-                            "definition": "questions that somebody must answer so that you can find out how much they know",
-                            "meaning": "시험"
+                            "word": "social studies (n.)",
+                            "definition": "the study of people in society",
+                            "meaning": "사회"
+                        },
+                        {
+                            "word": "ethics (n.)",
+                            "definition": "a study of good and bad or right and wrong actions and thoughts",
+                            "meaning": "도덕"
+                        },
+                        {
+                            "word": "English (n.)",
+                            "definition": "the language that is spoken in Britain, the US, Canada, Australia, etc.",
+                            "meaning": "영어"
+                        },
+                        {
+                            "word": "Korean (n.)",
+                            "definition": "language of Korea",
+                            "meaning": "국어 (한국어)"
+                        },
+                        {
+                            "word": "PE (n.)",
+                            "definition": "sport and exercise that are done as a subject at school",
+                            "meaning": "체육"
+                        },
+                        {
+                            "word": "cafeteria (n.)",
+                            "definition": "a restaurant where you choose and pay for your meal and carry it to a table",
+                            "meaning": "구내식당"
+                        },
+                        {
+                            "word": "similar (adj.)",
+                            "definition": "the same in some ways, but not exactly the same",
+                            "meaning": "비슷한"
+                        },
+                        {
+                            "word": "learn about past events",
+                            "definition": "to learn about things that happened in the past",
+                            "meaning": "과거의 사건에 대해 배우다"
                         }
                     ]
                 },
                 {
-                    "lesson": "5 & 6",
+                    "lesson": 5,
                     "vocabulary": [
                         {
-                            "word": "take a test",
-                            "definition": "to answer questions so that you can find out how much they know",
-                            "meaning": "시험을 보다"
+                            "word": "speak English",
+                            "definition": "to say things in English",
+                            "meaning": "영어를 말하다"
                         },
                         {
-                            "word": "fail a test",
-                            "definition": "to do badly in a test or an exam",
-                            "meaning": "시험에 떨어지다/낙제하다"
+                            "word": "learn about",
+                            "definition": "to learn about things that happened in the past",
+                            "meaning": "과거의 사건에 대해"
                         },
                         {
-                            "word": "pass a test",
-                            "definition": "to do well in an examination",
-                            "meaning": "시험에 통과하다"
+                            "word": "sing along",
+                            "definition": "to follow singing a song with someone who is already singing",
+                            "meaning": "노래를 따라 부르다"
                         },
                         {
-                            "word": "read a book",
-                            "definition": "to look at and understand the words in a book",
-                            "meaning": "책을 읽다"
+                            "word": "do arts and crafts",
+                            "definition": "to make things for decoration by hand",
+                            "meaning": "공예를 하다"
                         },
                         {
-                            "word": "watch a movie",
-                            "definition": "to look at a film",
-                            "meaning": "영화를 보다"
+                            "word": "solve math problems",
+                            "definition": "to find the answers to math problems",
+                            "meaning": "수학 문제를 풀다"
                         },
                         {
-                            "word": "write a report",
-                            "definition": "to produce a written description of facts, events",
-                            "meaning": "보고서를 쓰다"
+                            "word": "prefer/preferred (v.)",
+                            "definition": "to like one thing or person better than another",
+                            "meaning": "-(을)를 선호하다"
                         },
                         {
-                            "word": "stay at home",
-                            "definition": "to not go out",
-                            "meaning": "집에 머무르다"
+                            "word": "subject (n.)",
+                            "definition": "something that you study at school",
+                            "meaning": "과목"
+                        },
+                        {
+                            "word": "nature (n.)",
+                            "definition": "all the plants, animals, etc. in the world that are not made by people",
+                            "meaning": "자연"
+                        },
+                        {
+                            "word": "science lab (n.)",
+                            "definition": "a place to do scientific research",
+                            "meaning": "과학실험실"
+                        },
+                        {
+                            "word": "do experiments",
+                            "definition": "to do a scientific test to find out what happens",
+                            "meaning": "실험을 하다"
+                        },
+                        {
+                            "word": "sit/sat (v.)",
+                            "definition": "to rest on your bottom",
+                            "meaning": "앉다"
+                        },
+                        {
+                            "word": "beaker (n.)",
+                            "definition": "a tall glass cup used for science experiments",
+                            "meaning": "비커"
+                        },
+                        {
+                            "word": "alcohol lamp (n.)",
+                            "definition": "a lamp that is designed to burn alcohol",
+                            "meaning": "알코올램프"
+                        }
+                    ]
+                },
+                {
+                    "lesson": 6,
+                    "vocabulary": [
+                        {
+                            "word": "run a relay race",
+                            "definition": "to run a race between two or more teams in which each runner completes part of the race and then is replaced by another team member",
+                            "meaning": "릴레이 경주(이어달리기)를 하다"
+                        },
+                        {
+                            "word": "run a hurdle race",
+                            "definition": "to run a race in which runners have to jump over hurdles",
+                            "meaning": "장애물 경주를 하다"
+                        },
+                        {
+                            "word": "run a three-legged race",
+                            "definition": "to run a race in which people taking part run in pairs, the right leg of a runner is tied to the left leg of the other runner",
+                            "meaning": "2인3각 경주를 하다"
+                        },
+                        {
+                            "word": "jump rope in groups",
+                            "definition": "to jump over a rope that is held by two other people",
+                            "meaning": "단체 줄넘기를 하다"
+                        },
+                        {
+                            "word": "dance in groups",
+                            "definition": "to move your body to music with others",
+                            "meaning": "그룹으로 춤을 추다"
+                        },
+                        {
+                            "word": "play tug-of-war",
+                            "definition": "to play a game that two teams pull at opposite ends of a rope until one team drags the other team over a central line",
+                            "meaning": "줄다리기를 하다"
+                        },
+                        {
+                            "word": "Sports Day (n.)",
+                            "definition": "a special day at school when there are no classes",
+                            "meaning": "체육대회"
                         },
                         {
                             "word": "go on a field trip",
@@ -972,7 +1042,7 @@ export const BUILD_UP_1_DATA: BookData = {
                         {
                             "word": "without (prep.)",
                             "definition": "not having",
-                            "meaning": "~없이"
+                            "meaning": "-없이"
                         },
                         {
                             "word": "invite/invited (v.)",
@@ -981,7 +1051,7 @@ export const BUILD_UP_1_DATA: BookData = {
                         },
                         {
                             "word": "sell/sold (v.)",
-                            "definition": "to give something to somebody who pays you money for it",
+                            "definition": "to give something to somebody who pays you",
                             "meaning": "팔다"
                         },
                         {
@@ -1291,7 +1361,7 @@ export const BUILD_UP_1_DATA: BookData = {
                         },
                         {
                             "word": "Chinese (n., adj.)",
-                            "definition": "a person from China; 단어",
+                            "definition": "a person from China; the language of China",
                             "meaning": "중국 사람, 중국어, 중국의"
                         },
                         {
@@ -1362,7 +1432,7 @@ export const BUILD_UP_1_DATA: BookData = {
                         {
                             "word": "Mexican (n.)",
                             "definition": "a person from Mexico",
-                            "meaning": "멕시코 파람"
+                            "meaning": "멕시코 사람"
                         },
                         {
                             "word": "Egyptian (n.)",
@@ -1422,7 +1492,7 @@ export const BUILD_UP_1_DATA: BookData = {
                         {
                             "word": "plan to",
                             "definition": "to decide what you are going to do and how you are going to do it",
-                            "meaning": "~(을)를 계획하다"
+                            "meaning": "-(을)를 계획하다"
                         },
                         {
                             "word": "take a trip",
@@ -1512,7 +1582,7 @@ export const BUILD_UP_1_DATA: BookData = {
                         {
                             "word": "reach/reached (v.)",
                             "definition": "to arrive at a place",
-                            "meaning": "도착하다"
+                            "meaning": "도착하다, 도달하다"
                         },
                         {
                             "word": "sunlight (n.)",
