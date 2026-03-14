@@ -10,11 +10,12 @@ import { SettingsView } from '@/components/SettingsView';
 import { TimeChallengeView } from '@/components/TimeChallengeView';
 import { TheGameView } from '@/components/TheGameView';
 import { ClockGameView } from '@/components/ClockGameView';
+import { MultiplicationAdventureView } from '@/components/MultiplicationAdventureView';
 import { useEffect, useState } from 'react';
 import { useNotification } from '@/hooks/useNotification';
 
 // View types for navigation
-type ViewType = 'home' | 'stats' | 'settings' | 'game' | 'thegame' | 'clockgame';
+type ViewType = 'home' | 'stats' | 'settings' | 'game' | 'thegame' | 'clockgame' | 'multiplication';
 
 export default function Home() {
   const store = useQuizStore();
@@ -26,7 +27,11 @@ export default function Home() {
 
   // Avoid hydration mismatch with zustand persist
   useEffect(() => {
-    setMounted(true);
+    const frame = window.requestAnimationFrame(() => {
+      setMounted(true);
+    });
+
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   if (!mounted) return null;
@@ -56,6 +61,9 @@ export default function Home() {
     }
     if (currentView === 'clockgame') {
       return <ClockGameView onBack={() => setCurrentView('home')} />;
+    }
+    if (currentView === 'multiplication') {
+      return <MultiplicationAdventureView onBack={() => setCurrentView('home')} />;
     }
 
     // Handle quiz flow

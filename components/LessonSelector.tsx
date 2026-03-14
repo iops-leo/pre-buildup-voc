@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { VOCABULARY_DATA, Unit, Lesson, BookData } from '@/data/vocabulary';
 import { BUILD_UP_1_DATA } from '@/data/vocabulary-buildup';
-import { useQuizStore, QuizHistoryEntry, BADGES, getLevelTitle, Badge } from '@/store/useQuizStore';
-import { BookOpen, Star, RefreshCw, Trophy, ChevronRight, GraduationCap, Flame, Medal, Mic, PenTool, BarChart3, Settings, Timer, Swords, Volume2, Clock } from 'lucide-react';
+import { useQuizStore, BADGES, getLevelTitle, Badge } from '@/store/useQuizStore';
+import { BookOpen, Star, RefreshCw, Trophy, ChevronRight, Flame, Mic, PenTool, BarChart3, Settings, Timer, Swords, Volume2, Clock, Calculator } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import clsx from 'clsx';
@@ -10,7 +10,7 @@ import { useSound } from '@/hooks/useSound';
 import { BadgeModal, BadgeGrid } from './BadgeModal';
 
 // View types for navigation
-type ViewType = 'home' | 'stats' | 'settings' | 'game' | 'thegame' | 'clockgame';
+type ViewType = 'home' | 'stats' | 'settings' | 'game' | 'thegame' | 'clockgame' | 'multiplication';
 
 interface LessonSelectorProps {
     onNavigate?: (view: ViewType) => void;
@@ -22,7 +22,6 @@ export const LessonSelector = ({ onNavigate }: LessonSelectorProps) => {
         startReviewQuiz,
         startPreview,
         persistentWrongAnswers,
-        quizHistory,
         level,
         xp,
         streak,
@@ -62,7 +61,6 @@ export const LessonSelector = ({ onNavigate }: LessonSelectorProps) => {
     };
 
     // Calculate XP progress for next level
-    const xpForNextLevel = level * 1000;
     const currentLevelXp = xp - ((level - 1) * 1000);
     const xpProgress = Math.min((currentLevelXp / 1000) * 100, 100);
 
@@ -201,7 +199,7 @@ export const LessonSelector = ({ onNavigate }: LessonSelectorProps) => {
             )}
 
             {/* Navigation Menu */}
-            <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-7 gap-3">
                 <button
                     onClick={() => { playClick(); onNavigate?.('stats'); }}
                     className="flex flex-col items-center gap-2 p-4 bg-slate-900 border border-slate-800 rounded-2xl hover:bg-slate-800 transition-colors group touch-manipulation"
@@ -247,6 +245,16 @@ export const LessonSelector = ({ onNavigate }: LessonSelectorProps) => {
                         <Clock size={22} />
                     </div>
                     <span className="text-xs font-bold text-slate-300">시계 읽기</span>
+                </button>
+                <button
+                    onClick={() => { playClick(); onNavigate?.('multiplication'); }}
+                    className="flex flex-col items-center gap-2 p-4 bg-slate-900 border border-amber-500/20 rounded-2xl hover:bg-slate-800 transition-colors group touch-manipulation relative overflow-hidden"
+                >
+                    <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-orange-500/5 to-transparent opacity-80" />
+                    <div className="relative p-3 rounded-full bg-amber-500/10 text-amber-300 group-hover:bg-amber-500/20 transition-colors">
+                        <Calculator size={22} />
+                    </div>
+                    <span className="relative text-xs font-bold text-slate-200">구구단 탐험</span>
                 </button>
                 <button
                     onClick={() => { playClick(); onNavigate?.('settings'); }}
@@ -297,7 +305,6 @@ export const LessonSelector = ({ onNavigate }: LessonSelectorProps) => {
                                 {unit.lessons.map((lesson) => (
                                     <LessonCard
                                         key={lesson.lesson}
-                                        unit={unit}
                                         lesson={lesson}
                                         bestScore={getBestScore(currentBook.book_title, unit.unit, lesson.lesson)}
                                         onSelect={(mode) => handleModeSelect(currentBook.book_title, unit, lesson, mode)}
@@ -316,14 +323,13 @@ export const LessonSelector = ({ onNavigate }: LessonSelectorProps) => {
 };
 
 interface LessonCardProps {
-    unit: Unit;
     lesson: Lesson;
     bestScore: number | null;
     onSelect: (mode: 'korean_to_english' | 'english_to_korean' | 'spelling' | 'speaking' | 'writing') => void;
     onPreview: () => void;
 }
 
-const LessonCard = ({ unit, lesson, bestScore, onSelect, onPreview }: LessonCardProps) => {
+const LessonCard = ({ lesson, bestScore, onSelect, onPreview }: LessonCardProps) => {
     const previewWords = lesson.vocabulary
         .slice(0, 3)
         .map(v => v.word.length > 12 ? v.word.slice(0, 12) + '…' : v.word)
