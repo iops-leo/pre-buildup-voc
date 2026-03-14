@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { useQuizStore, QuizMode, BADGES, getLevelTitle, LEVEL_TITLES } from '../store/useQuizStore';
+import { useQuizStore, QuizMode, BADGES, getLevelTitle } from '../store/useQuizStore';
 import { Unit, Lesson, Vocabulary } from '../data/vocabulary';
 
 // Mock data
@@ -43,6 +43,20 @@ describe('useQuizStore', () => {
       streak: 0,
       lastStudyDate: null,
       earnedBadges: [],
+      multiplicationCount: 0,
+      multiplicationClears: 0,
+      multiplicationPerfectCount: 0,
+      multiplicationMaxCombo: 0,
+      multiplicationDansCleared: [],
+      raidCount: 0,
+      raidVictories: 0,
+      raidBossesDefeated: [],
+      raidTotalDamage: 0,
+      raidMaxCombo: 0,
+      raidSoloVictories: 0,
+      raidMultiVictories: 0,
+      raidPerfectCount: 0,
+      raidFastClears: 0,
     });
   });
 
@@ -197,6 +211,62 @@ describe('useQuizStore', () => {
 
       addXp(150);
       expect(useQuizStore.getState().xp).toBe(250);
+    });
+  });
+
+  describe('recordMultiplicationResult', () => {
+    it('tracks gugudan stats, xp, and unlocks related badges', () => {
+      const { recordMultiplicationResult } = useQuizStore.getState();
+
+      const earned = recordMultiplicationResult({
+        selectedDans: [2, 3],
+        xpGained: 120,
+        maxCombo: 6,
+        clearedStage: true,
+        perfectClear: true,
+      });
+
+      const state = useQuizStore.getState();
+      expect(state.xp).toBe(120);
+      expect(state.level).toBe(1);
+      expect(state.multiplicationCount).toBe(1);
+      expect(state.multiplicationClears).toBe(1);
+      expect(state.multiplicationPerfectCount).toBe(1);
+      expect(state.multiplicationMaxCombo).toBe(6);
+      expect(state.multiplicationDansCleared).toEqual([2, 3]);
+      expect(earned).toEqual(
+        expect.arrayContaining([
+          'gugudan_first',
+          'gugudan_clear',
+          'gugudan_perfect',
+          'gugudan_combo_5',
+        ])
+      );
+      expect(state.earnedBadges).toEqual(expect.arrayContaining(earned));
+    });
+
+    it('unlocks the all-dans badge after every dan has been cleared', () => {
+      useQuizStore.setState({
+        multiplicationCount: 4,
+        multiplicationClears: 4,
+        multiplicationPerfectCount: 1,
+        multiplicationMaxCombo: 4,
+        multiplicationDansCleared: [2, 3, 4, 5, 6, 7],
+        earnedBadges: ['gugudan_first', 'gugudan_clear', 'gugudan_perfect'],
+      });
+
+      const earned = useQuizStore.getState().recordMultiplicationResult({
+        selectedDans: [8, 9],
+        xpGained: 80,
+        maxCombo: 4,
+        clearedStage: true,
+        perfectClear: false,
+      });
+
+      const state = useQuizStore.getState();
+      expect(state.multiplicationDansCleared).toEqual([2, 3, 4, 5, 6, 7, 8, 9]);
+      expect(earned).toContain('gugudan_5');
+      expect(earned).toContain('gugudan_all_dans');
     });
   });
 

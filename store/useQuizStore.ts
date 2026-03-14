@@ -55,7 +55,7 @@ export const BADGES: Badge[] = [
         icon: '🥚',
         name: '첫 걸음',
         description: '첫 번째 퀴즈를 완료했어요!',
-        condition: (state, history) => state.quizHistory.length === 1
+        condition: (state) => state.quizHistory.length === 1
     },
     {
         id: 'quiz_10',
@@ -588,6 +588,50 @@ export const BADGES: Badge[] = [
         }
     },
 
+    // ===== 구구단 탐험 =====
+    {
+        id: 'gugudan_first',
+        icon: '🧮',
+        name: '구구단 첫걸음',
+        description: '첫 번째 구구단 탐험을 완료했어요!',
+        condition: (state) => state.multiplicationCount >= 1
+    },
+    {
+        id: 'gugudan_5',
+        icon: '🎒',
+        name: '구구단 탐험가',
+        description: '구구단 탐험 5회 완료!',
+        condition: (state) => state.multiplicationCount >= 5
+    },
+    {
+        id: 'gugudan_clear',
+        icon: '🌟',
+        name: '구구단 클리어',
+        description: '구구단 탐험을 처음 완주했어요!',
+        condition: (state) => state.multiplicationClears >= 1
+    },
+    {
+        id: 'gugudan_perfect',
+        icon: '💯',
+        name: '구구단 퍼펙트',
+        description: '구구단 탐험에서 퍼펙트 클리어를 달성했어요!',
+        condition: (state) => state.multiplicationPerfectCount >= 1
+    },
+    {
+        id: 'gugudan_combo_5',
+        icon: '🔥',
+        name: '구구단 불꽃 콤보',
+        description: '구구단 탐험에서 5콤보를 달성했어요!',
+        condition: (state) => state.multiplicationMaxCombo >= 5
+    },
+    {
+        id: 'gugudan_all_dans',
+        icon: '🌈',
+        name: '무지개 구구단',
+        description: '2단부터 9단까지 모두 클리어한 단수에 등록했어요!',
+        condition: (state) => [2, 3, 4, 5, 6, 7, 8, 9].every((dan) => state.multiplicationDansCleared.includes(dan))
+    },
+
     // ===== 몬스터 레이드 =====
     {
         id: 'raid_first',
@@ -784,6 +828,13 @@ interface QuizState {
     lastStudyDate: string | null;
     earnedBadges: string[]; // Badge IDs
 
+    // Multiplication Stats (persisted)
+    multiplicationCount: number;
+    multiplicationClears: number;
+    multiplicationPerfectCount: number;
+    multiplicationMaxCombo: number;
+    multiplicationDansCleared: number[];
+
     // Raid Stats (persisted)
     raidCount: number;
     raidVictories: number;
@@ -810,6 +861,13 @@ interface QuizState {
     // Gamification Actions
     addXp: (amount: number) => void;
     checkAchievements: (historyEntry: QuizHistoryEntry) => void;
+    recordMultiplicationResult: (result: {
+        selectedDans: number[];
+        xpGained: number;
+        maxCombo: number;
+        clearedStage: boolean;
+        perfectClear: boolean;
+    }) => string[];
     recordRaidResult: (result: {
         isVictory: boolean;
         monsterId: string;
@@ -848,6 +906,13 @@ export const useQuizStore = create<QuizState>()(
             streak: 0,
             lastStudyDate: null,
             earnedBadges: [],
+
+            // Multiplication Stats
+            multiplicationCount: 0,
+            multiplicationClears: 0,
+            multiplicationPerfectCount: 0,
+            multiplicationMaxCombo: 0,
+            multiplicationDansCleared: [],
 
             // Raid Stats
             raidCount: 0,
@@ -1083,6 +1148,48 @@ export const useQuizStore = create<QuizState>()(
                 }
             },
 
+            recordMultiplicationResult: (result) => {
+                const state = get();
+                const nextClearedDans = result.clearedStage
+                    ? Array.from(new Set([...state.multiplicationDansCleared, ...result.selectedDans])).sort((left, right) => left - right)
+                    : state.multiplicationDansCleared;
+
+                set({
+                    multiplicationCount: state.multiplicationCount + 1,
+                    multiplicationClears: state.multiplicationClears + (result.clearedStage ? 1 : 0),
+                    multiplicationPerfectCount: state.multiplicationPerfectCount + (result.perfectClear ? 1 : 0),
+                    multiplicationMaxCombo: Math.max(state.multiplicationMaxCombo, result.maxCombo),
+                    multiplicationDansCleared: nextClearedDans,
+                });
+
+                if (result.xpGained > 0) {
+                    get().addXp(result.xpGained);
+                }
+
+                const updatedState = get();
+                const newBadges = [...updatedState.earnedBadges];
+                const newlyEarned: string[] = [];
+
+                BADGES.forEach(badge => {
+                    if (!newBadges.includes(badge.id)) {
+                        try {
+                            if (badge.condition(updatedState, {} as QuizHistoryEntry)) {
+                                newBadges.push(badge.id);
+                                newlyEarned.push(badge.id);
+                            }
+                        } catch {
+                            // Skip badges that require valid historyEntry
+                        }
+                    }
+                });
+
+                if (newlyEarned.length > 0) {
+                    set({ earnedBadges: newBadges });
+                }
+
+                return newlyEarned;
+            },
+
             recordRaidResult: (result) => {
                 const state = get();
                 const totalAnswers = result.myCorrect + result.myWrong;
@@ -1139,6 +1246,11 @@ export const useQuizStore = create<QuizState>()(
                 streak: state.streak,
                 lastStudyDate: state.lastStudyDate,
                 earnedBadges: state.earnedBadges,
+                multiplicationCount: state.multiplicationCount,
+                multiplicationClears: state.multiplicationClears,
+                multiplicationPerfectCount: state.multiplicationPerfectCount,
+                multiplicationMaxCombo: state.multiplicationMaxCombo,
+                multiplicationDansCleared: state.multiplicationDansCleared,
                 lessonProgress: state.lessonProgress,
                 raidCount: state.raidCount,
                 raidVictories: state.raidVictories,
@@ -1151,9 +1263,11 @@ export const useQuizStore = create<QuizState>()(
                 raidFastClears: state.raidFastClears,
             }),
             version: 1,
-            migrate: (persistedState: any, version) => {
+            migrate: (persistedState: unknown, version) => {
+                const state = (persistedState ?? {}) as Partial<QuizState>;
+
                 if (version === 0) {
-                    const history = persistedState.quizHistory || [];
+                    const history = Array.isArray(state.quizHistory) ? state.quizHistory : [];
                     const progress: Record<string, LessonProgress> = {};
 
                     history.forEach((h: QuizHistoryEntry) => {
@@ -1171,11 +1285,11 @@ export const useQuizStore = create<QuizState>()(
                     });
 
                     return {
-                        ...persistedState,
+                        ...state,
                         lessonProgress: progress,
                     };
                 }
-                return persistedState;
+                return state;
             },
         }
     )

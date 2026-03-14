@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import clsx from 'clsx';
 import {
     ArrowLeft,
+    Award,
     Calculator,
     CheckCircle,
     Flame,
@@ -18,7 +19,7 @@ import {
     XCircle,
 } from 'lucide-react';
 import { useSound } from '@/hooks/useSound';
-import { useQuizStore } from '@/store/useQuizStore';
+import { BADGES, useQuizStore } from '@/store/useQuizStore';
 import {
     AVAILABLE_DANS,
     MULTIPLICATION_PRESETS,
@@ -166,7 +167,7 @@ function getResultTitle(clearedStage: boolean, wrongCount: number): string {
 }
 
 export const MultiplicationAdventureView = ({ onBack }: MultiplicationAdventureViewProps) => {
-    const { addXp } = useQuizStore();
+    const { recordMultiplicationResult } = useQuizStore();
     const { playClick, playCorrect, playWrong, playLevelUp } = useSound();
 
     const [gameState, setGameState] = useState<GameState>('ready');
@@ -185,6 +186,7 @@ export const MultiplicationAdventureView = ({ onBack }: MultiplicationAdventureV
     const [wrongAttempts, setWrongAttempts] = useState<WrongAttempt[]>([]);
     const [earnedXp, setEarnedXp] = useState(0);
     const [clearedStage, setClearedStage] = useState(false);
+    const [newlyEarnedBadgeIds, setNewlyEarnedBadgeIds] = useState<string[]>([]);
     const [requestedVideoDan, setRequestedVideoDan] = useState<number>(2);
 
     const advanceTimeoutRef = useRef<number | null>(null);
@@ -243,6 +245,7 @@ export const MultiplicationAdventureView = ({ onBack }: MultiplicationAdventureV
         setWrongAttempts([]);
         setEarnedXp(0);
         setClearedStage(false);
+        setNewlyEarnedBadgeIds([]);
         launchQuestion(0);
     }, [activePreset.lives, clearAdvanceTimeout, launchQuestion]);
 
@@ -261,15 +264,20 @@ export const MultiplicationAdventureView = ({ onBack }: MultiplicationAdventureV
             clearedStage: params.didClearStage,
         });
 
-        if (xp > 0) {
-            addXp(xp);
-        }
+        const newlyEarned = recordMultiplicationResult({
+            selectedDans: normalizedDans,
+            xpGained: xp,
+            maxCombo: params.nextMaxCombo,
+            clearedStage: params.didClearStage,
+            perfectClear: params.didClearStage && wrongAttempts.length === 0,
+        });
 
         playLevelUp();
         setEarnedXp(xp);
         setClearedStage(params.didClearStage);
+        setNewlyEarnedBadgeIds(newlyEarned);
         setGameState('result');
-    }, [activePreset.id, activePreset.questionCount, addXp, playLevelUp]);
+    }, [activePreset.id, activePreset.questionCount, normalizedDans, playLevelUp, recordMultiplicationResult, wrongAttempts.length]);
 
     const handleLeave = useCallback(() => {
         playClick();
@@ -679,6 +687,32 @@ export const MultiplicationAdventureView = ({ onBack }: MultiplicationAdventureV
                     <SummaryStat icon={<Star size={18} className="text-amber-300" />} label="점수" value={`${score}점`} />
                     <SummaryStat icon={<Heart size={18} className="text-rose-300" />} label="남은 하트" value={`${Math.max(lives, 0)}개`} />
                 </section>
+
+                {newlyEarnedBadgeIds.length > 0 && (
+                    <section className="rounded-3xl border border-amber-400/30 bg-amber-500/10 p-5 md:p-6">
+                        <div className="flex items-center gap-2 text-amber-100">
+                            <Award size={20} />
+                            <h3 className="text-lg font-black">새 구구단 뱃지 획득</h3>
+                        </div>
+                        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                            {newlyEarnedBadgeIds.map((badgeId) => {
+                                const badge = BADGES.find((item) => item.id === badgeId);
+                                if (!badge) return null;
+
+                                return (
+                                    <div
+                                        key={badge.id}
+                                        className="rounded-2xl border border-amber-300/20 bg-slate-950/70 p-4"
+                                    >
+                                        <div className="text-3xl">{badge.icon}</div>
+                                        <div className="mt-2 text-base font-black text-white">{badge.name}</div>
+                                        <p className="mt-1 text-sm text-slate-400">{badge.description}</p>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </section>
+                )}
 
                 {wrongAttempts.length > 0 && (
                     <section className="rounded-3xl border border-slate-800 bg-slate-900/90 p-5 md:p-6">

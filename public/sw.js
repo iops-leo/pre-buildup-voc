@@ -1,4 +1,4 @@
-const CACHE_NAME = 'pre-buildup-voca-v1';
+const CACHE_NAME = 'pre-buildup-voca-v2';
 const OFFLINE_URL = '/';
 
 // Assets to cache immediately on install
@@ -11,6 +11,33 @@ const PRECACHE_ASSETS = [
   '/media/sounds/click.ogg',
   '/media/sounds/level_up.mp3',
 ];
+
+const STATIC_CACHE_PATHS = [
+  '/icons/',
+  '/media/',
+  '/noise.svg',
+  '/manifest.json',
+];
+
+function isSameOrigin(url) {
+  return url.origin === self.location.origin;
+}
+
+function isNavigationRequest(request) {
+  return request.mode === 'navigate' || request.destination === 'document';
+}
+
+function isNextAsset(pathname) {
+  return pathname.startsWith('/_next/');
+}
+
+function isApiRequest(pathname) {
+  return pathname.startsWith('/api/');
+}
+
+function shouldUseStaticCache(pathname) {
+  return STATIC_CACHE_PATHS.some((prefix) => pathname === prefix || pathname.startsWith(prefix));
+}
 
 // Install event - cache essential assets
 self.addEventListener('install', (event) => {
@@ -45,13 +72,41 @@ self.addEventListener('fetch', (event) => {
   // Skip chrome-extension and other non-http(s) requests
   if (!event.request.url.startsWith('http')) return;
 
+  const requestUrl = new URL(event.request.url);
+
+  // Never intercept cross-origin requests such as YouTube embeds.
+  if (!isSameOrigin(requestUrl)) return;
+
+  // Let Next.js handle framework assets and APIs directly to avoid stale app code.
+  if (isNextAsset(requestUrl.pathname) || isApiRequest(requestUrl.pathname)) return;
+
+  // Navigation should prefer fresh network responses; fall back to offline shell only when needed.
+  if (isNavigationRequest(event.request)) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (response && response.status === 200) {
+            const responseClone = response.clone();
+            event.waitUntil(
+              caches.open(CACHE_NAME).then((cache) => cache.put(OFFLINE_URL, responseClone))
+            );
+          }
+          return response;
+        })
+        .catch(() => caches.match(OFFLINE_URL))
+    );
+    return;
+  }
+
+  if (!shouldUseStaticCache(requestUrl.pathname)) return;
+
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) {
         // Return cached response and update cache in background
         event.waitUntil(
           fetch(event.request).then((response) => {
-            if (response && response.status === 200) {
+            if (response && response.status === 200 && response.type === 'basic') {
               const responseClone = response.clone();
               caches.open(CACHE_NAME).then((cache) => {
                 cache.put(event.request, responseClone);
@@ -79,10 +134,6 @@ self.addEventListener('fetch', (event) => {
           return response;
         })
         .catch(() => {
-          // Offline fallback for navigation requests
-          if (event.request.mode === 'navigate') {
-            return caches.match(OFFLINE_URL);
-          }
           return new Response('Offline', { status: 503 });
         });
     })
