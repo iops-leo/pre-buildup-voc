@@ -41,38 +41,40 @@ interface WrongAttempt {
     selectedAnswer: number;
 }
 
+const getLocalVideoSrc = (fileName: string) => encodeURI(`/videos/${fileName}`);
+
 const MULTIPLICATION_VIDEO_MAP = {
     2: {
         title: '2단 구구단 송',
-        embedUrl: 'https://www.youtube-nocookie.com/embed/jd65cGdIB6w?rel=0&modestbranding=1&playsinline=1&fs=0',
+        videoSrc: getLocalVideoSrc('구구단 2단 ｜ 구구단송 ｜ 숫자송 ｜ 숫자노래 ｜ 주니토니 by 키즈캐슬_jd65cGdIB6w.mp4'),
     },
     3: {
         title: '3단 구구단 송',
-        embedUrl: 'https://www.youtube-nocookie.com/embed/RUz-YzGOAZg?rel=0&modestbranding=1&playsinline=1&fs=0',
+        videoSrc: getLocalVideoSrc('구구단 3단 ｜ 구구단송 ｜ 숫자송 ｜ 숫자노래 ｜ 주니토니 by 키즈캐슬_RUz-YzGOAZg.mp4'),
     },
     4: {
         title: '4단 구구단 송',
-        embedUrl: 'https://www.youtube-nocookie.com/embed/ZBCnmfM_VHU?rel=0&modestbranding=1&playsinline=1&fs=0',
+        videoSrc: getLocalVideoSrc('구구단 4단 ｜ 구구단송 ｜ 미이라처럼 불러보세요 ｜ 숫자송 ｜ 숫자노래 ｜ 주니토니 by 키즈캐슬_ZBCnmfM_VHU.mp4'),
     },
     5: {
         title: '5단 구구단 송',
-        embedUrl: 'https://www.youtube-nocookie.com/embed/dcOJDzim-Vc?rel=0&modestbranding=1&playsinline=1&fs=0',
+        videoSrc: getLocalVideoSrc('구구단 5단 ｜ 5단 완전정복 ｜ 구구단송 ｜ 숫자송 ｜ 숫자노래 ｜ 주니토니 by 키즈캐슬_dcOJDzim-Vc.mp4'),
     },
     6: {
         title: '6단 구구단 송',
-        embedUrl: 'https://www.youtube-nocookie.com/embed/fuFQhGBm_Lc?rel=0&modestbranding=1&playsinline=1&fs=0',
+        videoSrc: getLocalVideoSrc('구구단 6단 ｜ 사탕을 여섯개씩 더해 보아요 ｜ 구구단동요 ｜ 구구단송 ｜ 숫자송 ｜ 주니토니 by 키즈캐슬_fuFQhGBm_Lc.mp4'),
     },
     7: {
         title: '7단 구구단 송',
-        embedUrl: 'https://www.youtube-nocookie.com/embed/F6SGPx_U_kU?rel=0&modestbranding=1&playsinline=1&fs=0',
+        videoSrc: getLocalVideoSrc('구구단 7단 ｜ 외계인이 나타났다!!! ｜ 위기에 빠진 행성들을 구하고 싶은데... ｜ 구구단동요 ｜ 구구단송 ｜ 숫자송 ｜ 주니토니 by 키즈캐슬_F6SGPx_U_kU.mp4'),
     },
     8: {
         title: '8단 구구단 송',
-        embedUrl: 'https://www.youtube-nocookie.com/embed/MCWqPHzZkCY?rel=0&modestbranding=1&playsinline=1&fs=0',
+        videoSrc: getLocalVideoSrc('구구단 8단 l 배트맨과 함께 8단 완전정복ㅣ구구단동요ㅣ구구단송ㅣ숫자송ㅣ주니토니 by 키즈캐슬_MCWqPHzZkCY.mp4'),
     },
     9: {
         title: '9단 구구단 송',
-        embedUrl: 'https://www.youtube-nocookie.com/embed/ItwTjNJf9Ek?rel=0&modestbranding=1&playsinline=1&fs=0',
+        videoSrc: getLocalVideoSrc('구구단 9단ㅣ헤어샵에 간 사자와 9단 완전정복ㅣ구구단동요ㅣ구구단송ㅣ숫자송ㅣ주니토니 by 키즈캐슬_ItwTjNJf9Ek.mp4'),
     },
 } as const;
 
@@ -607,14 +609,16 @@ export const MultiplicationAdventureView = ({ onBack }: MultiplicationAdventureV
                     <div className="mt-5 grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
                         <div className="overflow-hidden rounded-[28px] border border-slate-800 bg-black shadow-2xl shadow-black/20">
                             <div className="aspect-video">
-                                <iframe
+                                <video
                                     key={activeVideoDan}
-                                    src={activeVideo.embedUrl}
+                                    src={activeVideo.videoSrc}
                                     title={activeVideo.title}
                                     className="h-full w-full"
-                                    loading="lazy"
-                                    referrerPolicy="strict-origin-when-cross-origin"
-                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    controls
+                                    playsInline
+                                    preload="metadata"
+                                    controlsList="nodownload noremoteplayback"
+                                    disablePictureInPicture
                                 />
                             </div>
                         </div>
@@ -632,7 +636,7 @@ export const MultiplicationAdventureView = ({ onBack }: MultiplicationAdventureV
                                 </p>
                             </div>
                             <p className="mt-4 text-xs leading-relaxed text-slate-500">
-                                영상은 새 화면을 열지 않고 여기서 재생되지만, 유튜브 자체 컨트롤 일부는 서비스 정책상 외부로 이어질 수 있습니다.
+                                업로드한 mp4를 직접 재생하므로 새 화면으로 나가지 않고 이 화면 안에서 바로 볼 수 있습니다.
                             </p>
                         </div>
                     </div>
