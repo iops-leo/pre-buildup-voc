@@ -1264,7 +1264,7 @@ export const useQuizStore = create<QuizState>()(
             }),
             version: 1,
             migrate: (persistedState: unknown, version) => {
-                const state = (persistedState ?? {}) as Partial<QuizState>;
+                const state = (persistedState ?? {}) as QuizState;
 
                 if (version === 0) {
                     const history = Array.isArray(state.quizHistory) ? state.quizHistory : [];
