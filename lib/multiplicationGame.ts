@@ -145,9 +145,12 @@ export function buildMultiplicationOptions({
     addCandidate(answer - (dan + multiplier));
     addCandidate(answer + (dan + multiplier));
 
-    while (candidates.size < 6) {
+    for (let attempt = 0; candidates.size < 6 && attempt < 50; attempt += 1) {
         const delta = Math.floor(random() * 8) + 1;
-        addCandidate(answer + (candidates.size % 2 === 0 ? delta : -delta));
+        addCandidate(answer + delta);
+        if (candidates.size < 6) {
+            addCandidate(answer - delta);
+        }
     }
 
     const distractors = shuffleArray([...candidates], random).slice(0, 3);

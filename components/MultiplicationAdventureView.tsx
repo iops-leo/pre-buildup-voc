@@ -70,11 +70,11 @@ const MULTIPLICATION_VIDEO_MAP = {
     },
     8: {
         title: '8단 구구단 송',
-        videoSrc: getLocalVideoSrc('구구단 8단 l 배트맨과 함께 8단 완전정복ㅣ구구단동요ㅣ구구단송ㅣ숫자송ㅣ주니토니 by 키즈캐슬_MCWqPHzZkCY.mp4'),
+        videoSrc: getLocalVideoSrc('8단.mp4'),
     },
     9: {
         title: '9단 구구단 송',
-        videoSrc: getLocalVideoSrc('구구단 9단ㅣ헤어샵에 간 사자와 9단 완전정복ㅣ구구단동요ㅣ구구단송ㅣ숫자송ㅣ주니토니 by 키즈캐슬_ItwTjNJf9Ek.mp4'),
+        videoSrc: getLocalVideoSrc('9단.mp4'),
     },
 } as const;
 
