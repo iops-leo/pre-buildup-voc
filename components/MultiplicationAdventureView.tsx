@@ -972,14 +972,24 @@ export const MultiplicationAdventureView = ({ onBack }: MultiplicationAdventureV
                         <span className="text-amber-300"> = ?</span>
                     </div>
                     <div className="mt-4 flex flex-wrap justify-center gap-2">
-                        {currentQuestion?.skipSequence.map((value) => (
+                        {currentQuestion?.skipSequence.slice(0, -1).map((value, index) => (
                             <span
-                                key={`${currentQuestion.key}-${value}`}
+                                key={`${currentQuestion.key}-seq-${index}`}
                                 className="rounded-full border border-slate-700 bg-slate-950/80 px-2.5 py-1 text-xs font-bold text-slate-300"
                             >
                                 {value}
                             </span>
                         ))}
+                        <span
+                            className={clsx(
+                                'rounded-full border px-2.5 py-1 text-xs font-black transition-colors',
+                                answered
+                                    ? 'border-emerald-400/50 bg-emerald-500/15 text-emerald-100'
+                                    : 'border-amber-400/50 bg-amber-500/10 text-amber-200'
+                            )}
+                        >
+                            {answered ? currentQuestion?.answer : '?'}
+                        </span>
                     </div>
                 </div>
             </motion.div>
